@@ -21,11 +21,13 @@
   <ItemGroup>
     <ClInclude Include="RemoteTalkFoundation\Foundation.h" />
     <ClInclude Include="RemoteTalkFoundation\Hook.h" />
+    <ClInclude Include="RemoteTalkFoundation\HookDSound.h" />
     <ClInclude Include="RemoteTalkFoundation\HookWave.h" />
     <ClInclude Include="RemoteTalkFoundation\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RemoteTalkFoundation\Hook.cpp" />
+    <ClCompile Include="RemoteTalkFoundation\HookDSound.cpp" />
     <ClCompile Include="RemoteTalkFoundation\HookWave.cpp" />
     <ClCompile Include="RemoteTalkFoundation\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

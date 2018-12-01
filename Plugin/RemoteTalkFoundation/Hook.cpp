@@ -45,17 +45,20 @@ void* EmitJmpInstruction(void* from_, void* to_)
 
 void* OverrideDLLExport(HMODULE module, const char *funcname, void *replacement, void *&jump_table)
 {
-    if (!module) { return nullptr; }
+    if (!module)
+        return nullptr;
 
     size_t ImageBase = (size_t)module;
-    PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
-    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) { return nullptr; }
+    auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
+    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+        return nullptr;
 
-    PIMAGE_NT_HEADERS pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
+    auto pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
     DWORD RVAExports = pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
-    if (RVAExports == 0) { return nullptr; }
+    if (RVAExports == 0)
+        return nullptr;
 
-    IMAGE_EXPORT_DIRECTORY *pExportDirectory = (IMAGE_EXPORT_DIRECTORY *)(ImageBase + RVAExports);
+    auto *pExportDirectory = (IMAGE_EXPORT_DIRECTORY *)(ImageBase + RVAExports);
     DWORD *RVANames = (DWORD*)(ImageBase + pExportDirectory->AddressOfNames);
     WORD *RVANameOrdinals = (WORD*)(ImageBase + pExportDirectory->AddressOfNameOrdinals);
     DWORD *RVAFunctions = (DWORD*)(ImageBase + pExportDirectory->AddressOfFunctions);
@@ -74,18 +77,19 @@ void* OverrideDLLExport(HMODULE module, const char *funcname, void *replacement,
 
 void* OverrideDLLImport(HMODULE module, const char *target_module, const char *target_funcname, void *replacement)
 {
-    if (module == 0) { return nullptr; }
+    if (!module)
+        return nullptr;
 
     size_t ImageBase = (size_t)module;
-    PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
-    PIMAGE_NT_HEADERS pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
+    auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
+    auto pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
 
     size_t RVAImports = pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
-    IMAGE_IMPORT_DESCRIPTOR *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR*)(ImageBase + RVAImports);
+    auto *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR*)(ImageBase + RVAImports);
     while (pImportDesc->Name != 0) {
         const char *dllname = (const char*)(ImageBase + pImportDesc->Name);
         if (stricmp(dllname, target_module) == 0) {
-            IMAGE_IMPORT_BY_NAME **func_names = (IMAGE_IMPORT_BY_NAME**)(ImageBase + pImportDesc->Characteristics);
+            auto **func_names = (IMAGE_IMPORT_BY_NAME**)(ImageBase + pImportDesc->Characteristics);
             void **import_table = (void**)(ImageBase + pImportDesc->FirstThunk);
             for (size_t i = 0; ; ++i) {
                 if ((size_t)func_names[i] == 0) { break; }
@@ -100,4 +104,150 @@ void* OverrideDLLImport(HMODULE module, const char *target_module, const char *t
         ++pImportDesc;
     }
     return nullptr;
+}
+
+void EnumerateModules(const std::function<void(HMODULE)>& body)
+{
+    std::vector<HMODULE> modules;
+    DWORD num_modules;
+    ::EnumProcessModules(::GetCurrentProcess(), nullptr, 0, &num_modules);
+    modules.resize(num_modules / sizeof(HMODULE));
+    ::EnumProcessModules(::GetCurrentProcess(), &modules[0], num_modules, &num_modules);
+    for (size_t i = 0; i < modules.size(); ++i) {
+        body(modules[i]);
+    }
+}
+
+void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body)
+{
+    if (!module)
+        return;
+
+    size_t ImageBase = (size_t)module;
+    auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
+    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+        return;
+
+    auto pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
+    DWORD RVAImports = pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    if (RVAImports == 0)
+        return;
+
+    auto *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR*)(ImageBase + RVAImports);
+    while (pImportDesc->Name != 0) {
+        const char *pDLLName = (const char*)(ImageBase + pImportDesc->Name);
+        if (dllname == nullptr || _stricmp(pDLLName, dllname) == 0) {
+            auto* pThunkOrig = (IMAGE_THUNK_DATA*)(ImageBase + pImportDesc->OriginalFirstThunk);
+            auto* pThunk = (IMAGE_THUNK_DATA*)(ImageBase + pImportDesc->FirstThunk);
+            while (pThunkOrig->u1.AddressOfData != 0) {
+                if ((pThunkOrig->u1.Ordinal & 0x80000000) > 0) {
+                    //DWORD Ordinal = pThunkOrig->u1.Ordinal & 0xffff;
+                    // nameless function
+                }
+                else {
+                    IMAGE_IMPORT_BY_NAME* pIBN = (IMAGE_IMPORT_BY_NAME*)(ImageBase + pThunkOrig->u1.AddressOfData);
+                    body((char*)pIBN->Name, *(void**)pThunk);
+                }
+                ++pThunkOrig;
+                ++pThunk;
+            }
+        }
+        ++pImportDesc;
+    }
+}
+
+void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body)
+{
+    if (!module)
+        return;
+
+    size_t ImageBase = (size_t)module;
+    auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
+    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+        return;
+
+    auto pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
+    DWORD RVAExports = pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    if (RVAExports == 0)
+        return;
+
+    auto *pExportDirectory = (IMAGE_EXPORT_DIRECTORY *)(ImageBase + RVAExports);
+    DWORD *RVANames = (DWORD*)(ImageBase + pExportDirectory->AddressOfNames);
+    WORD *RVANameOrdinals = (WORD*)(ImageBase + pExportDirectory->AddressOfNameOrdinals);
+    DWORD *RVAFunctions = (DWORD*)(ImageBase + pExportDirectory->AddressOfFunctions);
+    for (DWORD i = 0; i < pExportDirectory->NumberOfFunctions; ++i) {
+        char *pName = (char*)(ImageBase + RVANames[i]);
+        void *pFunc = (void*)(ImageBase + RVAFunctions[RVANameOrdinals[i]]);
+        body(pName, pFunc);
+    }
+}
+
+
+
+
+static LoadLibraryHandlerBase *g_loadlibrary_handlers[32];
+static int g_num_loadlibrary_handlers = 0;
+#define Call(Name, ...) for(int i=0; i<g_num_loadlibrary_handlers; ++i) { g_loadlibrary_handlers[i]->Name(__VA_ARGS__); }
+
+HMODULE(WINAPI *LoadLibraryA_orig)(LPCSTR lpFileName);
+HMODULE(WINAPI *LoadLibraryW_orig)(LPWSTR lpFileName);
+HMODULE(WINAPI *LoadLibraryExA_orig)(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags);
+HMODULE(WINAPI *LoadLibraryExW_orig)(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
+
+static void OverrideIAT(HMODULE mod);
+
+HMODULE WINAPI LoadLibraryA_hook(LPCSTR lpFileName)
+{
+    auto ret = LoadLibraryA_orig(lpFileName);
+    OverrideIAT(ret);
+    Call(afterLoadLibrary, ret);
+    return ret;
+}
+
+HMODULE WINAPI LoadLibraryW_hook(LPWSTR lpFileName)
+{
+    auto ret = LoadLibraryW_orig(lpFileName);
+    OverrideIAT(ret);
+    Call(afterLoadLibrary, ret);
+    return ret;
+}
+
+HMODULE WINAPI LoadLibraryExA_hook(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags)
+{
+    auto ret = LoadLibraryExA_orig(lpFileName, hFile, dwFlags);
+    OverrideIAT(ret);
+    Call(afterLoadLibrary, ret);
+    return ret;
+}
+
+HMODULE WINAPI LoadLibraryExW_hook(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlags)
+{
+    auto ret = LoadLibraryExW_orig(lpFileName, hFile, dwFlags);
+    OverrideIAT(ret);
+    Call(afterLoadLibrary, ret);
+    return ret;
+}
+
+static void OverrideIAT(HMODULE mod)
+{
+    if (!mod)
+        return;
+#define Override(Name) (void*&)Name##_orig = OverrideDLLImport(mod, "kernel32.dll", #Name, Name##_hook)
+    Override(LoadLibraryA);
+    Override(LoadLibraryW);
+    Override(LoadLibraryExA);
+    Override(LoadLibraryExW);
+#undef Override
+}
+
+bool HookLoadLibraryFunctions(LoadLibraryHandlerBase *handler)
+{
+    g_loadlibrary_handlers[g_num_loadlibrary_handlers++] = handler;
+
+    static bool s_first = true;
+    if (s_first) {
+        s_first = false;
+        EnumerateModules([](HMODULE mod) { OverrideIAT(mod); });
+    }
+    return true;
 }
