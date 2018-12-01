@@ -30,6 +30,7 @@ static HRESULT WINAPI DirectSoundCreate8_hook(LPCGUID pcGuidDevice, LPDIRECTSOUN
     Body(DirectSoundCreate);\
     Body(DirectSoundCreate8);
 
+static const char DSound_DLL[] = "dsound.dll";
 
 class LoadLibraryHandler_DSound : public LoadLibraryHandlerBase
 {
@@ -43,18 +44,18 @@ public:
     {
         if (!mod)
             return;
-#define Override(Name) OverrideIAT(mod, "dsound.dll", #Name, Name##_hook)
+#define Override(Name) OverrideIAT(mod, DSound_DLL, #Name, Name##_hook)
         EachFunctions(Override);
 #undef Override
     }
 } static g_loadlibraryhandler_dsound;
 
-bool AddDSoundHandler(DSoundHandlerBase *handler)
+bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll)
 {
     g_dsoundhandler = handler;
 
     // setup hooks
-    auto dsound = ::GetModuleHandleA("dsound.dll");
+    auto dsound = load_dll ? ::LoadLibraryA(DSound_DLL) : ::GetModuleHandleA(DSound_DLL);
     if (!dsound)
         return false;
 

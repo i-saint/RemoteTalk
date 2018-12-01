@@ -163,6 +163,8 @@ static MMRESULT WINAPI waveOutGetID_hook(HWAVEOUT hwo, LPUINT puDeviceID)
     Body(waveOutGetID);
 
 
+static const char WinMM_DLL[] = "winmm.dll";
+
 class LoadLibraryHandler_WaveOut : public LoadLibraryHandlerBase
 {
 public:
@@ -175,18 +177,18 @@ public:
     {
         if (!mod)
             return;
-#define Override(Name) OverrideIAT(mod, "winmm.dll", #Name, Name##_hook)
+#define Override(Name) OverrideIAT(mod, WinMM_DLL, #Name, Name##_hook)
         EachFunctions(Override);
 #undef Override
     }
 } static g_loadlibraryhandler_waveout;
 
-bool AddWaveOutHandler(WaveOutHandlerBase *handler)
+bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll)
 {
     g_waveouthandler = handler;
 
     // setup hooks
-    auto winmm = ::LoadLibraryA("winmm.dll");
+    auto winmm = load_dll ? ::LoadLibraryA(WinMM_DLL) : ::GetModuleHandleA(WinMM_DLL);
     if (!winmm)
         return false;
 

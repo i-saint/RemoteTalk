@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="RemoteTalkCeVIO">
+    <Filter Include="RemoteTalkCeVIOCS">
       <UniqueIdentifier>{cc4736c0-c4cd-4088-80eb-d2b2ab06a614}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RemoteTalkCeVIO\pch.h">
-      <Filter>RemoteTalkCeVIO</Filter>
+    <ClInclude Include="RemoteTalkCeVIOCS\pch.h">
+      <Filter>RemoteTalkCeVIOCS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RemoteTalkCeVIO\RemoteTalkCeVIOHook.cpp">
-      <Filter>RemoteTalkCeVIO</Filter>
+    <ClCompile Include="RemoteTalkCeVIOCS\pch.cpp">
+      <Filter>RemoteTalkCeVIOCS</Filter>
     </ClCompile>
-    <ClCompile Include="RemoteTalkCeVIO\pch.cpp">
-      <Filter>RemoteTalkCeVIO</Filter>
+    <ClCompile Include="RemoteTalkCeVIOCS\RemoteTalkCeVIOCSHook.cpp">
+      <Filter>RemoteTalkCeVIOCS</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

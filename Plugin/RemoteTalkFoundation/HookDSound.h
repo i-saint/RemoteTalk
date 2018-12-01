@@ -12,4 +12,4 @@ public:
 };
 #pragma warning(pop)
 
-bool AddDSoundHandler(DSoundHandlerBase *handler);
+bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll = true);
