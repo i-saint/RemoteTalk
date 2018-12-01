@@ -12,3 +12,4 @@ public:
 };
 #pragma warning(pop)
 
+bool AddDSoundHandler(DSoundHandlerBase *handler);

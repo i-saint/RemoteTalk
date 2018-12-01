@@ -40,5 +40,5 @@ public:
 };
 #pragma warning(pop)
 
-bool HookWaveOutFunctions(WaveOutHandlerBase *handler);
+bool AddWaveOutHandler(WaveOutHandlerBase *handler);
 

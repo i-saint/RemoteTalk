@@ -175,13 +175,13 @@ public:
     {
         if (!mod)
             return;
-#define Override(Name) OverrideDLLImport(mod, "winmm.dll", #Name, Name##_hook)
+#define Override(Name) OverrideIAT(mod, "winmm.dll", #Name, Name##_hook)
         EachFunctions(Override);
 #undef Override
     }
 } static g_loadlibraryhandler_waveout;
 
-bool HookWaveOutFunctions(WaveOutHandlerBase *handler)
+bool AddWaveOutHandler(WaveOutHandlerBase *handler)
 {
     g_waveouthandler = handler;
 
@@ -190,12 +190,12 @@ bool HookWaveOutFunctions(WaveOutHandlerBase *handler)
     if (!winmm)
         return false;
 
-    auto jumptable = AllocateExecutableMemoryForward(1024, winmm);
-#define Override(Name) (void*&)Name##_orig = OverrideDLLExport(winmm, #Name, Name##_hook, jumptable)
+    auto jumptable = AllocExecutableForward(1024, winmm);
+#define Override(Name) (void*&)Name##_orig = OverrideEAT(winmm, #Name, Name##_hook, jumptable)
     EachFunctions(Override);
 #undef Override
 
     EnumerateModules([](HMODULE mod) { LoadLibraryHandler_WaveOut::hook(mod); });
-    HookLoadLibraryFunctions(&g_loadlibraryhandler_waveout);
+    AddLoadLibraryHandler(&g_loadlibraryhandler_waveout);
     return true;
 }

@@ -13,13 +13,14 @@ static inline void ForceWrite(T &dst, const T &src)
     ::VirtualProtect(&dst, sizeof(T), old_flag, &old_flag);
 }
 
-void* AllocateExecutableMemoryForward(size_t size, void *location);
+void* AllocExecutableForward(size_t size, void *location);
 void* EmitJmpInstruction(void* from_, void* to_);
-void* OverrideDLLExport(HMODULE module, const char *funcname, void *replacement, void *&jump_table);
-void* OverrideDLLImport(HMODULE module, const char *target_module, const char *funcname, void *replacement);
+void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void *&jump_table);
+void* OverrideIAT(HMODULE module, const char *target_module, const char *funcname, void *replacement);
 
 void EnumerateModules(const std::function<void(HMODULE)>& body);
 void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body);
+void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body);
 
 
 #pragma warning(push)
@@ -29,7 +30,10 @@ class LoadLibraryHandlerBase
 public:
     virtual ~LoadLibraryHandlerBase() {}
     virtual void afterLoadLibrary(HMODULE& mod) {}
+    virtual void beforeFreeLibrary(HMODULE& mod) {}
+    virtual void afterGetProcAddress(HMODULE& hModule, LPCSTR& lpProcName, FARPROC& ret) {}
+
 };
 #pragma warning(pop)
 
-bool HookLoadLibraryFunctions(LoadLibraryHandlerBase *handler);
+bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler);

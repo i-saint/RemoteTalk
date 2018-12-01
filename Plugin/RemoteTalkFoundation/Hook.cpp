@@ -2,7 +2,7 @@
 #include "Hook.h"
 
 
-void* AllocateExecutableMemoryForward(size_t size, void *location)
+void* AllocExecutableForward(size_t size, void *location)
 {
     static size_t base = (size_t)location;
 
@@ -43,7 +43,7 @@ void* EmitJmpInstruction(void* from_, void* to_)
     return from;
 }
 
-void* OverrideDLLExport(HMODULE module, const char *funcname, void *replacement, void *&jump_table)
+void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void *&jump_table)
 {
     if (!module)
         return nullptr;
@@ -75,7 +75,7 @@ void* OverrideDLLExport(HMODULE module, const char *funcname, void *replacement,
     return nullptr;
 }
 
-void* OverrideDLLImport(HMODULE module, const char *target_module, const char *target_funcname, void *replacement)
+void* OverrideIAT(HMODULE module, const char *target_module, const char *target_funcname, void *replacement)
 {
     if (!module)
         return nullptr;
@@ -189,14 +189,16 @@ static LoadLibraryHandlerBase *g_loadlibrary_handlers[32];
 static int g_num_loadlibrary_handlers = 0;
 #define Call(Name, ...) for(int i=0; i<g_num_loadlibrary_handlers; ++i) { g_loadlibrary_handlers[i]->Name(__VA_ARGS__); }
 
-HMODULE(WINAPI *LoadLibraryA_orig)(LPCSTR lpFileName);
-HMODULE(WINAPI *LoadLibraryW_orig)(LPWSTR lpFileName);
-HMODULE(WINAPI *LoadLibraryExA_orig)(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags);
-HMODULE(WINAPI *LoadLibraryExW_orig)(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
+static HMODULE(WINAPI *LoadLibraryA_orig)(LPCSTR lpFileName);
+static HMODULE(WINAPI *LoadLibraryW_orig)(LPWSTR lpFileName);
+static HMODULE(WINAPI *LoadLibraryExA_orig)(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags);
+static HMODULE(WINAPI *LoadLibraryExW_orig)(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
+static BOOL(WINAPI *FreeLibrary_orig)(HMODULE hLibModule);
+static FARPROC (WINAPI *GetProcAddress_orig)(HMODULE hModule, LPCSTR lpProcName);
 
 static void OverrideIAT(HMODULE mod);
 
-HMODULE WINAPI LoadLibraryA_hook(LPCSTR lpFileName)
+static HMODULE WINAPI LoadLibraryA_hook(LPCSTR lpFileName)
 {
     auto ret = LoadLibraryA_orig(lpFileName);
     OverrideIAT(ret);
@@ -204,7 +206,7 @@ HMODULE WINAPI LoadLibraryA_hook(LPCSTR lpFileName)
     return ret;
 }
 
-HMODULE WINAPI LoadLibraryW_hook(LPWSTR lpFileName)
+static HMODULE WINAPI LoadLibraryW_hook(LPWSTR lpFileName)
 {
     auto ret = LoadLibraryW_orig(lpFileName);
     OverrideIAT(ret);
@@ -212,7 +214,7 @@ HMODULE WINAPI LoadLibraryW_hook(LPWSTR lpFileName)
     return ret;
 }
 
-HMODULE WINAPI LoadLibraryExA_hook(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags)
+static HMODULE WINAPI LoadLibraryExA_hook(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags)
 {
     auto ret = LoadLibraryExA_orig(lpFileName, hFile, dwFlags);
     OverrideIAT(ret);
@@ -220,7 +222,7 @@ HMODULE WINAPI LoadLibraryExA_hook(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlag
     return ret;
 }
 
-HMODULE WINAPI LoadLibraryExW_hook(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlags)
+static HMODULE WINAPI LoadLibraryExW_hook(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlags)
 {
     auto ret = LoadLibraryExW_orig(lpFileName, hFile, dwFlags);
     OverrideIAT(ret);
@@ -228,25 +230,50 @@ HMODULE WINAPI LoadLibraryExW_hook(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlag
     return ret;
 }
 
+static BOOL WINAPI FreeLibrary_hook(HMODULE hLibModule)
+{
+    Call(beforeFreeLibrary, hLibModule);
+    auto ret = FreeLibrary_orig(hLibModule);
+    return ret;
+}
+
+static FARPROC WINAPI GetProcAddress_hook(HMODULE hModule, LPCSTR lpProcName)
+{
+    auto ret = GetProcAddress_orig(hModule, lpProcName);
+    Call(afterGetProcAddress, hModule, lpProcName, ret);
+    return ret;
+}
+
+#define EachFunctions(Body)\
+    Body(LoadLibraryA);\
+    Body(LoadLibraryW);\
+    Body(LoadLibraryExA);\
+    Body(LoadLibraryExW);\
+    Body(FreeLibrary);\
+    Body(GetProcAddress);
+
+
 static void OverrideIAT(HMODULE mod)
 {
     if (!mod)
         return;
-#define Override(Name) (void*&)Name##_orig = OverrideDLLImport(mod, "kernel32.dll", #Name, Name##_hook)
-    Override(LoadLibraryA);
-    Override(LoadLibraryW);
-    Override(LoadLibraryExA);
-    Override(LoadLibraryExW);
+#define Override(Name) OverrideIAT(mod, "kernel32.dll", #Name, Name##_hook)
+    EachFunctions(Override);
 #undef Override
 }
 
-bool HookLoadLibraryFunctions(LoadLibraryHandlerBase *handler)
+bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler)
 {
     g_loadlibrary_handlers[g_num_loadlibrary_handlers++] = handler;
 
     static bool s_first = true;
     if (s_first) {
         s_first = false;
+
+        auto kernel32 = GetModuleHandleA("kernel32.dll");
+#define GetProc(Name) (void*&)Name##_orig = GetProcAddress(kernel32, #Name)
+        EachFunctions(GetProc);
+#undef GetProc
         EnumerateModules([](HMODULE mod) { OverrideIAT(mod); });
     }
     return true;

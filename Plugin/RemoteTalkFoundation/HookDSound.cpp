@@ -5,21 +5,21 @@
 
 #pragma warning(push)
 #pragma warning(disable:4229)
-HRESULT (*WINAPI DirectSoundCreate_orig)(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter);
-HRESULT (*WINAPI DirectSoundCreate8_orig)(LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS8, LPUNKNOWN pUnkOuter);
+static HRESULT (*WINAPI DirectSoundCreate_orig)(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter);
+static HRESULT (*WINAPI DirectSoundCreate8_orig)(LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS8, LPUNKNOWN pUnkOuter);
 #pragma warning(pop)
 
 static DSoundHandlerBase *g_dsoundhandler = nullptr;
 #define Call(Name, ...) g_dsoundhandler->Name(__VA_ARGS__);
 
-HRESULT WINAPI DirectSoundCreate_hook(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
+static HRESULT WINAPI DirectSoundCreate_hook(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
 {
     auto ret = DirectSoundCreate_orig(pcGuidDevice, ppDS, pUnkOuter);
     Call(afterDirectSoundCreate, pcGuidDevice, ppDS, pUnkOuter, ret);
     return ret;
 }
 
-HRESULT WINAPI DirectSoundCreate8_hook(LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS8, LPUNKNOWN pUnkOuter)
+static HRESULT WINAPI DirectSoundCreate8_hook(LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS8, LPUNKNOWN pUnkOuter)
 {
     auto ret = DirectSoundCreate8_orig(pcGuidDevice, ppDS8, pUnkOuter);
     Call(afterDirectSoundCreate8, pcGuidDevice, ppDS8, pUnkOuter, ret);
@@ -43,13 +43,13 @@ public:
     {
         if (!mod)
             return;
-#define Override(Name) OverrideDLLImport(mod, "dsound.dll", #Name, Name##_hook)
+#define Override(Name) OverrideIAT(mod, "dsound.dll", #Name, Name##_hook)
         EachFunctions(Override);
 #undef Override
     }
 } static g_loadlibraryhandler_dsound;
 
-bool HookDSoundFunctions(DSoundHandlerBase *handler)
+bool AddDSoundHandler(DSoundHandlerBase *handler)
 {
     g_dsoundhandler = handler;
 
@@ -58,12 +58,12 @@ bool HookDSoundFunctions(DSoundHandlerBase *handler)
     if (!dsound)
         return false;
 
-    auto jumptable = AllocateExecutableMemoryForward(1024, dsound);
-#define Override(Name) (void*&)Name##_orig = OverrideDLLExport(dsound, #Name, Name##_hook, jumptable)
+    auto jumptable = AllocExecutableForward(1024, dsound);
+#define Override(Name) (void*&)Name##_orig = OverrideEAT(dsound, #Name, Name##_hook, jumptable)
     EachFunctions(Override);
 #undef Override
 
     EnumerateModules([](HMODULE mod) { LoadLibraryHandler_DSound::hook(mod); });
-    HookLoadLibraryFunctions(&g_loadlibraryhandler_dsound);
+    AddLoadLibraryHandler(&g_loadlibraryhandler_dsound);
     return true;
 }
