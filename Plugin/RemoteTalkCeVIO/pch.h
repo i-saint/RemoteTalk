@@ -1,0 +1,21 @@
+#pragma once
+
+#pragma warning(disable:4996)
+#define NOMINMAX
+#include <windows.h>
+#include <mmsystem.h>
+#include <ppl.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <codecvt>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <map>
+#include <functional>
+#include <future>
+#include <mutex>
+#include <memory>
