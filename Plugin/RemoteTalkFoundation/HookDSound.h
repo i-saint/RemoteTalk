@@ -1,5 +1,4 @@
 #pragma once
-#define INITGUID
 #include <dsound.h>
 
 #pragma warning(push)
@@ -10,9 +9,21 @@ public:
     virtual ~DSoundHandlerBase() {}
     virtual void afterDirectSoundCreate(LPCGUID& pcGuidDevice, LPDIRECTSOUND *&ppDS, LPUNKNOWN& pUnkOuter, HRESULT& ret) {}
     virtual void afterDirectSoundCreate8(LPCGUID& pcGuidDevice, LPDIRECTSOUND8 *&ppDS8, LPUNKNOWN& pUnkOuter, HRESULT& ret) {}
-
     virtual void afterCCIDirectSound(LPDIRECTSOUND *&ppDS, HRESULT& ret) {}
     virtual void afterCCIDirectSound8(LPDIRECTSOUND8 *&ppDS8, HRESULT& ret) {}
+
+    virtual void afterIDirectSound8_CreateSoundBuffer(IDirectSound8 *_this, LPCDSBUFFERDESC pcDSBufferDesc, LPDIRECTSOUNDBUFFER *ppDSBuffer, LPUNKNOWN pUnkOuter) {}
+
+    virtual void afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *_this, DWORD dwOffset, DWORD dwBytes, LPVOID *ppvAudioPtr1, LPDWORD pdwAudioBytes1, LPVOID *ppvAudioPtr2, LPDWORD pdwAudioBytes2, DWORD dwFlags) {}
+    virtual void afterIDirectSoundBuffer_Play(IDirectSoundBuffer *_this, DWORD dwReserved1, DWORD dwPriority, DWORD dwFlags) {}
+    virtual void afterIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *_this, DWORD dwNewPosition) {}
+    virtual void afterIDirectSoundBuffer_SetFormat(IDirectSoundBuffer *_this, LPCWAVEFORMATEX pcfxFormat) {}
+    virtual void afterIDirectSoundBuffer_SetVolume(IDirectSoundBuffer *_this, LONG lVolume) {}
+    virtual void afterIDirectSoundBuffer_SetPan(IDirectSoundBuffer *_this, LONG lPan) {}
+    virtual void afterIDirectSoundBuffer_SetFrequency(IDirectSoundBuffer *_this, DWORD dwFrequency) {}
+    virtual void afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *_this) {}
+    virtual void afterIDirectSoundBuffer_Unlock(IDirectSoundBuffer *_this, LPVOID pvAudioPtr1, DWORD dwAudioBytes1, LPVOID pvAudioPtr2, DWORD dwAudioBytes2) {}
+    virtual void afterIDirectSoundBuffer_Restore(IDirectSoundBuffer *_this) {}
 };
 #pragma warning(pop)
 
