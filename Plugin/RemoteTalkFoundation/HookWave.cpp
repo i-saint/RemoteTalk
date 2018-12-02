@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Hook.h"
+#include "HookKernel.h"
 #include "HookWave.h"
 
 
