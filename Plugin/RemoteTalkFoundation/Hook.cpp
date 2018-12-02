@@ -43,9 +43,34 @@ void* EmitJmpInstruction(void* from_, void* to_)
     return from;
 }
 
-void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void *&jump_table)
+bool IsValidMemory(const void *p)
+{
+    if (!p)
+        return false;
+    MEMORY_BASIC_INFORMATION meminfo;
+    return ::VirtualQuery(p, &meminfo, sizeof(meminfo)) != 0 && meminfo.State != MEM_FREE;
+}
+
+bool IsValidModule(HMODULE& module)
 {
     if (!module)
+        return false;
+    auto MZ = (const char*)module;
+    if (MZ[0] != 'M' || MZ[1] != 'Z')
+        return false;
+    return true;
+}
+
+HMODULE GetModuleByAddr(const void * p)
+{
+    HMODULE mod = 0;
+    ::GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)p, &mod);
+    return mod;
+}
+
+void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void *&jump_table)
+{
+    if (!IsValidModule(module))
         return nullptr;
 
     size_t ImageBase = (size_t)module;
@@ -77,7 +102,7 @@ void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void 
 
 void* OverrideIAT(HMODULE module, const char *target_module, const char *target_funcname, void *replacement)
 {
-    if (!module)
+    if (!IsValidModule(module))
         return nullptr;
 
     size_t ImageBase = (size_t)module;
@@ -106,6 +131,19 @@ void* OverrideIAT(HMODULE module, const char *target_module, const char *target_
     return nullptr;
 }
 
+void* Hotpatch(void *target, const void *replacement)
+{
+    DWORD old;
+    BYTE *f = (BYTE*)target;
+    void *orig_func = f + 2;
+    ::VirtualProtect(f - 5, 7, PAGE_EXECUTE_READWRITE, &old);
+    f[-5] = 0xE9; // jmp
+    *(DWORD*)(f - 4) = (DWORD)((size_t)replacement - (size_t)f);
+    f[0] = 0xEB; f[1] = 0xF9; // short jmp -7
+    ::VirtualProtect(f - 5, 7, old, &old);
+    return orig_func;
+}
+
 void EnumerateModules(const std::function<void(HMODULE)>& body)
 {
     std::vector<HMODULE> modules;
@@ -120,7 +158,7 @@ void EnumerateModules(const std::function<void(HMODULE)>& body)
 
 void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body)
 {
-    if (!module)
+    if (!IsValidModule(module))
         return;
 
     size_t ImageBase = (size_t)module;
@@ -158,7 +196,7 @@ void EnumerateDLLImports(HMODULE module, const char *dllname, const std::functio
 
 void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body)
 {
-    if (!module)
+    if (!IsValidModule(module))
         return;
 
     size_t ImageBase = (size_t)module;
@@ -185,9 +223,8 @@ void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, v
 
 
 
-static LoadLibraryHandlerBase *g_loadlibrary_handlers[32];
-static int g_num_loadlibrary_handlers = 0;
-#define Call(Name, ...) for(int i=0; i<g_num_loadlibrary_handlers; ++i) { g_loadlibrary_handlers[i]->Name(__VA_ARGS__); }
+static std::vector<LoadLibraryHandlerBase*> g_loadlibrary_handlers;
+#define Call(Name, ...) for(auto *handler : g_loadlibrary_handlers) { handler->Name(__VA_ARGS__); }
 
 static HMODULE(WINAPI *LoadLibraryA_orig)(LPCSTR lpFileName);
 static HMODULE(WINAPI *LoadLibraryW_orig)(LPWSTR lpFileName);
@@ -196,12 +233,12 @@ static HMODULE(WINAPI *LoadLibraryExW_orig)(LPWSTR lpFileName, HANDLE hFile, DWO
 static BOOL(WINAPI *FreeLibrary_orig)(HMODULE hLibModule);
 static FARPROC (WINAPI *GetProcAddress_orig)(HMODULE hModule, LPCSTR lpProcName);
 
-static void OverrideIAT(HMODULE mod);
+static void OverrideLoadLibrary(HMODULE mod);
 
 static HMODULE WINAPI LoadLibraryA_hook(LPCSTR lpFileName)
 {
     auto ret = LoadLibraryA_orig(lpFileName);
-    OverrideIAT(ret);
+    OverrideLoadLibrary(ret);
     Call(afterLoadLibrary, ret);
     return ret;
 }
@@ -209,7 +246,7 @@ static HMODULE WINAPI LoadLibraryA_hook(LPCSTR lpFileName)
 static HMODULE WINAPI LoadLibraryW_hook(LPWSTR lpFileName)
 {
     auto ret = LoadLibraryW_orig(lpFileName);
-    OverrideIAT(ret);
+    OverrideLoadLibrary(ret);
     Call(afterLoadLibrary, ret);
     return ret;
 }
@@ -217,7 +254,7 @@ static HMODULE WINAPI LoadLibraryW_hook(LPWSTR lpFileName)
 static HMODULE WINAPI LoadLibraryExA_hook(LPCSTR lpFileName, HANDLE hFile, DWORD dwFlags)
 {
     auto ret = LoadLibraryExA_orig(lpFileName, hFile, dwFlags);
-    OverrideIAT(ret);
+    OverrideLoadLibrary(ret);
     Call(afterLoadLibrary, ret);
     return ret;
 }
@@ -225,7 +262,7 @@ static HMODULE WINAPI LoadLibraryExA_hook(LPCSTR lpFileName, HANDLE hFile, DWORD
 static HMODULE WINAPI LoadLibraryExW_hook(LPWSTR lpFileName, HANDLE hFile, DWORD dwFlags)
 {
     auto ret = LoadLibraryExW_orig(lpFileName, hFile, dwFlags);
-    OverrideIAT(ret);
+    OverrideLoadLibrary(ret);
     Call(afterLoadLibrary, ret);
     return ret;
 }
@@ -243,6 +280,7 @@ static FARPROC WINAPI GetProcAddress_hook(HMODULE hModule, LPCSTR lpProcName)
     Call(afterGetProcAddress, hModule, lpProcName, ret);
     return ret;
 }
+#undef Call
 
 #define EachFunctions(Body)\
     Body(LoadLibraryA);\
@@ -253,7 +291,7 @@ static FARPROC WINAPI GetProcAddress_hook(HMODULE hModule, LPCSTR lpProcName)
     Body(GetProcAddress);
 
 
-static void OverrideIAT(HMODULE mod)
+static void OverrideLoadLibrary(HMODULE mod)
 {
     if (!mod)
         return;
@@ -264,7 +302,7 @@ static void OverrideIAT(HMODULE mod)
 
 bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler)
 {
-    g_loadlibrary_handlers[g_num_loadlibrary_handlers++] = handler;
+    g_loadlibrary_handlers.push_back(handler);
 
     static bool s_first = true;
     if (s_first) {
@@ -274,7 +312,87 @@ bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler)
 #define GetProc(Name) (void*&)Name##_orig = GetProcAddress(kernel32, #Name)
         EachFunctions(GetProc);
 #undef GetProc
-        EnumerateModules([](HMODULE mod) { OverrideIAT(mod); });
+        EnumerateModules([](HMODULE mod) { OverrideLoadLibrary(mod); });
     }
     return true;
 }
+
+#undef EachFunctions
+
+
+
+static std::vector<CoCreateHandlerBase*> g_cocreate_handlers;
+#define Call(Name, ...) for(auto *handler : g_cocreate_handlers) { handler->Name(__VA_ARGS__); }
+
+static HRESULT WINAPI CoGetClassObject_hook(REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID *ppv)
+{
+    auto ret = CoGetClassObject(rclsid, dwClsContext, pvReserved, riid, ppv);
+    Call(afterCoGetClassObject, rclsid, dwClsContext, pvReserved, riid, ppv, ret);
+    return ret;
+}
+
+static HRESULT WINAPI CoCreateInstance_hook(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
+{
+    auto ret = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
+    Call(afterCoCreateInstance, rclsid, pUnkOuter, dwClsContext, riid, ppv, ret);
+    return ret;
+}
+
+static HRESULT WINAPI CoCreateInstanceEx_hook(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, COSERVERINFO *pServerInfo, DWORD dwCount, MULTI_QI *pResults)
+{
+    auto ret = CoCreateInstanceEx(rclsid, pUnkOuter, dwClsContext, pServerInfo, dwCount, pResults);
+    Call(afterCoCreateInstanceEx, rclsid, pUnkOuter, dwClsContext, pServerInfo, dwCount, pResults, ret);
+    return ret;
+}
+#undef Call
+
+#define EachFunctions(Body)\
+    Body(CoGetClassObject);\
+    Body(CoCreateInstance);\
+    Body(CoCreateInstanceEx);
+
+const char OLE32_Dll[] = "ole32.dll";
+
+class LoadLibraryHandler_OLE32 : public LoadLibraryHandlerBase
+{
+public:
+    void afterLoadLibrary(HMODULE& mod) override
+    {
+        hook(mod);
+    }
+
+    static void hook(HMODULE mod)
+    {
+        if (!IsValidModule(mod) || mod == GetModuleByAddr(&hook))
+            return;
+#define Override(Name) OverrideIAT(mod, OLE32_Dll, #Name, Name##_hook)
+        EachFunctions(Override);
+#undef Override
+    }
+} static g_loadlibraryhandler_ole32;
+
+
+bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll)
+{
+    g_cocreate_handlers.push_back(handler);
+
+    // setup hooks
+    auto ole32 = load_dll ? ::LoadLibraryA(OLE32_Dll) : ::GetModuleHandleA(OLE32_Dll);
+    if (!ole32)
+        return false;
+
+    static bool s_first = true;
+    if (s_first) {
+        s_first = false;
+        auto jumptable = AllocExecutableForward(1024, ole32);
+#define Override(Name) OverrideEAT(ole32, #Name, Name##_hook, jumptable)
+        EachFunctions(Override);
+#undef Override
+
+        AddLoadLibraryHandler(&g_loadlibraryhandler_ole32);
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_OLE32::hook(mod); });
+    }
+    return true;
+}
+
+#undef EachFunctions

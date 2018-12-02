@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "RemoteTalkFoundation/Foundation.h"
 
 #define HookDllName "RemoteTalkCeVIOHook.dll"
 #define TargetExeName "CeVIO Creative Studio.exe"
@@ -55,7 +56,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         std::string hook_path;
         hook_path += module_path + "\\" + HookDllName;
 
-        //::Sleep(10000); // for debug
+        rtDebugSleep(10000); // for debug
         InjectDLL(pi.hProcess, hook_path);
         ::ResumeThread(pi.hThread);
     }

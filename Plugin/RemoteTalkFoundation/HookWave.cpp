@@ -3,27 +3,24 @@
 #include "HookWave.h"
 
 
-#pragma warning(push)
-#pragma warning(disable:4229)
-static MMRESULT (*WINAPI waveOutOpen_orig)(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
-static MMRESULT (*WINAPI waveOutClose_orig)(HWAVEOUT hwo);
-static MMRESULT (*WINAPI waveOutPrepareHeader_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
-static MMRESULT (*WINAPI waveOutUnprepareHeader_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
-static MMRESULT (*WINAPI waveOutWrite_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
-static MMRESULT (*WINAPI waveOutPause_orig)(HWAVEOUT hwo);
-static MMRESULT (*WINAPI waveOutRestart_orig)(HWAVEOUT hwo);
-static MMRESULT (*WINAPI waveOutReset_orig)(HWAVEOUT hwo);
-static MMRESULT (*WINAPI waveOutBreakLoop_orig)(HWAVEOUT hwo);
-static MMRESULT (*WINAPI waveOutGetPosition_orig)(HWAVEOUT hwo, LPMMTIME pmmt, UINT cbmmt);
-static MMRESULT (*WINAPI waveOutGetPitch_orig)(HWAVEOUT hwo, LPDWORD pdwPitch);
-static MMRESULT (*WINAPI waveOutSetPitch_orig)(HWAVEOUT hwo, DWORD dwPitch);
-static MMRESULT (*WINAPI waveOutGetPlaybackRate_orig)(HWAVEOUT hwo, LPDWORD pdwRate);
-static MMRESULT (*WINAPI waveOutSetPlaybackRate_orig)(HWAVEOUT hwo, DWORD dwRate);
-static MMRESULT (*WINAPI waveOutGetID_orig)(HWAVEOUT hwo, LPUINT puDeviceID);
-#pragma warning(pop)
+static MMRESULT(WINAPI *waveOutOpen_orig)(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
+static MMRESULT(WINAPI *waveOutClose_orig)(HWAVEOUT hwo);
+static MMRESULT(WINAPI *waveOutPrepareHeader_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
+static MMRESULT(WINAPI *waveOutUnprepareHeader_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
+static MMRESULT(WINAPI *waveOutWrite_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
+static MMRESULT(WINAPI *waveOutPause_orig)(HWAVEOUT hwo);
+static MMRESULT(WINAPI *waveOutRestart_orig)(HWAVEOUT hwo);
+static MMRESULT(WINAPI *waveOutReset_orig)(HWAVEOUT hwo);
+static MMRESULT(WINAPI *waveOutBreakLoop_orig)(HWAVEOUT hwo);
+static MMRESULT(WINAPI *waveOutGetPosition_orig)(HWAVEOUT hwo, LPMMTIME pmmt, UINT cbmmt);
+static MMRESULT(WINAPI *waveOutGetPitch_orig)(HWAVEOUT hwo, LPDWORD pdwPitch);
+static MMRESULT(WINAPI *waveOutSetPitch_orig)(HWAVEOUT hwo, DWORD dwPitch);
+static MMRESULT(WINAPI *waveOutGetPlaybackRate_orig)(HWAVEOUT hwo, LPDWORD pdwRate);
+static MMRESULT(WINAPI *waveOutSetPlaybackRate_orig)(HWAVEOUT hwo, DWORD dwRate);
+static MMRESULT(WINAPI *waveOutGetID_orig)(HWAVEOUT hwo, LPUINT puDeviceID);
 
-static WaveOutHandlerBase *g_waveouthandler;
-#define Call(Name, ...) g_waveouthandler->Name(__VA_ARGS__);
+static std::vector<WaveOutHandlerBase*> g_waveouthandlers;
+#define Call(Name, ...) for(auto *handler : g_waveouthandlers) { handler->Name(__VA_ARGS__); }
 
 static MMRESULT WINAPI waveOutOpen_hook(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen)
 {
@@ -175,7 +172,7 @@ public:
 
     static void hook(HMODULE mod)
     {
-        if (!mod)
+        if (!IsValidModule(mod))
             return;
 #define Override(Name) OverrideIAT(mod, WinMM_DLL, #Name, Name##_hook)
         EachFunctions(Override);
@@ -185,19 +182,21 @@ public:
 
 bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll)
 {
-    g_waveouthandler = handler;
+    g_waveouthandlers.push_back(handler);
 
     // setup hooks
     auto winmm = load_dll ? ::LoadLibraryA(WinMM_DLL) : ::GetModuleHandleA(WinMM_DLL);
     if (!winmm)
         return false;
 
-    auto jumptable = AllocExecutableForward(1024, winmm);
+    if (!waveOutOpen_orig) {
+        auto jumptable = AllocExecutableForward(1024, winmm);
 #define Override(Name) (void*&)Name##_orig = OverrideEAT(winmm, #Name, Name##_hook, jumptable)
-    EachFunctions(Override);
+        EachFunctions(Override);
 #undef Override
 
-    EnumerateModules([](HMODULE mod) { LoadLibraryHandler_WaveOut::hook(mod); });
-    AddLoadLibraryHandler(&g_loadlibraryhandler_waveout);
+        AddLoadLibraryHandler(&g_loadlibraryhandler_waveout);
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_WaveOut::hook(mod); });
+    }
     return true;
 }
