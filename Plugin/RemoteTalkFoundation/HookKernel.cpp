@@ -2,7 +2,7 @@
 #include "Hook.h"
 #include "HookKernel.h"
 
-
+#pragma region Kernel32
 static std::vector<LoadLibraryHandlerBase*> g_loadlibrary_handlers;
 #define Call(Name, ...) for(auto *handler : g_loadlibrary_handlers) { handler->Name(__VA_ARGS__); }
 
@@ -92,9 +92,11 @@ bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler)
 }
 
 #undef EachFunctions
+#pragma endregion
 
 
 
+#pragma region OLE32
 static std::vector<CoCreateHandlerBase*> g_cocreate_handlers;
 #define Call(Name, ...) for(auto *handler : g_cocreate_handlers) { handler->Name(__VA_ARGS__); }
 
@@ -170,3 +172,77 @@ bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll)
 }
 
 #undef EachFunctions
+#pragma endregion
+
+
+
+#pragma region User32
+static std::vector<WindowMessageHandlerBase*> g_windowmessage_handlers;
+#define Call(Name, ...) for(auto *handler : g_windowmessage_handlers) { handler->Name(__VA_ARGS__); }
+
+static BOOL WINAPI GetMessageA_hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
+{
+    Call(beforeGetMessageA, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+    auto ret = GetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+    Call(afterGetMessageA, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
+    return ret;
+}
+
+static BOOL WINAPI GetMessageW_hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
+{
+    Call(beforeGetMessageW, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+    auto ret = GetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+    Call(afterGetMessageW, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
+    return ret;
+}
+#undef Call
+
+#define EachFunctions(Body)\
+    Body(GetMessageA);\
+    Body(GetMessageW);
+
+static const char User32_Dll[] = "user32.dll";
+
+class LoadLibraryHandler_User32 : public LoadLibraryHandlerBase
+{
+public:
+    void afterLoadLibrary(HMODULE& mod) override
+    {
+        hook(mod);
+    }
+
+    static void hook(HMODULE mod)
+    {
+        if (!IsValidModule(mod) || mod == GetModuleByAddr(&hook))
+            return;
+#define Override(Name) OverrideIAT(mod, OLE32_Dll, #Name, Name##_hook)
+        EachFunctions(Override);
+#undef Override
+    }
+} static g_loadlibraryhandler_user32;
+
+bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll)
+{
+    g_windowmessage_handlers.push_back(handler);
+
+    // setup hooks
+    auto user32 = load_dll ? ::LoadLibraryA(User32_Dll) : ::GetModuleHandleA(User32_Dll);
+    if (!user32)
+        return false;
+
+    static bool s_first = true;
+    if (s_first) {
+        s_first = false;
+        auto jumptable = AllocExecutableForward(1024, user32);
+#define Override(Name) OverrideEAT(user32, #Name, Name##_hook, jumptable)
+        EachFunctions(Override);
+#undef Override
+
+        AddLoadLibraryHandler(&g_loadlibraryhandler_user32);
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_User32::hook(mod); });
+    }
+    return true;
+}
+
+#undef EachFunctions
+#pragma endregion
