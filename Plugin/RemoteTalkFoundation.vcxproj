@@ -19,14 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RemoteTalkFoundation\AudioData.h" />
     <ClInclude Include="RemoteTalkFoundation\Foundation.h" />
     <ClInclude Include="RemoteTalkFoundation\Hook.h" />
     <ClInclude Include="RemoteTalkFoundation\HookDSound.h" />
     <ClInclude Include="RemoteTalkFoundation\HookKernel.h" />
     <ClInclude Include="RemoteTalkFoundation\HookWave.h" />
+    <ClInclude Include="RemoteTalkFoundation\Norm.h" />
     <ClInclude Include="RemoteTalkFoundation\pch.h" />
+    <ClInclude Include="RemoteTalkFoundation\RawVector.h" />
+    <ClInclude Include="RemoteTalkFoundation\Serialization.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RemoteTalkFoundation\AudioData.cpp" />
     <ClCompile Include="RemoteTalkFoundation\Hook.cpp" />
     <ClCompile Include="RemoteTalkFoundation\HookDSound.cpp" />
     <ClCompile Include="RemoteTalkFoundation\HookKernel.cpp" />

@@ -16,6 +16,9 @@
     <ClCompile Include="RemoteTalkFoundation\HookKernel.cpp">
       <Filter>RemoteTalkFoundation</Filter>
     </ClCompile>
+    <ClCompile Include="RemoteTalkFoundation\AudioData.cpp">
+      <Filter>RemoteTalkFoundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RemoteTalkFoundation\Foundation.h">
@@ -34,6 +37,18 @@
       <Filter>RemoteTalkFoundation</Filter>
     </ClInclude>
     <ClInclude Include="RemoteTalkFoundation\HookKernel.h">
+      <Filter>RemoteTalkFoundation</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteTalkFoundation\AudioData.h">
+      <Filter>RemoteTalkFoundation</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteTalkFoundation\Norm.h">
+      <Filter>RemoteTalkFoundation</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteTalkFoundation\Serialization.h">
+      <Filter>RemoteTalkFoundation</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteTalkFoundation\RawVector.h">
       <Filter>RemoteTalkFoundation</Filter>
     </ClInclude>
   </ItemGroup>
