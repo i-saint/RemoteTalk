@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "RemoteTalkFoundation/Foundation.h"
+#include "RemoteTalk/RemoteTalk.h"
 
 #define HookDllName "RemoteTalkVOICEROID2Hook.dll"
 #define TargetExeName "VoiceroidEditor.exe"

@@ -1,8 +1,10 @@
 #include "pch.h"
-#include "Hook.h"
-#include "HookKernel.h"
-#include "HookDSound.h"
+#include "rtHook.h"
+#include "rtHookKernel.h"
+#include "rtHookDSound.h"
 
+
+namespace rt {
 
 static std::vector<DSoundHandlerBase*> g_dsoundhandlers;
 #define Call(Name, ...) for(auto *handler : g_dsoundhandlers) { handler->Name(__VA_ARGS__); }
@@ -239,3 +241,5 @@ bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll)
     }
     return true;
 }
+
+} // namespace rt

@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
-#include "RemoteTalkFoundation/Foundation.h"
+#include "RemoteTalk/RemoteTalk.h"
 
 
-class WaveOutHandler : public WaveOutHandlerBase
+class WaveOutHandler : public rt::WaveOutHandlerBase
 {
 public:
 
@@ -11,7 +11,7 @@ public:
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
-        AddWaveOutHandler(&g_waveout_handler);
+        rt::AddWaveOutHandler(&g_waveout_handler);
     }
     else if (fdwReason == DLL_PROCESS_DETACH) {
     }

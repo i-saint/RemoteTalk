@@ -19,29 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RemoteTalkFoundation\AudioData.h" />
-    <ClInclude Include="RemoteTalkFoundation\Foundation.h" />
-    <ClInclude Include="RemoteTalkFoundation\Hook.h" />
-    <ClInclude Include="RemoteTalkFoundation\HookDSound.h" />
-    <ClInclude Include="RemoteTalkFoundation\HookKernel.h" />
-    <ClInclude Include="RemoteTalkFoundation\HookWave.h" />
-    <ClInclude Include="RemoteTalkFoundation\Norm.h" />
-    <ClInclude Include="RemoteTalkFoundation\pch.h" />
-    <ClInclude Include="RemoteTalkFoundation\RawVector.h" />
-    <ClInclude Include="RemoteTalkFoundation\Serialization.h" />
+    <ClInclude Include="rtAudioData.h" />
+    <ClInclude Include="RemoteTalk.h" />
+    <ClInclude Include="rtHook.h" />
+    <ClInclude Include="rtHookDSound.h" />
+    <ClInclude Include="rtHookKernel.h" />
+    <ClInclude Include="rtHookWave.h" />
+    <ClInclude Include="rtNorm.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="rtRawVector.h" />
+    <ClInclude Include="rtSerialization.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RemoteTalkFoundation\AudioData.cpp" />
-    <ClCompile Include="RemoteTalkFoundation\Hook.cpp" />
-    <ClCompile Include="RemoteTalkFoundation\HookDSound.cpp" />
-    <ClCompile Include="RemoteTalkFoundation\HookKernel.cpp" />
-    <ClCompile Include="RemoteTalkFoundation\HookWave.cpp" />
-    <ClCompile Include="RemoteTalkFoundation\pch.cpp">
+    <ClCompile Include="rtAudioData.cpp" />
+    <ClCompile Include="rtHook.cpp" />
+    <ClCompile Include="rtHookDSound.cpp" />
+    <ClCompile Include="rtHookKernel.cpp" />
+    <ClCompile Include="rtHookWave.cpp" />
+    <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="setup.vcxproj">
+    <ProjectReference Include="$(SolutionDir)setup.vcxproj">
       <Project>{1c5de91b-7ae9-4304-9fa1-0de1aba8c02d}</Project>
     </ProjectReference>
   </ItemGroup>

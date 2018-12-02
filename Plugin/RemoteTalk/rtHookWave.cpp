@@ -1,8 +1,9 @@
 #include "pch.h"
-#include "Hook.h"
-#include "HookKernel.h"
-#include "HookWave.h"
+#include "rtHook.h"
+#include "rtHookKernel.h"
+#include "rtHookWave.h"
 
+namespace rt {
 
 static MMRESULT(WINAPI *waveOutOpen_orig)(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
 static MMRESULT(WINAPI *waveOutClose_orig)(HWAVEOUT hwo);
@@ -201,3 +202,5 @@ bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll)
     }
     return true;
 }
+
+} // namespace rt

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "RemoteTalkFoundation/Foundation.h"
+#include "RemoteTalk/RemoteTalk.h"
 
 #define HookDllName "RemoteTalkCeVIOHook.dll"
 #define TargetExeName "CeVIO Creative Studio.exe"

@@ -1,6 +1,8 @@
 #include "pch.h"
-#include "Hook.h"
-#include "HookKernel.h"
+#include "rtHook.h"
+#include "rtHookKernel.h"
+
+namespace rt {
 
 #pragma region Kernel32
 static std::vector<LoadLibraryHandlerBase*> g_loadlibrary_handlers;
@@ -246,3 +248,4 @@ bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll)
 
 #undef EachFunctions
 #pragma endregion
+} // namespace rt

@@ -1,6 +1,8 @@
 #pragma once
 #include <dsound.h>
 
+namespace rt {
+
 #pragma warning(push)
 #pragma warning(disable:4100)
 class DSoundHandlerBase
@@ -29,3 +31,5 @@ public:
 #pragma warning(pop)
 
 bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll = true);
+
+} // namespace rt

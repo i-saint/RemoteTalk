@@ -1,8 +1,9 @@
 #include "pch.h"
-#include "Hook.h"
+#include "rtHook.h"
 #include <psapi.h>
 #include <tlhelp32.h>
 
+namespace rt {
 
 void* AllocExecutableForward(size_t size, void *location)
 {
@@ -222,3 +223,4 @@ void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, v
     }
 }
 
+} // namespace rt

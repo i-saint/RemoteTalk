@@ -1,5 +1,7 @@
 #pragma once
 
+namespace rt {
+
 #pragma warning(push)
 #pragma warning(disable:4100)
 class LoadLibraryHandlerBase
@@ -35,3 +37,5 @@ public:
 bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler);
 bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll = true);
 bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll = true);
+
+} // namespace rt

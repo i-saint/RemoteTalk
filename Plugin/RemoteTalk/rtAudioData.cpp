@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "AudioData.h"
-#include "Norm.h"
-#include "Serialization.h"
+#include "rtAudioData.h"
+#include "rtNorm.h"
+#include "rtSerialization.h"
 
 namespace rt {
 

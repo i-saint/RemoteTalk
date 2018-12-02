@@ -3,6 +3,8 @@
 #include <functional>
 
 
+namespace rt {
+
 template<class T>
 static inline void ForceWrite(T &dst, const T &src)
 {
@@ -24,3 +26,5 @@ void* Hotpatch(void *target, const void *replacement);
 void EnumerateModules(const std::function<void(HMODULE)>& body);
 void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body);
 void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body);
+
+} // namespace rt

@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <initializer_list>
 
+namespace rt {
+
 template<class T>
 class RawVector
 {
@@ -265,3 +267,5 @@ private:
     size_t m_size = 0;
     size_t m_capacity = 0;
 };
+
+} // namespace rt

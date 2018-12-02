@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
-#include "RemoteTalkFoundation/Foundation.h"
+#include "RemoteTalk/RemoteTalk.h"
 
-class DSoundHandler : public DSoundHandlerBase
+class DSoundHandler : public rt::DSoundHandlerBase
 {
 public:
     void afterCCIDirectSound8(LPDIRECTSOUND8 *&ppDS8, HRESULT& ret) override;
@@ -15,7 +15,7 @@ void DSoundHandler::afterCCIDirectSound8(LPDIRECTSOUND8 *& ppDS8, HRESULT & ret)
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
-        AddDSoundHandler(&g_dsound_handler);
+        rt::AddDSoundHandler(&g_dsound_handler);
     }
     else if (fdwReason == DLL_PROCESS_DETACH) {
     }

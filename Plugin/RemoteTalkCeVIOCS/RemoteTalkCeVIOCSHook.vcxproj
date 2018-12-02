@@ -19,21 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RemoteTalkVOICEROID\pch.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RemoteTalkVOICEROID\pch.cpp">
+    <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RemoteTalkVOICEROID\RemoteTalkVOICEROID2Hook.cpp" />
+    <ClCompile Include="RemoteTalkCeVIOCSHook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="RemoteTalkFoundation.vcxproj">
+    <ProjectReference Include="$(SolutionDir)RemoteTalk\RemoteTalk.vcxproj">
       <Project>{fd3fe1ff-abe5-40db-b867-144e9dd9b23c}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5D93E237-1407-42D4-9F06-8064BEB518B3}</ProjectGuid>
+    <ProjectGuid>{62680C45-269B-4751-9FBD-774481C13873}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

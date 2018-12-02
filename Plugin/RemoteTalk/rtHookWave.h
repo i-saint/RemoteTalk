@@ -1,6 +1,8 @@
 #pragma once
 #include <mmsystem.h>
 
+namespace rt {
+
 #pragma warning(push)
 #pragma warning(disable:4100)
 class WaveOutHandlerBase
@@ -42,3 +44,4 @@ public:
 
 bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll = true);
 
+} // namespace rt
