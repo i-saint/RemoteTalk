@@ -89,17 +89,14 @@ rtvr2Context^ rtvr2Context::getInstance()
 
 void rtvr2Context::setTalker(int id)
 {
-    throw gcnew System::NotImplementedException();
 }
 
-void rtvr2Context::setVoiceParams(const rtvr2Params & v)
+void rtvr2Context::setVoiceParams(const rtvr2Params& v)
 {
-    throw gcnew System::NotImplementedException();
 }
 
-void rtvr2Context::setStyleParams(const rtvr2Style & v)
+void rtvr2Context::setStyleParams(const rtvr2Style& v)
 {
-    throw gcnew System::NotImplementedException();
 }
 
 bool rtvr2Context::setupControls()

@@ -4,7 +4,7 @@
 
 rtvr2IController* (*rtvr2GetController)();
 
-static bool LoadController()
+static bool rtvr2LoadController()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\RemoteTalkVOICEROID2Managed.dll";
     auto mod = ::LoadLibraryA(path.c_str());
@@ -25,7 +25,7 @@ public:
 class WindowMessageHandler : public rt::WindowMessageHandlerBase
 {
 public:
-    void afterGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, BOOL ret) override;
+    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 } g_wm_handler;
 
 
@@ -34,7 +34,7 @@ void DSoundHandler::afterCCIDirectSound8(LPDIRECTSOUND8 *& ppDS8, HRESULT & ret)
     printf("");
 }
 
-void WindowMessageHandler::afterGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, BOOL ret)
+void WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
     static int s_count;
     ++s_count;
@@ -49,7 +49,7 @@ void WindowMessageHandler::afterGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFil
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
-        if (LoadController()) {
+        if (rtvr2LoadController()) {
             rt::AddDSoundHandler(&g_dsound_handler);
             rt::AddWindowMessageHandler(&g_wm_handler);
         }

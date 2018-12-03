@@ -37,5 +37,6 @@ public:
     // length of dst must be frequency * channels
     bool convertSamplesToFloat(float *dst);
 };
+using AudioDataPtr = std::shared_ptr<AudioData>;
 
 } // namespace rt
