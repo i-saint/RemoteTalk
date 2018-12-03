@@ -15,8 +15,11 @@ static inline void ForceWrite(T &dst, const T &src)
 }
 
 bool IsValidMemory(const void *p);
-bool IsValidModule(HMODULE& module);
+bool IsValidModule(HMODULE module);
 HMODULE GetModuleByAddr(const void *p);
+std::string GetModuleDirectory(HMODULE module);
+std::string GetCurrentModuleDirectory();
+
 void* AllocExecutableForward(size_t size, void *location);
 void* EmitJmpInstruction(void* from_, void* to_);
 void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void *&jump_table);
@@ -26,5 +29,10 @@ void* Hotpatch(void *target, const void *replacement);
 void EnumerateModules(const std::function<void(HMODULE)>& body);
 void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body);
 void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body);
+
+void EnumerateTopWindows(const std::function<void(HWND)> &body);
+void EnumerateChildWindows(HWND parent, const std::function<void(HWND)> &body);
+void EnumerateChildWindowsRecirsive(HWND parent, const std::function<void(HWND)> &body);
+void EnumerateAllWindows(const std::function<void(HWND)> &body);
 
 } // namespace rt

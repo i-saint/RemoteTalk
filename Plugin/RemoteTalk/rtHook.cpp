@@ -54,11 +54,11 @@ bool IsValidMemory(const void *p)
     return ::VirtualQuery(p, &meminfo, sizeof(meminfo)) != 0 && meminfo.State != MEM_FREE;
 }
 
-bool IsValidModule(HMODULE& module)
+bool IsValidModule(HMODULE mod)
 {
-    if (!module)
+    if (!mod)
         return false;
-    auto MZ = (const char*)module;
+    auto MZ = (const char*)mod;
     if (MZ[0] != 'M' || MZ[1] != 'Z')
         return false;
     return true;
@@ -71,12 +71,29 @@ HMODULE GetModuleByAddr(const void * p)
     return mod;
 }
 
-void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void *&jump_table)
+std::string GetModuleDirectory(HMODULE mod)
 {
-    if (!IsValidModule(module))
+    if (!mod)
+        return std::string();
+    char buf[MAX_PATH + 1];
+    ::GetModuleFileNameA(mod, buf, sizeof(buf));
+    std::string ret = buf;
+    auto spos = ret.find_last_of("\\");
+    if (spos != std::string::npos)
+        ret.resize(spos);
+    return ret;
+}
+std::string GetCurrentModuleDirectory()
+{
+    return GetModuleDirectory(GetModuleByAddr(&GetCurrentModuleDirectory));
+}
+
+void* OverrideEAT(HMODULE mod, const char *funcname, void *replacement, void *&jump_table)
+{
+    if (!IsValidModule(mod))
         return nullptr;
 
-    size_t ImageBase = (size_t)module;
+    size_t ImageBase = (size_t)mod;
     auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
     if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
         return nullptr;
@@ -103,12 +120,12 @@ void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void 
     return nullptr;
 }
 
-void* OverrideIAT(HMODULE module, const char *target_module, const char *target_funcname, void *replacement)
+void* OverrideIAT(HMODULE mod, const char *target_module, const char *target_funcname, void *replacement)
 {
-    if (!IsValidModule(module))
+    if (!IsValidModule(mod))
         return nullptr;
 
-    size_t ImageBase = (size_t)module;
+    size_t ImageBase = (size_t)mod;
     auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
     auto pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
 
@@ -159,12 +176,12 @@ void EnumerateModules(const std::function<void(HMODULE)>& body)
     }
 }
 
-void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body)
+void EnumerateDLLImports(HMODULE mod, const char *dllname, const std::function<void(const char*, void *&)> &body)
 {
-    if (!IsValidModule(module))
+    if (!IsValidModule(mod))
         return;
 
-    size_t ImageBase = (size_t)module;
+    size_t ImageBase = (size_t)mod;
     auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
     if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
         return;
@@ -197,12 +214,12 @@ void EnumerateDLLImports(HMODULE module, const char *dllname, const std::functio
     }
 }
 
-void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body)
+void EnumerateDLLExports(HMODULE mod, const std::function<void(const char*, void *&)> &body)
 {
-    if (!IsValidModule(module))
+    if (!IsValidModule(mod))
         return;
 
-    size_t ImageBase = (size_t)module;
+    size_t ImageBase = (size_t)mod;
     auto pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
     if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
         return;
@@ -221,6 +238,45 @@ void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, v
         void *pFunc = (void*)(ImageBase + RVAFunctions[RVANameOrdinals[i]]);
         body(pName, pFunc);
     }
+}
+
+std::vector<std::string> g_wclasses;
+
+static BOOL CALLBACK CBEnumerateWindows(HWND w, LPARAM _body)
+{
+    auto& body = *(const std::function<void(HWND)>*)_body;
+    body(w);
+    return TRUE;
+}
+static BOOL CALLBACK CBEnumerateWindowsR(HWND w, LPARAM _body)
+{
+    //char buf[256];
+    //GetClassName(w, buf, 256);
+    //g_wclasses.push_back(buf);
+
+    auto& body = *(const std::function<void(HWND)>*)_body;
+    body(w);
+    ::EnumChildWindows(w, &CBEnumerateWindowsR, _body);
+    return TRUE;
+}
+
+void EnumerateTopWindows(const std::function<void(HWND)>& body)
+{
+    ::EnumWindows(CBEnumerateWindows, (LPARAM)&body);
+}
+void EnumerateChildWindows(HWND parent, const std::function<void(HWND)>& body)
+{
+    ::EnumChildWindows(parent, &CBEnumerateWindows, (LPARAM)&body);
+}
+void EnumerateChildWindowsRecirsive(HWND parent, const std::function<void(HWND)>& body)
+{
+    ::EnumChildWindows(parent, &CBEnumerateWindowsR, (LPARAM)&body);
+}
+void EnumerateAllWindows(const std::function<void(HWND)>& body)
+{
+    g_wclasses.clear();
+    ::EnumWindows(CBEnumerateWindowsR, (LPARAM)&body);
+    printf("");
 }
 
 } // namespace rt

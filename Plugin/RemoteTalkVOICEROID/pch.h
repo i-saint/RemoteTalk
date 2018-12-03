@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <mmsystem.h>
-#include <ppl.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -17,6 +16,4 @@
 #include <vector>
 #include <map>
 #include <functional>
-#include <future>
-#include <mutex>
 #include <memory>
