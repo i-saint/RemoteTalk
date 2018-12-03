@@ -1,7 +1,28 @@
 #include "pch.h"
+#include "rtFoundation.h"
 #include "rtServer.h"
 
 namespace rt {
+
+std::string ToANSI(const char *src)
+{
+#ifdef _WIN32
+    // to UTF-16
+    const int wsize = ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)src, -1, nullptr, 0);
+    std::wstring ws;
+    ws.resize(wsize);
+    ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)src, -1, (LPWSTR)ws.data(), wsize);
+
+    // to ANSI
+    const int u8size = ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.data(), -1, nullptr, 0, nullptr, nullptr);
+    std::string u8s;
+    u8s.resize(u8size);
+    ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.data(), -1, (LPSTR)u8s.data(), u8size, nullptr, nullptr);
+    return u8s;
+#else
+    return src;
+#endif
+}
 
 using namespace Poco::Net;
 
@@ -36,13 +57,16 @@ void RequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerRespons
 
     bool handled = false;
     if (request.getMethod() == HTTPServerRequest::HTTP_GET) {
-        if (uri == "/talk") {
+        if (strncmp(uri.c_str(), "/talk", 5) == 0) {
             auto pos = uri.find("t=");
             if (pos != std::string::npos) {
-                std::string text;
-                Poco::URI::decode(&uri[pos + 2], text, true);
-                auto data = m_server->onTalk(text).get();
-                if (data) {
+                auto *mes = new Server::TalkMessage();
+                Poco::URI::decode(&uri[pos + 2], mes->text, true);
+                mes->text = ToANSI(mes->text.c_str());
+
+                Server::MessagePtr pmes(mes);
+                m_server->addMessage(pmes);
+                if (mes->wait() && mes->data) {
                     // todo
                     m_server->serveText(response, "", HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
                     handled = true;
@@ -70,6 +94,16 @@ HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const HTTPServer
     return new RequestHandler(m_server);
 }
 
+
+bool Server::Message::wait()
+{
+    for (int i = 0; i < 1000; ++i) {
+        if (ready.load())
+            break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    }
+    return ready.load();
+}
 
 Server::~Server()
 {
@@ -107,6 +141,32 @@ bool Server::start()
 void Server::stop()
 {
     m_server.reset();
+}
+
+void Server::processMessages()
+{
+    lock_t lock(m_mutex);
+
+    for (auto& mes : m_messages) {
+        if (auto *pmes = dynamic_cast<ParamMessage*>(mes.get())) {
+            for (auto& nvp : pmes->params)
+                onSetParam(nvp.first, nvp.second);
+        }
+        else if (auto *tmes = dynamic_cast<TalkMessage*>(mes.get())) {
+            onTalk(tmes->text);
+        }
+        else {
+            throw std::runtime_error("should not be here");
+        }
+        mes->ready = true;
+    }
+    m_messages.clear();
+}
+
+void Server::addMessage(MessagePtr mes)
+{
+    lock_t lock(m_mutex);
+    m_messages.push_back(mes);
 }
 
 void Server::serveText(Poco::Net::HTTPServerResponse & response, const char * text, int stat)

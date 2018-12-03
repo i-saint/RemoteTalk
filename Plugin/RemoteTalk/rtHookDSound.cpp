@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
 #include "rtHookDSound.h"
@@ -187,6 +188,8 @@ static const char DSound_DLL[] = "dsound.dll";
 class LoadLibraryHandler_DSound : public LoadLibraryHandlerBase
 {
 public:
+    rtDefSingleton(LoadLibraryHandler_DSound);
+
     void afterLoadLibrary(HMODULE& mod) override
     {
         hook(mod);
@@ -200,11 +203,13 @@ public:
         EachFunctions(Override);
 #undef Override
     }
-} static g_loadlibraryhandler_dsound;
+};
 
 class CoCreateHandler_DSound : public CoCreateHandlerBase
 {
 public:
+    rtDefSingleton(CoCreateHandler_DSound);
+
     void afterCoCreateInstance(REFCLSID rclsid, LPUNKNOWN& /*pUnkOuter*/, DWORD& /*dwClsContext*/, REFIID /*riid*/, LPVOID *&ppv, HRESULT& ret) override
     {
         static const GUID CLSID_DirectSound_ = { 0x47d4d946, 0x62e8, 0x11cf, 0x93, 0xbc, 0x44, 0x45, 0x53, 0x54, 0x0, 0x0 };
@@ -218,7 +223,7 @@ public:
             SetHook_IDirectSound8(*(LPDIRECTSOUND8*)ppv);
         }
     }
-} static g_cocreatehandler_dsound;
+};
 
 bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll)
 {
@@ -235,8 +240,8 @@ bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll)
         EachFunctions(Override);
 #undef Override
 
-        AddLoadLibraryHandler(&g_loadlibraryhandler_dsound);
-        AddCoCreateHandler(&g_cocreatehandler_dsound);
+        AddLoadLibraryHandler(&LoadLibraryHandler_DSound::getInstance());
+        AddCoCreateHandler(&CoCreateHandler_DSound::getInstance());
         EnumerateModules([](HMODULE mod) { LoadLibraryHandler_DSound::hook(mod); });
     }
     return true;

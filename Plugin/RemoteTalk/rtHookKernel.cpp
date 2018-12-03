@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
 
@@ -134,6 +135,8 @@ static const char OLE32_Dll[] = "ole32.dll";
 class LoadLibraryHandler_OLE32 : public LoadLibraryHandlerBase
 {
 public:
+    rtDefSingleton(LoadLibraryHandler_OLE32);
+
     void afterLoadLibrary(HMODULE& mod) override
     {
         hook(mod);
@@ -147,7 +150,7 @@ public:
         EachFunctions(Override);
 #undef Override
     }
-} static g_loadlibraryhandler_ole32;
+};
 
 
 bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll)
@@ -167,7 +170,7 @@ bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll)
         EachFunctions(Override);
 #undef Override
 
-        AddLoadLibraryHandler(&g_loadlibraryhandler_ole32);
+        AddLoadLibraryHandler(&LoadLibraryHandler_OLE32::getInstance());
         EnumerateModules([](HMODULE mod) { LoadLibraryHandler_OLE32::hook(mod); });
     }
     return true;
@@ -208,6 +211,8 @@ static const char User32_Dll[] = "user32.dll";
 class LoadLibraryHandler_User32 : public LoadLibraryHandlerBase
 {
 public:
+    rtDefSingleton(LoadLibraryHandler_User32);
+
     void afterLoadLibrary(HMODULE& mod) override
     {
         hook(mod);
@@ -221,7 +226,7 @@ public:
         EachFunctions(Override);
 #undef Override
     }
-} static g_loadlibraryhandler_user32;
+};
 
 bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll)
 {
@@ -240,7 +245,7 @@ bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll)
         EachFunctions(Override);
 #undef Override
 
-        AddLoadLibraryHandler(&g_loadlibraryhandler_user32);
+        AddLoadLibraryHandler(&LoadLibraryHandler_User32::getInstance());
         EnumerateModules([](HMODULE mod) { LoadLibraryHandler_User32::hook(mod); });
     }
     return true;

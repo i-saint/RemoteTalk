@@ -19,8 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RemoteTalkNet.h" />
     <ClInclude Include="rtAudioData.h" />
     <ClInclude Include="RemoteTalk.h" />
+    <ClInclude Include="rtFoundation.h" />
     <ClInclude Include="rtHook.h" />
     <ClInclude Include="rtHookDSound.h" />
     <ClInclude Include="rtHookKernel.h" />

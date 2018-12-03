@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
 #include "rtHookWave.h"
@@ -167,6 +168,8 @@ static const char WinMM_DLL[] = "winmm.dll";
 class LoadLibraryHandler_WaveOut : public LoadLibraryHandlerBase
 {
 public:
+    rtDefSingleton(LoadLibraryHandler_WaveOut);
+
     void afterLoadLibrary(HMODULE& mod) override
     {
         hook(mod);
@@ -180,7 +183,7 @@ public:
         EachFunctions(Override);
 #undef Override
     }
-} static g_loadlibraryhandler_waveout;
+};
 
 bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll)
 {
@@ -197,7 +200,7 @@ bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll)
         EachFunctions(Override);
 #undef Override
 
-        AddLoadLibraryHandler(&g_loadlibraryhandler_waveout);
+        AddLoadLibraryHandler(&LoadLibraryHandler_WaveOut::getInstance());
         EnumerateModules([](HMODULE mod) { LoadLibraryHandler_WaveOut::hook(mod); });
     }
     return true;

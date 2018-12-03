@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "rtFoundation.h"
 #include "rtAudioData.h"
 #include "rtNorm.h"
 #include "rtSerialization.h"

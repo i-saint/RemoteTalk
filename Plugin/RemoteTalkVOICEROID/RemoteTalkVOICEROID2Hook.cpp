@@ -1,6 +1,31 @@
 ﻿#include "pch.h"
 #include "RemoteTalk/RemoteTalk.h"
+#include "RemoteTalk/RemoteTalkNet.h"
 #include "RemoteTalkVOICEROID2Controller.h"
+
+
+class rtvr2DSoundHandler : public rt::DSoundHandlerBase
+{
+public:
+    rtDefSingleton(rtvr2DSoundHandler);
+    void afterCCIDirectSound8(LPDIRECTSOUND8 *&ppDS8, HRESULT& ret) override;
+};
+
+class rtvr2WindowMessageHandler : public rt::WindowMessageHandlerBase
+{
+public:
+    rtDefSingleton(rtvr2WindowMessageHandler);
+    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+};
+
+class rtvr2Server : public rt::Server
+{
+public:
+    rtDefSingleton(rtvr2Server);
+    bool onSetParam(const std::string& name, const std::string& value) override;
+    bool onTalk(const std::string& text) override;
+};
+
 
 rtvr2IController* (*rtvr2GetController)();
 
@@ -16,42 +41,34 @@ static bool rtvr2LoadController()
 }
 
 
-class DSoundHandler : public rt::DSoundHandlerBase
+void rtvr2DSoundHandler::afterCCIDirectSound8(LPDIRECTSOUND8 *& ppDS8, HRESULT & ret)
 {
-public:
-    void afterCCIDirectSound8(LPDIRECTSOUND8 *&ppDS8, HRESULT& ret) override;
-} static g_dsound_handler;
-
-class WindowMessageHandler : public rt::WindowMessageHandlerBase
-{
-public:
-    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
-} g_wm_handler;
-
-
-void DSoundHandler::afterCCIDirectSound8(LPDIRECTSOUND8 *& ppDS8, HRESULT & ret)
-{
-    printf("");
 }
 
-void WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+void rtvr2WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
-    static int s_count;
-    ++s_count;
-    if (s_count % 1000 == 0) {
-        std::vector<std::string> windows;
-        rtvr2GetController()->dbgListWindows(windows);
+    auto& server = rtvr2Server::getInstance();
+    server.start();
+    server.processMessages();
+}
 
-        rtvr2GetController()->talk("はろーぼいすろいど");
-    }
+bool rtvr2Server::onSetParam(const std::string & name, const std::string & value)
+{
+    return false;
+}
+
+bool rtvr2Server::onTalk(const std::string & text)
+{
+    rtvr2GetController()->talk(text);
+    return true;
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
         if (rtvr2LoadController()) {
-            rt::AddDSoundHandler(&g_dsound_handler);
-            rt::AddWindowMessageHandler(&g_wm_handler);
+            rt::AddDSoundHandler(&rtvr2DSoundHandler::getInstance());
+            rt::AddWindowMessageHandler(&rtvr2WindowMessageHandler::getInstance());
         }
     }
     else if (fdwReason == DLL_PROCESS_DETACH) {

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "RemoteTalk/RemoteTalk.h"
+#include "RemoteTalk/rtFoundation.h"
 #include "RemoteTalkVOICEROID2Controller.h"
 
 using namespace System;
@@ -89,14 +89,17 @@ rtvr2Context^ rtvr2Context::getInstance()
 
 void rtvr2Context::setTalker(int id)
 {
+    // todo
 }
 
 void rtvr2Context::setVoiceParams(const rtvr2Params& v)
 {
+    // todo
 }
 
 void rtvr2Context::setStyleParams(const rtvr2Style& v)
 {
+    // todo
 }
 
 bool rtvr2Context::setupControls()
