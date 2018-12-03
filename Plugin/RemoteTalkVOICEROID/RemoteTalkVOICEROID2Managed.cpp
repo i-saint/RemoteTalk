@@ -3,9 +3,7 @@
 #include "RemoteTalkVOICEROID2Controller.h"
 
 using namespace System;
-using namespace System::Windows;
-using namespace System::Windows::Forms;
-using namespace System::Windows::Interop;
+using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
 
 
@@ -13,14 +11,20 @@ ref class rtvr2Context
 {
 public:
     static rtvr2Context^ getInstance();
-    Control^ getTextArea();
+
+    void setTalker(int id);
+    void setVoiceParams(const rtvr2Params& v);
+    void setStyleParams(const rtvr2Style& v);
+    bool talk(const std::string& text);
 
 private:
     static rtvr2Context s_instance;
 
-    Control^ m_ctrl_text;
-    Control^ m_ctrl_play;
-    Control^ m_ctrl_save;
+    bool setupControls();
+
+    System::Windows::Controls::TextBox^ m_tb_text;
+    System::Windows::Controls::Button^ m_bu_play;
+    System::Windows::Controls::Button^ m_bu_save;
 };
 
 class rtvr2Controller : public rtvr2IController
@@ -28,40 +32,47 @@ class rtvr2Controller : public rtvr2IController
 public:
     ~rtvr2Controller() override;
     void setTalker(int id) override;
-    void setVoiceParams(const Params& v) override;
-    void setStyleParams(const Style& v) override;
-    void talk(const std::string& text) override;
+    void setVoiceParams(const rtvr2Params& v) override;
+    void setStyleParams(const rtvr2Style& v) override;
+    bool talk(const std::string& text) override;
 
     void dbgListWindows(std::vector<std::string>& dst) override;
 };
 
 
-static HWND FindWindowByTypeName(String^ name)
+static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj, String^ name, List<System::Windows::DependencyObject^>^ dst)
 {
-    std::vector<HWND> windows;
-    rt::EnumerateAllWindows([&windows](HWND hw) {
-        windows.push_back(hw);
-    });
+    if (obj->GetType()->FullName == name)
+        dst->Add(obj);
 
-    for (auto hw : windows) {
-        auto ctrl = Control::FromHandle(IntPtr(hw));
-        if (ctrl != nullptr) {
-            auto name = ctrl->GetType()->FullName;
-            if (name == name) {
-                return hw;
-            }
-        }
-    }
-    return nullptr;
+    int num_children = System::Windows::Media::VisualTreeHelper::GetChildrenCount(obj);
+    for (int i = 0; i < num_children; i++)
+        SelectControlsByTypeNameImpl(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), name, dst);
 }
 
-static std::vector<HWND> GetChildWindows(HWND parent)
+static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(System::Windows::DependencyObject^ obj, String^ name)
 {
-    std::vector<HWND> ret;
-    rt::EnumerateChildWindowsRecirsive(parent, [&ret](HWND hw) {
-        ret.push_back(hw);
-    });
+    auto ret = gcnew List<System::Windows::DependencyObject^>();
+    SelectControlsByTypeNameImpl(obj, name, ret);
     return ret;
+}
+
+static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String^ name)
+{
+    auto ret = gcnew List<System::Windows::DependencyObject^>();
+    if (System::Windows::Application::Current != nullptr) {
+        for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows)
+            SelectControlsByTypeNameImpl(w, name, ret);
+    }
+    return ret;
+}
+
+static void EmulateClick(System::Windows::Controls::Button^ button)
+{
+    using namespace System::Windows::Automation;
+    auto peer = gcnew Peers::ButtonAutomationPeer(button);
+    auto invoke = (Provider::IInvokeProvider^)peer->GetPattern(Peers::PatternInterface::Invoke);
+    invoke->Invoke();
 }
 
 static std::string ToStdString(String^ str)
@@ -76,19 +87,53 @@ rtvr2Context^ rtvr2Context::getInstance()
     return %s_instance;
 }
 
-Control^ rtvr2Context::getTextArea()
+void rtvr2Context::setTalker(int id)
 {
-    if (!m_ctrl_text) {
-        if (auto tev = FindWindowByTypeName("AI.Talk.Editor.TextEditView")) {
-            auto children = GetChildWindows(tev);
-            if (children.size() > 24) {
-                m_ctrl_text = Control::FromHandle(IntPtr(children[4]));
-                m_ctrl_play = Control::FromHandle(IntPtr(children[6]));
-                m_ctrl_save = Control::FromHandle(IntPtr(children[24]));
-            }
-        }
+    throw gcnew System::NotImplementedException();
+}
+
+void rtvr2Context::setVoiceParams(const rtvr2Params & v)
+{
+    throw gcnew System::NotImplementedException();
+}
+
+void rtvr2Context::setStyleParams(const rtvr2Style & v)
+{
+    throw gcnew System::NotImplementedException();
+}
+
+bool rtvr2Context::setupControls()
+{
+    auto tev = SelectControlsByTypeName("AI.Talk.Editor.TextEditView");
+    if (tev->Count == 0)
+        return false;
+
+    auto tb = SelectControlsByTypeName(tev[0], "AI.Framework.Wpf.Controls.TextBoxEx");
+    if (tb->Count == 0)
+        return false;
+
+    m_tb_text = (System::Windows::Controls::TextBox^)tb[0];
+
+    auto buttons = SelectControlsByTypeName(tev[0], "System.Windows.Controls.Button");
+    if (buttons->Count == 0)
+        return false;
+
+    m_bu_play = (System::Windows::Controls::Button^)buttons[0];
+    if (buttons->Count > 4)
+        m_bu_save = (System::Windows::Controls::Button^)buttons[4];
+
+    return true;
+}
+
+bool rtvr2Context::talk(const std::string & text)
+{
+    if (!m_tb_text || !m_bu_play) {
+        if (!setupControls())
+            return false;
     }
-    return m_ctrl_text;
+    m_tb_text->Text = gcnew String(text.c_str());
+    EmulateClick(m_bu_play);
+    return true;
 }
 
 
@@ -101,20 +146,24 @@ rtvr2Controller::~rtvr2Controller()
 {
 }
 
-void rtvr2Controller::setTalker(int id)
+void rtvr2Controller::setTalker(int v)
 {
+    return rtvr2Context::getInstance()->setTalker(v);
 }
 
-void rtvr2Controller::setVoiceParams(const Params & v)
+void rtvr2Controller::setVoiceParams(const rtvr2Params& v)
 {
+    return rtvr2Context::getInstance()->setVoiceParams(v);
 }
 
-void rtvr2Controller::setStyleParams(const Style & v)
+void rtvr2Controller::setStyleParams(const rtvr2Style& v)
 {
+    return rtvr2Context::getInstance()->setStyleParams(v);
 }
 
-void rtvr2Controller::talk(const std::string & text)
+bool rtvr2Controller::talk(const std::string & text)
 {
+    return rtvr2Context::getInstance()->talk(text);
 }
 
 static void GetControlInfo(System::Windows::DependencyObject^ obj, std::vector<std::string>& dst)

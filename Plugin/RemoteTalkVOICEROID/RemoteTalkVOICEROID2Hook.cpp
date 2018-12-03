@@ -28,11 +28,11 @@ public:
     void afterGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, BOOL ret) override;
 } g_wm_handler;
 
+
 void DSoundHandler::afterCCIDirectSound8(LPDIRECTSOUND8 *& ppDS8, HRESULT & ret)
 {
     printf("");
 }
-
 
 void WindowMessageHandler::afterGetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, BOOL ret)
 {
