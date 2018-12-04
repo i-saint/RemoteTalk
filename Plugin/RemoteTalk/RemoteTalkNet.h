@@ -1,4 +1,6 @@
 #pragma once
 #include "RemoteTalk.h"
 
-#include "rtServer.h"
+#include "rtTalkServer.h"
+#include "rtTalkReceiver.h"
+#include "rtTalkClient.h"

@@ -31,7 +31,9 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="rtRawVector.h" />
     <ClInclude Include="rtSerialization.h" />
-    <ClInclude Include="rtServer.h" />
+    <ClInclude Include="rtTalkClient.h" />
+    <ClInclude Include="rtTalkReceiver.h" />
+    <ClInclude Include="rtTalkServer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtAudioData.cpp" />
@@ -42,7 +44,9 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="rtServer.cpp" />
+    <ClCompile Include="rtTalkClient.cpp" />
+    <ClCompile Include="rtTalkReceiver.cpp" />
+    <ClCompile Include="rtTalkServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)setup.vcxproj">
