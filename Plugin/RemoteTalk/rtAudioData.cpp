@@ -21,6 +21,11 @@ static inline int SizeOf(AudioFormat f)
 }
 
 
+AudioDataPtr AudioData::create(std::istream & is)
+{
+    return AudioDataPtr();
+}
+
 AudioData::AudioData()
 {
 }

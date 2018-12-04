@@ -104,6 +104,9 @@ void rtvr2Context::setStyleParams(const rtvr2Style& v)
 
 bool rtvr2Context::setupControls()
 {
+    if (m_tb_text)
+        return true;
+
     auto tev = SelectControlsByTypeName("AI.Talk.Editor.TextEditView");
     if (tev->Count == 0)
         return false;

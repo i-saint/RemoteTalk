@@ -24,6 +24,7 @@ public:
     int channels = 0;
     RawVector<char> data;
 
+    static std::shared_ptr<AudioData> create(std::istream& is);
     AudioData();
     ~AudioData();
     void serialize(std::ostream& os) const;

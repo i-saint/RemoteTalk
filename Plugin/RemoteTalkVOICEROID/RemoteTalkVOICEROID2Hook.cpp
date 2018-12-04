@@ -18,10 +18,10 @@ public:
     void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 };
 
-class rtvr2Server : public rt::Server
+class rtvr2TalkServer : public rt::TalkServer
 {
 public:
-    rtDefSingleton(rtvr2Server);
+    rtDefSingleton(rtvr2TalkServer);
     bool onSetParam(const std::string& name, const std::string& value) override;
     bool onTalk(const std::string& text) override;
 };
@@ -47,17 +47,17 @@ void rtvr2DSoundHandler::afterCCIDirectSound8(LPDIRECTSOUND8 *& ppDS8, HRESULT &
 
 void rtvr2WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
-    auto& server = rtvr2Server::getInstance();
+    auto& server = rtvr2TalkServer::getInstance();
     server.start();
     server.processMessages();
 }
 
-bool rtvr2Server::onSetParam(const std::string & name, const std::string & value)
+bool rtvr2TalkServer::onSetParam(const std::string & name, const std::string & value)
 {
     return false;
 }
 
-bool rtvr2Server::onTalk(const std::string & text)
+bool rtvr2TalkServer::onTalk(const std::string & text)
 {
     rtvr2GetController()->talk(text);
     return true;
