@@ -36,7 +36,9 @@ public:
     public:
         virtual ~Message() {}
         bool wait();
+
         std::atomic_bool ready = { false };
+        std::ostream *respond_stream = nullptr;
     };
     using MessagePtr = std::shared_ptr<Message>;
 
@@ -50,10 +52,13 @@ public:
     {
     public:
         std::string text;
-        AudioDataPtr data;
     };
 
 public:
+    TalkServer(const TalkServer&) = delete;
+    TalkServer& operator=(const TalkServer&) = delete;
+
+    TalkServer();
     virtual ~TalkServer();
     virtual void setSettings(const TalkServerSettings& v);
     virtual bool start();
@@ -61,7 +66,7 @@ public:
 
     virtual void processMessages();
     virtual bool onSetParam(const std::string& name, const std::string& value) = 0;
-    virtual bool onTalk(const std::string& text) = 0;
+    virtual bool onTalk(const std::string& text, std::ostream& os) = 0;
 
     void addMessage(MessagePtr mes);
 

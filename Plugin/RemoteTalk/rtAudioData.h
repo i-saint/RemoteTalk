@@ -15,6 +15,8 @@ enum class AudioFormat
     F32,
     RawFile = 100,
 };
+int SizeOf(AudioFormat f);
+int GetNumBits(AudioFormat f);
 
 class AudioData
 {
@@ -37,6 +39,8 @@ public:
     bool exportAsWave(const char *path) const;
     // length of dst must be frequency * channels
     bool convertSamplesToFloat(float *dst);
+
+    AudioData& operator+=(const AudioData& v);
 };
 using AudioDataPtr = std::shared_ptr<AudioData>;
 

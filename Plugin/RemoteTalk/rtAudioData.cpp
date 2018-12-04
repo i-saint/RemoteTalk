@@ -6,7 +6,7 @@
 
 namespace rt {
 
-static inline int SizeOf(AudioFormat f)
+int SizeOf(AudioFormat f)
 {
     int ret = 0;
     switch (f) {
@@ -19,6 +19,11 @@ static inline int SizeOf(AudioFormat f)
     }
     return ret;
 }
+int GetNumBits(AudioFormat f)
+{
+    return SizeOf(f) * 8;
+}
+
 
 
 AudioDataPtr AudioData::create(std::istream & is)

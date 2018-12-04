@@ -8,3 +8,5 @@
 #include "rtNorm.h"
 #include "rtAudioData.h"
 
+#include "rtTalkInterface.h"
+

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "RemoteTalk/rtFoundation.h"
+#include "RemoteTalk/rtAudioData.h"
 #include "RemoteTalkVOICEROID2Controller.h"
 
 using namespace System;
@@ -7,18 +8,18 @@ using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
 
 
-ref class rtvr2Context
+ref class rtvr2InterfaceManaged
 {
 public:
-    static rtvr2Context^ getInstance();
+    static rtvr2InterfaceManaged^ getInstance();
 
+    void setVolume(float v);
     void setTalker(int id);
-    void setVoiceParams(const rtvr2Params& v);
-    void setStyleParams(const rtvr2Style& v);
-    bool talk(const std::string& text);
+
+    bool talk(const char *text);
 
 private:
-    static rtvr2Context s_instance;
+    static rtvr2InterfaceManaged s_instance;
 
     bool setupControls();
 
@@ -27,16 +28,37 @@ private:
     System::Windows::Controls::Button^ m_bu_save;
 };
 
-class rtvr2Controller : public rtvr2IController
+class rtvr2TalkInterfaceImpl : public rtvr2TalkInterface
 {
 public:
-    ~rtvr2Controller() override;
-    void setTalker(int id) override;
-    void setVoiceParams(const rtvr2Params& v) override;
-    void setStyleParams(const rtvr2Style& v) override;
-    bool talk(const std::string& text) override;
+    rtDefSingleton(rtvr2TalkInterfaceImpl);
 
-    void dbgListWindows(std::vector<std::string>& dst) override;
+    rtvr2TalkInterfaceImpl();
+    ~rtvr2TalkInterfaceImpl() override;
+    void release() override;
+    const char* getClientName() const override;
+    int getPluginVersion() const override;
+    int getProtocolVersion() const override;
+
+    bool hasParam(rt::TalkParamID pid) const override;
+    void setParam(rt::TalkParamID pid, const void *value) override;
+    void getParam(rt::TalkParamID pid, void *value) const override;
+    int getNumTalkers() const override;
+    void getTalkerInfo(int i, rt::TalkerInfo *dst) const override;
+
+    bool talk(const char *text, SampleCallback cb, void *userdata) override;
+
+
+    void onPlay() override;
+    void onStop() override;
+    void onUpdateBuffer(const rt::AudioData& ad) override;
+
+    void dbgListWindows(std::vector<std::string>& dst);
+
+private:
+    bool m_is_playing = false;
+    SampleCallback m_sample_cb = nullptr;
+    void *m_sample_cb_userdata = nullptr;
 };
 
 
@@ -82,27 +104,22 @@ static std::string ToStdString(String^ str)
 }
 
 
-rtvr2Context^ rtvr2Context::getInstance()
+rtvr2InterfaceManaged^ rtvr2InterfaceManaged::getInstance()
 {
     return %s_instance;
 }
 
-void rtvr2Context::setTalker(int id)
+void rtvr2InterfaceManaged::setVolume(float v)
 {
     // todo
 }
 
-void rtvr2Context::setVoiceParams(const rtvr2Params& v)
+void rtvr2InterfaceManaged::setTalker(int id)
 {
     // todo
 }
 
-void rtvr2Context::setStyleParams(const rtvr2Style& v)
-{
-    // todo
-}
-
-bool rtvr2Context::setupControls()
+bool rtvr2InterfaceManaged::setupControls()
 {
     if (m_tb_text)
         return true;
@@ -128,46 +145,118 @@ bool rtvr2Context::setupControls()
     return true;
 }
 
-bool rtvr2Context::talk(const std::string & text)
+bool rtvr2InterfaceManaged::talk(const char *text)
 {
     if (!m_tb_text || !m_bu_play) {
         if (!setupControls())
             return false;
     }
-    m_tb_text->Text = gcnew String(text.c_str());
+    m_tb_text->Text = gcnew String(text);
     EmulateClick(m_bu_play);
     return true;
 }
 
 
 
-rtvr2IController::~rtvr2IController()
+rtvr2TalkInterfaceImpl::rtvr2TalkInterfaceImpl()
 {
 }
 
-rtvr2Controller::~rtvr2Controller()
+rtvr2TalkInterfaceImpl::~rtvr2TalkInterfaceImpl()
 {
 }
 
-void rtvr2Controller::setTalker(int v)
+void rtvr2TalkInterfaceImpl::release()
 {
-    return rtvr2Context::getInstance()->setTalker(v);
 }
 
-void rtvr2Controller::setVoiceParams(const rtvr2Params& v)
+const char* rtvr2TalkInterfaceImpl::getClientName() const
 {
-    return rtvr2Context::getInstance()->setVoiceParams(v);
+    return "VOICEROID2";
 }
 
-void rtvr2Controller::setStyleParams(const rtvr2Style& v)
+int rtvr2TalkInterfaceImpl::getPluginVersion() const
 {
-    return rtvr2Context::getInstance()->setStyleParams(v);
+    return rtPluginVersion;
 }
 
-bool rtvr2Controller::talk(const std::string & text)
+int rtvr2TalkInterfaceImpl::getProtocolVersion() const
 {
-    return rtvr2Context::getInstance()->talk(text);
+    return rtProtocolVersion;
 }
+
+bool rtvr2TalkInterfaceImpl::hasParam(rt::TalkParamID pid) const
+{
+    switch (pid) {
+    case rt::TalkParamID::Volume:
+    case rt::TalkParamID::Speed:
+    case rt::TalkParamID::Pitch:
+    case rt::TalkParamID::Intonation:
+    case rt::TalkParamID::Joy:
+    case rt::TalkParamID::Anger:
+    case rt::TalkParamID::Sorrow:
+    case rt::TalkParamID::Talker:
+        return true;
+    default:
+        return false;
+    }
+}
+
+void rtvr2TalkInterfaceImpl::setParam(rt::TalkParamID pid, const void *value)
+{
+    // todo
+}
+
+void rtvr2TalkInterfaceImpl::getParam(rt::TalkParamID pid, void *value) const
+{
+    // todo
+}
+
+int rtvr2TalkInterfaceImpl::getNumTalkers() const
+{
+    // todo
+    return 0;
+}
+
+void rtvr2TalkInterfaceImpl::getTalkerInfo(int i, rt::TalkerInfo *dst) const
+{
+    // todo
+}
+
+bool rtvr2TalkInterfaceImpl::talk(const char *text, SampleCallback cb, void *userdata)
+{
+    if (m_is_playing || !text)
+        return false;
+    m_sample_cb = cb;
+    m_sample_cb_userdata = userdata;
+    return rtvr2InterfaceManaged::getInstance()->talk(text);
+}
+
+
+
+void rtvr2TalkInterfaceImpl::onPlay()
+{
+    m_is_playing = true;
+}
+
+void rtvr2TalkInterfaceImpl::onStop()
+{
+    if (m_sample_cb && m_is_playing) {
+        rt::AudioData dummy;
+        auto sd = rt::ToTalkSample(dummy);
+        m_sample_cb(&sd, m_sample_cb_userdata);
+    }
+    m_is_playing = false;
+}
+
+void rtvr2TalkInterfaceImpl::onUpdateBuffer(const rt::AudioData& ad)
+{
+    if (m_sample_cb && m_is_playing) {
+        auto sd = rt::ToTalkSample(ad);
+        m_sample_cb(&sd, m_sample_cb_userdata);
+    }
+}
+
 
 static void GetControlInfo(System::Windows::DependencyObject^ obj, std::vector<std::string>& dst)
 {
@@ -177,8 +266,7 @@ static void GetControlInfo(System::Windows::DependencyObject^ obj, std::vector<s
     for (int i = 0; i < num_children; i++)
         GetControlInfo(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), dst);
 }
-
-void rtvr2Controller::dbgListWindows(std::vector<std::string>& dst)
+void rtvr2TalkInterfaceImpl::dbgListWindows(std::vector<std::string>& dst)
 {
     if (System::Windows::Application::Current != nullptr) {
         for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows) {
@@ -187,8 +275,7 @@ void rtvr2Controller::dbgListWindows(std::vector<std::string>& dst)
     }
 }
 
-rtExport rtvr2IController* rtvr2GetController()
+rtExport rt::TalkInterface* rtGetTalkInterface()
 {
-    static rtvr2Controller s_instance;
-    return &s_instance;
+    return &rtvr2TalkInterfaceImpl::getInstance();
 }

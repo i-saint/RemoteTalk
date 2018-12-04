@@ -1,5 +1,10 @@
 #pragma once
 
+#define rtPluginVersion 20181210
+#define rtPluginVersionStr "20181210"
+#define rtProtocolVersion 100
+
+
 #define rtDefSingleton(T) static T& getInstance() { static T s_inst; return s_inst; }
 
 #ifdef rtDebug

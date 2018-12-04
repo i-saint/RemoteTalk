@@ -3,6 +3,7 @@
 #include "RemoteTalk/RemoteTalk.h"
 #include "RemoteTalk/RemoteTalkNet.h"
 
+
 static rt::TalkClientSettings GetClientSettings()
 {
     rt::TalkClientSettings ret;
@@ -13,10 +14,15 @@ static rt::TalkClientSettings GetClientSettings()
     return ret;
 }
 
-
 TestCase(RemoteTalkClient)
 {
     rt::TalkClient client(GetClientSettings());
     client.setText("あー、あー、まいくてすと");
-    client.send();
+
+    int n = 0;
+    client.send([&](const rt::AudioData& ad) {
+        char filename[128];
+        sprintf(filename, "%04d.wav", n++);
+        ad.exportAsWave(filename);
+    });
 }

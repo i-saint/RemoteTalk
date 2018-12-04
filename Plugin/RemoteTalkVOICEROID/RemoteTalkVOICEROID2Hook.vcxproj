@@ -21,12 +21,14 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemoteTalkVOICEROID2Controller.h" />
+    <ClInclude Include="rtvrDSound.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RemoteTalkVOICEROID2Hook.cpp" />
+    <ClCompile Include="rtvrDSound.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)RemoteTalk\RemoteTalk.vcxproj">

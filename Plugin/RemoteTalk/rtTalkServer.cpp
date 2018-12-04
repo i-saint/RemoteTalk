@@ -87,11 +87,14 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
                 Poco::URI::decode(&uri[pos + 2], mes->text, true);
                 mes->text = ToANSI(mes->text.c_str());
 
+                response.setStatus(HTTPResponse::HTTPStatus::HTTP_OK);
+                response.setContentType("application/octet-stream");
+                auto& os = response.send();
+                mes->respond_stream = &os;
+
                 TalkServer::MessagePtr pmes(mes);
                 m_server->addMessage(pmes);
-                if (mes->wait() && mes->data) {
-                    // todo
-                    ServeText(response, "", HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
+                if (mes->wait()) {
                     handled = true;
                 }
             }
@@ -120,12 +123,16 @@ HTTPRequestHandler* TalkServerRequestHandlerFactory::createRequestHandler(const 
 
 bool TalkServer::Message::wait()
 {
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         if (ready.load())
             break;
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
     return ready.load();
+}
+
+TalkServer::TalkServer()
+{
 }
 
 TalkServer::~TalkServer()
@@ -176,7 +183,14 @@ void TalkServer::processMessages()
                 onSetParam(nvp.first, nvp.second);
         }
         if (auto *tmes = dynamic_cast<TalkMessage*>(mes.get())) {
-            onTalk(tmes->text);
+            if (onTalk(tmes->text, *tmes->respond_stream)) {
+                // ok. nothing to do.
+            }
+            else {
+                // send empty audio data to notify end of stream.
+                AudioData dummy;
+                dummy.serialize(*tmes->respond_stream);
+            }
         }
         mes->ready = true;
     }

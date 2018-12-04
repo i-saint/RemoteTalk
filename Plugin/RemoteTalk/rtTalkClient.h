@@ -18,13 +18,12 @@ public:
     void clear();
     void setParam(const std::string& name, const std::string& value);
     void setText(const std::string& text);
-    std::future<AudioDataPtr> send();
+    bool send(const std::function<void (const AudioData&)>& cb);
 
 private:
     TalkClientSettings m_settings;
     std::map<std::string, std::string> m_params;
     std::string m_text;
-    AudioDataPtr m_audio_data;
 };
 
 } // namespace rt

@@ -32,16 +32,17 @@ void TalkClient::setText(const std::string& text)
     m_text = text;
 }
 
-std::future<AudioDataPtr> TalkClient::send()
+bool TalkClient::send(const std::function<void(const AudioData&)>& cb)
 {
+    bool ret = false;
     try {
-        URI uri(m_settings.server);
+        URI uri("/talk");
         for (auto& kvp : m_params)
             uri.addQueryParameter(kvp.first, kvp.second);
         if(!m_text.empty())
             uri.addQueryParameter("t", m_text);
 
-        HTTPClientSession session{ uri.getHost(), uri.getPort() };
+        HTTPClientSession session{ m_settings.server, m_settings.port };
         session.setTimeout(m_settings.timeout_ms * 1000);
 
         HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
@@ -49,15 +50,22 @@ std::future<AudioDataPtr> TalkClient::send()
 
         HTTPResponse response;
         auto& rs = session.receiveResponse(response);
-        //std::ostringstream ostr;
-        //StreamCopier::copyStream(rs, ostr);
-        auto succeeded = response.getStatus() == HTTPResponse::HTTP_OK;
+        AudioData audio_data;
+        for (;;) {
+            audio_data.deserialize(rs);
+            if(cb)
+                cb(audio_data);
+            // empty data means end of stream
+            if (audio_data.data.empty())
+                break;
+        }
+        ret = response.getStatus() == HTTPResponse::HTTP_OK;
     }
-    catch (...) {
+    catch (Poco::Exception& e) {
+        auto mes = e.what();
+        printf(mes);
     }
-
-    // todo
-    return std::future<AudioDataPtr>();
+    return ret;
 }
 
 } // namespace rt

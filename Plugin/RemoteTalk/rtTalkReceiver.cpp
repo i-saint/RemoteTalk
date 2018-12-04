@@ -53,6 +53,10 @@ HTTPRequestHandler* TalkReceiverRequestHandlerFactory::createRequestHandler(cons
     return new TalkReceiverRequestHandler(m_server);
 }
 
+TalkReceiver::TalkReceiver()
+{
+}
+
 TalkReceiver::~TalkReceiver()
 {
     stop();

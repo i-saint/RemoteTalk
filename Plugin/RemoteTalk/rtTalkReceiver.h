@@ -6,6 +6,10 @@ namespace rt {
 class TalkReceiver
 {
 public:
+    TalkReceiver(const TalkReceiver&) = delete;
+    TalkReceiver& operator=(const TalkReceiver&) = delete;
+
+    TalkReceiver();
     virtual ~TalkReceiver();
     virtual void setSettings(const TalkServerSettings& v);
     virtual bool start();

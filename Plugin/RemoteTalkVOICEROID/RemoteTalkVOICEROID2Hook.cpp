@@ -2,33 +2,35 @@
 #include "RemoteTalk/RemoteTalk.h"
 #include "RemoteTalk/RemoteTalkNet.h"
 #include "RemoteTalkVOICEROID2Controller.h"
+#include "rtvrDSound.h"
 
 
-class rtvr2DSoundHandler : public rt::DSoundHandlerBase
+
+class rtvrWindowMessageHandler : public rt::WindowMessageHandlerBase
 {
 public:
-    rtDefSingleton(rtvr2DSoundHandler);
-    void afterCCIDirectSound8(LPDIRECTSOUND8 *&ppDS8, HRESULT& ret) override;
-};
-
-class rtvr2WindowMessageHandler : public rt::WindowMessageHandlerBase
-{
-public:
-    rtDefSingleton(rtvr2WindowMessageHandler);
+    rtDefSingleton(rtvrWindowMessageHandler);
     void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 };
 
-class rtvr2TalkServer : public rt::TalkServer
+class rtvrTalkServer : public rt::TalkServer
 {
 public:
-    rtDefSingleton(rtvr2TalkServer);
+    rtDefSingleton(rtvrTalkServer);
     bool onSetParam(const std::string& name, const std::string& value) override;
-    bool onTalk(const std::string& text) override;
+    bool onTalk(const std::string& text, std::ostream& os) override;
+
+    static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
+    void sampleCallback(const rt::TalkSample *data);
+
+private:
+    std::mutex m_data_mutex;
+    std::vector<rt::AudioDataPtr> m_data_queue;
+    std::future<void> m_talk_task;
 };
 
 
-rtvr2IController* (*rtvr2GetController)();
-
+rtvr2TalkInterface* (*rtGetTalkInterface)();
 static bool rtvr2LoadController()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\RemoteTalkVOICEROID2Managed.dll";
@@ -36,39 +38,80 @@ static bool rtvr2LoadController()
     if (!mod)
         return false;
 
-    (void*&)rtvr2GetController = ::GetProcAddress(mod, "rtvr2GetController");
-    return rtvr2GetController;
+    (void*&)rtGetTalkInterface = ::GetProcAddress(mod, "rtGetTalkInterface");
+    return rtGetTalkInterface;
 }
 
 
-void rtvr2DSoundHandler::afterCCIDirectSound8(LPDIRECTSOUND8 *& ppDS8, HRESULT & ret)
-{
-}
 
-void rtvr2WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+
+void rtvrWindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
-    auto& server = rtvr2TalkServer::getInstance();
+    auto& server = rtvrTalkServer::getInstance();
     server.start();
     server.processMessages();
 }
 
-bool rtvr2TalkServer::onSetParam(const std::string & name, const std::string & value)
+bool rtvrTalkServer::onSetParam(const std::string& name, const std::string& value)
 {
     return false;
 }
 
-bool rtvr2TalkServer::onTalk(const std::string & text)
+bool rtvrTalkServer::onTalk(const std::string& text, std::ostream& os)
 {
-    rtvr2GetController()->talk(text);
+    if (!rtGetTalkInterface()->talk(text.c_str(), &sampleCallbackS, this))
+        return false;
+
+    m_talk_task = std::async(std::launch::async, [this, &os]() {
+        std::vector<rt::AudioDataPtr> tmp;
+        for (;;) {
+            {
+                std::unique_lock<std::mutex> lock(m_data_mutex);
+                tmp = m_data_queue;
+                m_data_queue.clear();
+            }
+
+            for (auto& ad : tmp)
+                ad->serialize(os);
+
+            if (!tmp.empty() && tmp.back()->data.empty())
+                break;
+            else
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    });
     return true;
 }
+
+
+void rtvrTalkServer::sampleCallbackS(const rt::TalkSample *data, void *userdata)
+{
+    auto _this = (rtvrTalkServer*)userdata;
+    _this->sampleCallback(data);
+}
+
+void rtvrTalkServer::sampleCallback(const rt::TalkSample *data)
+{
+    auto tmp = std::make_shared<rt::AudioData>();
+    rt::ToAudioData(*tmp, *data);
+    {
+        std::unique_lock<std::mutex> lock(m_data_mutex);
+        m_data_queue.push_back(tmp);
+    }
+}
+
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
         if (rtvr2LoadController()) {
-            rt::AddDSoundHandler(&rtvr2DSoundHandler::getInstance());
-            rt::AddWindowMessageHandler(&rtvr2WindowMessageHandler::getInstance());
+            rt::AddWindowMessageHandler(&rtvrWindowMessageHandler::getInstance());
+
+            auto& dsound = rtvrDSoundHandler::getInstance();
+            rt::AddDSoundHandler(&dsound);
+            dsound.onPlay = []() { rtGetTalkInterface()->onPlay(); };
+            dsound.onStop = []() { rtGetTalkInterface()->onStop(); };
+            dsound.onUpdateBuffer = [](const rt::AudioData& ad) { rtGetTalkInterface()->onUpdateBuffer(ad); };
         }
     }
     else if (fdwReason == DLL_PROCESS_DETACH) {
