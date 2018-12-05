@@ -1,4 +1,5 @@
 #pragma once
+#ifdef _WIN32
 
 namespace rt {
 
@@ -39,3 +40,4 @@ bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll = true);
 bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll = true);
 
 } // namespace rt
+#endif // _WIN32

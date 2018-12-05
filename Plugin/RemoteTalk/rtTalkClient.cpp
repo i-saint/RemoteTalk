@@ -47,7 +47,6 @@ bool TalkClient::send(const std::function<void(const AudioData&)>& cb)
         session.setTimeout(m_settings.timeout_ms * 1000);
 
         HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
-        request.setChunkedTransferEncoding(true);
         session.sendRequest(request);
 
         HTTPResponse response;

@@ -63,6 +63,18 @@ uint64_t AudioData::hash() const
     return gen_hash(data);
 }
 
+void* AudioData::allocateByte(size_t num)
+{
+    data.resize(num);
+    return data.data();
+}
+
+void* AudioData::allocateSample(size_t num_samples)
+{
+    data.resize(channels * SizeOf(format) * num_samples);
+    return data.data();
+}
+
 size_t AudioData::getSampleLength() const
 {
     return data.size() / SizeOf(format);
@@ -140,7 +152,11 @@ bool AudioData::convertSamplesToFloat(float *dst)
 
 AudioData& AudioData::operator+=(const AudioData& v)
 {
-    if (data.empty()) {
+    if (format == AudioFormat::RawFile || v.data.empty() || v.format == AudioFormat::Unknown || v.format == AudioFormat::RawFile ||
+        channels != v.channels || frequency != v.frequency)
+        return *this;
+
+    if (format == AudioFormat::Unknown) {
         *this = v;
     }
     else {
@@ -148,7 +164,41 @@ AudioData& AudioData::operator+=(const AudioData& v)
             data.insert(data.end(), v.data.begin(), v.data.end());
         }
         else {
-            // todo: 
+            auto convert = [](auto *dst, const auto *src, size_t n) {
+                for (size_t i = 0; i < n; ++i)
+                    dst[i] = (float)src[i];
+            };
+
+            auto pos = data.size();
+            allocateSample(getSampleLength() + v.getSampleLength());
+
+#define Impl(SrcT)\
+                switch (v.format) {\
+                case AudioFormat::U8: convert((SrcT*)&data[pos], (const unorm8n*)&v.data[0], v.data.size() / sizeof(unorm8n)); break;\
+                case AudioFormat::S16: convert((SrcT*)&data[pos], (const snorm16*)&v.data[0], v.data.size() / sizeof(snorm16)); break;\
+                case AudioFormat::S24: convert((SrcT*)&data[pos], (const snorm24*)&v.data[0], v.data.size() / sizeof(snorm24)); break;\
+                case AudioFormat::S32: convert((SrcT*)&data[pos], (const snorm32*)&v.data[0], v.data.size() / sizeof(snorm32)); break;\
+                case AudioFormat::F32: convert((SrcT*)&data[pos], (const float*)&v.data[0], v.data.size() / sizeof(float)); break;\
+                }
+
+            switch (format) {
+            case AudioFormat::U8:
+                Impl(unorm8n);
+                break;
+            case AudioFormat::S16:
+                Impl(snorm16);
+                break;
+            case AudioFormat::S24:
+                Impl(snorm24);
+                break;
+            case AudioFormat::S32:
+                Impl(snorm32);
+                break;
+            case AudioFormat::F32:
+                Impl(float);
+                break;
+            }
+#undef Impl
         }
     }
     return *this;

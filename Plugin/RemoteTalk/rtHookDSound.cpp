@@ -3,6 +3,7 @@
 #include "rtHook.h"
 #include "rtHookKernel.h"
 #include "rtHookDSound.h"
+#ifdef _WIN32
 
 
 namespace rt {
@@ -47,6 +48,22 @@ static HRESULT WINAPI DirectSoundFullDuplexCreate_hook(LPCGUID pcGuidCaptureDevi
 
 
 // IDirectSound8
+static ULONG(WINAPI *IDirectSound8_AddRef_orig)(IDirectSound8 *_this);
+static ULONG WINAPI IDirectSound8_AddRef_hook(IDirectSound8 *_this)
+{
+    auto ret = IDirectSound8_AddRef_orig(_this);
+    Call(afterIDirectSound8_AddRef, _this, ret);
+    return ret;
+}
+
+static ULONG(WINAPI *IDirectSound8_Release_orig)(IDirectSound8 *_this);
+static ULONG WINAPI IDirectSound8_Release_hook(IDirectSound8 *_this)
+{
+    auto ret = IDirectSound8_Release_orig(_this);
+    Call(afterIDirectSound8_Release, _this, ret);
+    return ret;
+}
+
 static HRESULT(WINAPI *IDirectSound8_CreateSoundBuffer_orig)(IDirectSound8 *_this, LPCDSBUFFERDESC pcDSBufferDesc, LPDIRECTSOUNDBUFFER *ppDSBuffer, LPUNKNOWN pUnkOuter);
 static HRESULT WINAPI IDirectSound8_CreateSoundBuffer_hook(IDirectSound8 *_this, LPCDSBUFFERDESC pcDSBufferDesc, LPDIRECTSOUNDBUFFER *ppDSBuffer, LPUNKNOWN pUnkOuter)
 {
@@ -63,12 +80,34 @@ static void SetHook_IDirectSound8(IDirectSound8 *dst)
 
     void **&vtable = ((void***)dst)[0];
 
-    (void*&)IDirectSound8_CreateSoundBuffer_orig = vtable[3];
-    ForceWrite(vtable[3], (void*)&IDirectSound8_CreateSoundBuffer_hook);
+#define Hook(Name, N)\
+    (void*&)IDirectSound8_##Name##_orig = vtable[N];\
+    ForceWrite(vtable[N], (void*)&IDirectSound8_##Name##_hook);
+
+    Hook(AddRef, 1);
+    Hook(Release, 2);
+    Hook(CreateSoundBuffer, 3);
+#undef Hook
 }
 
 
 // IDirectSoundBuffer
+
+static ULONG(WINAPI *IDirectSoundBuffer_AddRef_orig)(IDirectSoundBuffer *_this);
+static ULONG WINAPI IDirectSoundBuffer_AddRef_hook(IDirectSoundBuffer *_this)
+{
+    auto ret = IDirectSoundBuffer_AddRef_orig(_this);
+    Call(afterIDirectSoundBuffer_AddRef, _this, ret);
+    return ret;
+}
+
+static ULONG(WINAPI *IDirectSoundBuffer_Release_orig)(IDirectSoundBuffer *_this);
+static ULONG WINAPI IDirectSoundBuffer_Release_hook(IDirectSoundBuffer *_this)
+{
+    auto ret = IDirectSoundBuffer_Release_orig(_this);
+    Call(afterIDirectSoundBuffer_Release, _this, ret);
+    return ret;
+}
 
 static HRESULT(WINAPI *IDirectSoundBuffer_Lock_orig)(IDirectSoundBuffer *_this, DWORD dwOffset, DWORD dwBytes, LPVOID *ppvAudioPtr1, LPDWORD pdwAudioBytes1, LPVOID *ppvAudioPtr2, LPDWORD pdwAudioBytes2, DWORD dwFlags);
 static HRESULT WINAPI IDirectSoundBuffer_Lock_hook(IDirectSoundBuffer *_this, DWORD dwOffset, DWORD dwBytes, LPVOID *ppvAudioPtr1, LPDWORD pdwAudioBytes1, LPVOID *ppvAudioPtr2, LPDWORD pdwAudioBytes2, DWORD dwFlags)
@@ -163,6 +202,8 @@ static void SetHook_IDirectSoundBuffer(IDirectSoundBuffer *dst)
     (void*&)IDirectSoundBuffer_##Name##_orig = vtable[N];\
     ForceWrite(vtable[N], (void*)&IDirectSoundBuffer_##Name##_hook);
 
+    Hook(AddRef, 1);
+    Hook(Release, 2);
     Hook(Lock, 11);
     Hook(Play, 12);
     Hook(SetCurrentPosition, 13);
@@ -249,3 +290,4 @@ bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll)
 }
 
 } // namespace rt
+#endif // _WIN32

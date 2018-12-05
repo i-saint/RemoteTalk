@@ -2,6 +2,7 @@
 #include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
+#ifdef _WIN32
 
 namespace rt {
 
@@ -254,3 +255,4 @@ bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll)
 #undef EachFunctions
 #pragma endregion
 } // namespace rt
+#endif // _WIN32

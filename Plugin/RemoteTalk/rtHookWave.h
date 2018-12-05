@@ -1,4 +1,5 @@
 #pragma once
+#ifdef _WIN32
 #include <mmsystem.h>
 
 namespace rt {
@@ -45,3 +46,4 @@ public:
 bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll = true);
 
 } // namespace rt
+#endif // _WIN32

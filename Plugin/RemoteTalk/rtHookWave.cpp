@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef _WIN32
 #include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
@@ -207,3 +208,4 @@ bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll)
 }
 
 } // namespace rt
+#endif // _WIN32

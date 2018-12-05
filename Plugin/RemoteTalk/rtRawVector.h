@@ -78,7 +78,7 @@ public:
     iterator end() { return m_data + m_size; }
     const_iterator end() const { return m_data + m_size; }
 
-    static void* allocate(size_t size) { return malloc(size); }
+    static void* allocateSample(size_t size) { return malloc(size); }
     static void deallocate(void *addr, size_t /*size*/) { free(addr); }
 
     void reserve(size_t s)
@@ -88,7 +88,7 @@ public:
             size_t newsize = sizeof(T) * s;
             size_t oldsize = sizeof(T) * m_size;
 
-            T *newdata = (T*)allocate(newsize);
+            T *newdata = (T*)allocateSample(newsize);
             memcpy(newdata, m_data, oldsize);
             deallocate(m_data, oldsize);
             m_data = newdata;
@@ -104,7 +104,7 @@ public:
             size_t oldsize = sizeof(T) * m_size;
 
             deallocate(m_data, oldsize);
-            m_data = (T*)allocate(newsize);
+            m_data = (T*)allocateSample(newsize);
             m_capacity = s;
         }
     }
@@ -123,7 +123,7 @@ public:
         else {
             size_t newsize = sizeof(T) * m_size;
             size_t oldsize = sizeof(T) * m_capacity;
-            T *newdata = (T*)allocate(newsize);
+            T *newdata = (T*)allocateSample(newsize);
             memcpy(newdata, m_data, newsize);
             deallocate(m_data, oldsize);
             m_data = newdata;

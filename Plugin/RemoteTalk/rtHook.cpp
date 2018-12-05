@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "rtHook.h"
+#ifdef _WIN32
 #include <psapi.h>
 #include <tlhelp32.h>
 
@@ -280,3 +281,4 @@ void EnumerateAllWindows(const std::function<void(HWND)>& body)
 }
 
 } // namespace rt
+#endif // _WIN32

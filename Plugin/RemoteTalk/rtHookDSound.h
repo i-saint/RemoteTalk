@@ -1,4 +1,5 @@
 #pragma once
+#ifdef _WIN32
 #include <dsound.h>
 
 namespace rt {
@@ -14,8 +15,12 @@ public:
     virtual void afterCCIDirectSound(LPDIRECTSOUND *&ppDS, HRESULT& ret) {}
     virtual void afterCCIDirectSound8(LPDIRECTSOUND8 *&ppDS8, HRESULT& ret) {}
 
+    virtual void afterIDirectSound8_AddRef(IDirectSound8 *&_this, ULONG& ret) {}
+    virtual void afterIDirectSound8_Release(IDirectSound8 *&_this, ULONG& ret) {}
     virtual void afterIDirectSound8_CreateSoundBuffer(IDirectSound8 *&_this, LPCDSBUFFERDESC& pcDSBufferDesc, LPDIRECTSOUNDBUFFER *&ppDSBuffer, LPUNKNOWN& pUnkOuter, HRESULT& ret) {}
 
+    virtual void afterIDirectSoundBuffer_AddRef(IDirectSoundBuffer *&_this, ULONG& ret) {}
+    virtual void afterIDirectSoundBuffer_Release(IDirectSoundBuffer *&_this, ULONG& ret) {}
     virtual void afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwOffset, DWORD& dwBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret) {}
     virtual void afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret) {}
     virtual void beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition) {}
@@ -34,3 +39,4 @@ public:
 bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll = true);
 
 } // namespace rt
+#endif // _WIN32

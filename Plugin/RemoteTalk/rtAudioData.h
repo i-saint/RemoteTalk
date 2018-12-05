@@ -5,6 +5,10 @@
 
 namespace rt {
 
+static constexpr float PI = 3.14159265358979323846264338327950288419716939937510f;
+static constexpr float Deg2Rad = PI / 180.0f;
+static constexpr float Rad2Deg = 1.0f / (PI / 180.0f);
+
 enum class AudioFormat
 {
     Unknown = 0,
@@ -35,6 +39,9 @@ public:
     void deserialize(std::istream& is);
     uint64_t hash() const;
 
+    void* allocateByte(size_t num);
+    // allocate num_samples * channels * size_of_format bytes
+    void* allocateSample(size_t num_samples);
     size_t getSampleLength() const;
     double getDuration() const;
 

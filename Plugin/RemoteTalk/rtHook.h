@@ -1,4 +1,5 @@
 #pragma once
+#ifdef _WIN32
 #include <windows.h>
 #include <functional>
 
@@ -36,3 +37,4 @@ void EnumerateChildWindowsRecirsive(HWND parent, const std::function<void(HWND)>
 void EnumerateAllWindows(const std::function<void(HWND)> &body);
 
 } // namespace rt
+#endif // _WIN32
