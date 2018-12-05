@@ -150,4 +150,26 @@ struct read_impl<std::vector<std::shared_ptr<T>>>
 };
 template<class T> inline void read(std::istream& is, T& v) { return read_impl<T>()(is, v); }
 
+
+template<class T>
+struct hash_impl;
+
+template<class T>
+struct hash_impl<RawVector<T>>
+{
+    uint64_t operator()(const RawVector<T>& v)
+    {
+        uint64_t ret = 0;
+        if (sizeof(T) * v.size() >= 8)
+            ret = *(const uint64_t*)((const char*)v.end() - 8);
+        return ret;
+    }
+};
+
+template<> struct hash_impl<bool> { uint64_t operator()(bool v) { return (uint32_t)v; } };
+template<> struct hash_impl<int> { uint64_t operator()(int v) { return (uint32_t&)v; } };
+template<> struct hash_impl<float> { uint64_t operator()(float v) { return (uint32_t&)v; } };
+
+template<class T> inline uint64_t gen_hash(const T& v) { return hash_impl<T>()(v); }
+
 } // namespace rt

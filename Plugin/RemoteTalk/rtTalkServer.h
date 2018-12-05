@@ -70,7 +70,7 @@ public:
     virtual bool onSetParam(const std::string& name, const std::string& value) = 0;
     virtual std::future<void> onTalk(const std::string& text, std::ostream& os) = 0;
 
-    void addMessage(MessagePtr mes);
+    virtual void addMessage(MessagePtr mes);
 
 private:
     using HTTPServerPtr = std::shared_ptr<Poco::Net::HTTPServer>;

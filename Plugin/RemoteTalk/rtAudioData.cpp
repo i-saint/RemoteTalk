@@ -28,7 +28,9 @@ int GetNumBits(AudioFormat f)
 
 AudioDataPtr AudioData::create(std::istream & is)
 {
-    return AudioDataPtr();
+    auto ret = std::make_shared<AudioData>();
+    ret->deserialize(is);
+    return ret;
 }
 
 AudioData::AudioData()
@@ -39,25 +41,26 @@ AudioData::~AudioData()
 {
 }
 
+#define EachMember(Body) Body(format) Body(frequency) Body(channels) Body(data)
+
 void AudioData::serialize(std::ostream& os) const
 {
-    write(os, format);
-    write(os, frequency);
-    write(os, channels);
-    write(os, data);
+#define Body(N) write(os, N);
+    EachMember(Body)
+#undef Body
 }
 
 void AudioData::deserialize(std::istream& is)
 {
-    read(is, format);
-    read(is, frequency);
-    read(is, channels);
-    read(is, data);
+#define Body(N) read(is, N);
+    EachMember(Body)
+#undef Body
 }
+#undef EachMember
 
 uint64_t AudioData::hash() const
 {
-    return uint64_t();
+    return gen_hash(data);
 }
 
 size_t AudioData::getSampleLength() const

@@ -46,7 +46,7 @@ public:
     int getNumTalkers() const override;
     void getTalkerInfo(int i, rt::TalkerInfo *dst) const override;
 
-    bool talk(const char *text, SampleCallback cb, void *userdata) override;
+    bool talk(const char *text, rt::TalkSampleCallback cb, void *userdata) override;
 
 
     void onPlay() override;
@@ -57,7 +57,7 @@ public:
 
 private:
     bool m_is_playing = false;
-    SampleCallback m_sample_cb = nullptr;
+    rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
 };
 
@@ -226,7 +226,7 @@ void rtvr2TalkInterfaceImpl::getTalkerInfo(int i, rt::TalkerInfo *dst) const
     // todo
 }
 
-bool rtvr2TalkInterfaceImpl::talk(const char *text, SampleCallback cb, void *userdata)
+bool rtvr2TalkInterfaceImpl::talk(const char *text, rt::TalkSampleCallback cb, void *userdata)
 {
     if (m_is_playing || !text)
         return false;

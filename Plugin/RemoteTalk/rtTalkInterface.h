@@ -25,19 +25,19 @@ struct TalkerInfo
 struct TalkSample
 {
     const char *data;
-    size_t size; // in byte
+    int size; // in byte
     int bits;
     int channels;
     int frequency;
 };
 
+// one talk() will call this callback several times. last one has null data to notify end.
+using TalkSampleCallback = void(*)(const TalkSample *data, void *userdata);
+
+
 class TalkInterface
 {
 public:
-
-    // one talk() will call this callback several times. last one has null data to notify end.
-    using SampleCallback = void(*)(const TalkSample *data, void *userdata);
-
     virtual ~TalkInterface() {}
     virtual void release() = 0;
     virtual const char* getClientName() const = 0;
@@ -50,7 +50,7 @@ public:
     virtual int getNumTalkers() const = 0;
     virtual void getTalkerInfo(int i, TalkerInfo *dst) const = 0;
 
-    virtual bool talk(const char *text, SampleCallback cb, void *userdata) = 0;
+    virtual bool talk(const char *text, TalkSampleCallback cb, void *userdata) = 0;
 
 
     // utils

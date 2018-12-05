@@ -26,5 +26,6 @@ TestCase(RemoteTalkClient)
             return;
         sequence += ad;
     });
-    sequence.exportAsWave("hello_voiceroid.wav");
+    if (!sequence.data.empty())
+        sequence.exportAsWave("hello_voiceroid.wav");
 }

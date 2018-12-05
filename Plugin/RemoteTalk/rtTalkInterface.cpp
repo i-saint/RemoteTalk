@@ -8,7 +8,7 @@ TalkSample ToTalkSample(const AudioData& ad)
 {
     TalkSample ret;
     ret.data = ad.data.data();
-    ret.size = ad.data.size();
+    ret.size = (int)ad.data.size();
     ret.bits = rt::GetNumBits(ad.format);
     ret.channels = ad.channels;
     ret.frequency = ad.frequency;
