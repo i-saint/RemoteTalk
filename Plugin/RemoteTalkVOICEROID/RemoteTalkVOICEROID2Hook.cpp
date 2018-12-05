@@ -115,7 +115,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             rt::AddDSoundHandler(&dsound);
             dsound.onPlay = []() { rtGetTalkInterface()->onPlay(); };
             dsound.onStop = []() { rtGetTalkInterface()->onStop(); };
-            dsound.onUpdateBuffer = [](const rt::AudioData& ad) { rtGetTalkInterface()->onUpdateBuffer(ad); };
+            dsound.onUpdate = [](const rt::AudioData& ad) { rtGetTalkInterface()->onUpdateBuffer(ad); };
         }
     }
     else if (fdwReason == DLL_PROCESS_DETACH) {

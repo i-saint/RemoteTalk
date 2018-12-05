@@ -18,6 +18,7 @@ public:
 
     virtual void afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwOffset, DWORD& dwBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret) {}
     virtual void afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret) {}
+    virtual void beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition) {}
     virtual void afterIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition, HRESULT& ret) {}
     virtual void afterIDirectSoundBuffer_SetFormat(IDirectSoundBuffer *&_this, LPCWAVEFORMATEX& pcfxFormat, HRESULT& ret) {}
     virtual void afterIDirectSoundBuffer_SetVolume(IDirectSoundBuffer *&_this, LONG& lVolume, HRESULT& ret) {}

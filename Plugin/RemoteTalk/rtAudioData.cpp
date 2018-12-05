@@ -135,4 +135,20 @@ bool AudioData::convertSamplesToFloat(float *dst)
     return true;
 }
 
+AudioData& AudioData::operator+=(const AudioData& v)
+{
+    if (data.empty()) {
+        *this = v;
+    }
+    else {
+        if (format == v.format) {
+            data.insert(data.end(), v.data.begin(), v.data.end());
+        }
+        else {
+            // todo: 
+        }
+    }
+    return *this;
+}
+
 } // namespace rt

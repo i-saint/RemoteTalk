@@ -89,6 +89,7 @@ static HRESULT WINAPI IDirectSoundBuffer_Play_hook(IDirectSoundBuffer *_this, DW
 static HRESULT(WINAPI *IDirectSoundBuffer_SetCurrentPosition_orig)(IDirectSoundBuffer *_this, DWORD dwNewPosition);
 static HRESULT WINAPI IDirectSoundBuffer_SetCurrentPosition_hook(IDirectSoundBuffer *_this, DWORD dwNewPosition)
 {
+    Call(beforeIDirectSoundBuffer_SetCurrentPosition, _this, dwNewPosition);
     auto ret = IDirectSoundBuffer_SetCurrentPosition_orig(_this, dwNewPosition);
     Call(afterIDirectSoundBuffer_SetCurrentPosition, _this, dwNewPosition, ret);
     return ret;

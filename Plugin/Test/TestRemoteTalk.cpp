@@ -20,11 +20,11 @@ TestCase(RemoteTalkClient)
     client.setText("hello voiceroid!");
 
     int n = 0;
+    rt::AudioData sequence;
     client.send([&](const rt::AudioData& ad) {
         if (ad.data.empty())
             return;
-        char filename[128];
-        sprintf(filename, "%04d.wav", n++);
-        ad.exportAsWave(filename);
+        sequence += ad;
     });
+    sequence.exportAsWave("hello_voiceroid.wav");
 }
