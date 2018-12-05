@@ -36,16 +36,18 @@ bool TalkClient::send(const std::function<void(const AudioData&)>& cb)
 {
     bool ret = false;
     try {
-        URI uri("/talk");
+        URI uri;
+        uri.setPath("/talk");
         for (auto& kvp : m_params)
             uri.addQueryParameter(kvp.first, kvp.second);
-        if(!m_text.empty())
+        if (!m_text.empty())
             uri.addQueryParameter("t", m_text);
 
         HTTPClientSession session{ m_settings.server, m_settings.port };
         session.setTimeout(m_settings.timeout_ms * 1000);
 
         HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+        request.setChunkedTransferEncoding(true);
         session.sendRequest(request);
 
         HTTPResponse response;
@@ -55,6 +57,7 @@ bool TalkClient::send(const std::function<void(const AudioData&)>& cb)
             audio_data.deserialize(rs);
             if(cb)
                 cb(audio_data);
+
             // empty data means end of stream
             if (audio_data.data.empty())
                 break;

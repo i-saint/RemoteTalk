@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "rtvrDSound.h"
 
+void rtvrDSoundHandler::clearCallbacks()
+{
+    onPlay = {};
+    onStop = {};
+    onUpdateBuffer = {};
+}
 
 void rtvrDSoundHandler::afterIDirectSound8_CreateSoundBuffer(IDirectSound8 *&_this, LPCDSBUFFERDESC& pcDSBufferDesc, LPDIRECTSOUNDBUFFER *&ppDSBuffer, LPUNKNOWN& pUnkOuter, HRESULT& ret)
 {
@@ -19,15 +25,36 @@ void rtvrDSoundHandler::afterIDirectSound8_CreateSoundBuffer(IDirectSound8 *&_th
 
 void rtvrDSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwOffset, DWORD& dwBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret)
 {
+    m_lbuf1 = ppvAudioPtr1 ? *ppvAudioPtr1 : nullptr;
+    m_lsize1 = pdwAudioBytes1 ? *pdwAudioBytes1 : 0;
+    m_lbuf2 = ppvAudioPtr2 ? *ppvAudioPtr2 : nullptr;
+    m_lsize2 = pdwAudioBytes2 ? *pdwAudioBytes2 : 0;
+
+    m_buffer.data.reserve_discard(m_lsize1 + m_lsize2);
+    m_buffer.data.resize_discard(dwBytes);
+    if (ppvAudioPtr1)
+        *ppvAudioPtr1 = m_buffer.data.data();
+    if (ppvAudioPtr2)
+        *ppvAudioPtr2 = m_buffer.data.data() + m_lsize1;
 }
 
 void rtvrDSoundHandler::beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, LPVOID& pvAudioPtr1, DWORD& dwAudioBytes1, LPVOID& pvAudioPtr2, DWORD& dwAudioBytes2)
 {
-    m_buffer.data.resize_discard(dwAudioBytes1 + dwAudioBytes2);
-    if (pvAudioPtr1)
-        memcpy(m_buffer.data.data(), pvAudioPtr1, dwAudioBytes1);
-    if (pvAudioPtr2)
-        memcpy(m_buffer.data.data() + dwAudioBytes1, pvAudioPtr2, dwAudioBytes2);
+    if (mute) {
+        if (m_lbuf1)
+            memset(m_lbuf1, 0, m_lsize1);
+        if (m_lbuf2)
+            memset(m_lbuf2, 0, m_lsize2);
+    }
+    else {
+        if (m_lbuf1)
+            memcpy(m_lbuf1, m_buffer.data.data(), m_lsize1);
+        if (m_lbuf2)
+            memcpy(m_lbuf2, m_buffer.data.data() + m_lsize1, m_lsize2);
+    }
+
+    pvAudioPtr1 = m_lbuf1;
+    pvAudioPtr2 = m_lbuf2;
 
     if (onUpdateBuffer)
         onUpdateBuffer(m_buffer);

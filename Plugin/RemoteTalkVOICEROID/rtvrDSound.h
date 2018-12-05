@@ -6,8 +6,11 @@ class rtvrDSoundHandler : public rt::DSoundHandlerBase
 public:
     rtDefSingleton(rtvrDSoundHandler);
 
+    bool mute = false;
     std::function<void()> onPlay, onStop;
     std::function<void(const rt::AudioData&)> onUpdateBuffer;
+
+    void clearCallbacks();
 
 protected:
     void afterIDirectSound8_CreateSoundBuffer(IDirectSound8 *&_this, LPCDSBUFFERDESC& pcDSBufferDesc, LPDIRECTSOUNDBUFFER *&ppDSBuffer, LPUNKNOWN& pUnkOuter, HRESULT& ret) override;

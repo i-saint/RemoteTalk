@@ -62,29 +62,32 @@ private:
 };
 
 
-static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj, String^ name, List<System::Windows::DependencyObject^>^ dst)
+static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj, String^ name, List<System::Windows::DependencyObject^>^ dst, bool one)
 {
-    if (obj->GetType()->FullName == name)
+    if (obj->GetType()->FullName == name) {
         dst->Add(obj);
+        if (one)
+            return;
+    }
 
     int num_children = System::Windows::Media::VisualTreeHelper::GetChildrenCount(obj);
     for (int i = 0; i < num_children; i++)
-        SelectControlsByTypeNameImpl(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), name, dst);
+        SelectControlsByTypeNameImpl(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), name, dst, one);
 }
 
-static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(System::Windows::DependencyObject^ obj, String^ name)
+static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(System::Windows::DependencyObject^ obj, String^ name, bool one)
 {
     auto ret = gcnew List<System::Windows::DependencyObject^>();
-    SelectControlsByTypeNameImpl(obj, name, ret);
+    SelectControlsByTypeNameImpl(obj, name, ret, one);
     return ret;
 }
 
-static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String^ name)
+static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String^ name, bool one)
 {
     auto ret = gcnew List<System::Windows::DependencyObject^>();
     if (System::Windows::Application::Current != nullptr) {
         for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows)
-            SelectControlsByTypeNameImpl(w, name, ret);
+            SelectControlsByTypeNameImpl(w, name, ret, one);
     }
     return ret;
 }
@@ -124,17 +127,17 @@ bool rtvr2InterfaceManaged::setupControls()
     if (m_tb_text)
         return true;
 
-    auto tev = SelectControlsByTypeName("AI.Talk.Editor.TextEditView");
+    auto tev = SelectControlsByTypeName("AI.Talk.Editor.TextEditView", true);
     if (tev->Count == 0)
         return false;
 
-    auto tb = SelectControlsByTypeName(tev[0], "AI.Framework.Wpf.Controls.TextBoxEx");
+    auto tb = SelectControlsByTypeName(tev[0], "AI.Framework.Wpf.Controls.TextBoxEx", true);
     if (tb->Count == 0)
         return false;
 
     m_tb_text = (System::Windows::Controls::TextBox^)tb[0];
 
-    auto buttons = SelectControlsByTypeName(tev[0], "System.Windows.Controls.Button");
+    auto buttons = SelectControlsByTypeName(tev[0], "System.Windows.Controls.Button", false);
     if (buttons->Count == 0)
         return false;
 
@@ -229,7 +232,13 @@ bool rtvr2TalkInterfaceImpl::talk(const char *text, SampleCallback cb, void *use
         return false;
     m_sample_cb = cb;
     m_sample_cb_userdata = userdata;
-    return rtvr2InterfaceManaged::getInstance()->talk(text);
+    if (rtvr2InterfaceManaged::getInstance()->talk(text)) {
+        m_is_playing = true;
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 

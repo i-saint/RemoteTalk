@@ -18,7 +18,7 @@ class rtvrTalkServer : public rt::TalkServer
 public:
     rtDefSingleton(rtvrTalkServer);
     bool onSetParam(const std::string& name, const std::string& value) override;
-    bool onTalk(const std::string& text, std::ostream& os) override;
+    std::future<void> onTalk(const std::string& text, std::ostream& os) override;
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
     void sampleCallback(const rt::TalkSample *data);
@@ -26,7 +26,6 @@ public:
 private:
     std::mutex m_data_mutex;
     std::vector<rt::AudioDataPtr> m_data_queue;
-    std::future<void> m_talk_task;
 };
 
 
@@ -57,12 +56,17 @@ bool rtvrTalkServer::onSetParam(const std::string& name, const std::string& valu
     return false;
 }
 
-bool rtvrTalkServer::onTalk(const std::string& text, std::ostream& os)
+std::future<void> rtvrTalkServer::onTalk(const std::string& text, std::ostream& os)
 {
-    if (!rtGetTalkInterface()->talk(text.c_str(), &sampleCallbackS, this))
-        return false;
+    {
+        std::unique_lock<std::mutex> lock(m_data_mutex);
+        m_data_queue.clear();
+    }
 
-    m_talk_task = std::async(std::launch::async, [this, &os]() {
+    if (!rtGetTalkInterface()->talk(text.c_str(), &sampleCallbackS, this))
+        return std::future<void>();
+
+    return std::async(std::launch::async, [this, &os]() {
         std::vector<rt::AudioDataPtr> tmp;
         for (;;) {
             {
@@ -71,8 +75,9 @@ bool rtvrTalkServer::onTalk(const std::string& text, std::ostream& os)
                 m_data_queue.clear();
             }
 
-            for (auto& ad : tmp)
+            for (auto& ad : tmp) {
                 ad->serialize(os);
+            }
 
             if (!tmp.empty() && tmp.back()->data.empty())
                 break;
@@ -80,7 +85,6 @@ bool rtvrTalkServer::onTalk(const std::string& text, std::ostream& os)
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     });
-    return true;
 }
 
 
@@ -115,6 +119,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         }
     }
     else if (fdwReason == DLL_PROCESS_DETACH) {
+        rtvrDSoundHandler::getInstance().clearCallbacks();
     }
     return TRUE;
 }

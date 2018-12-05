@@ -83,17 +83,15 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
         if (strncmp(uri.c_str(), "/talk", 5) == 0) {
             auto pos = uri.find("t=");
             if (pos != std::string::npos) {
-                auto *mes = new TalkServer::TalkMessage();
+                auto mes = std::make_shared<TalkServer::TalkMessage>();
                 Poco::URI::decode(&uri[pos + 2], mes->text, true);
                 mes->text = ToANSI(mes->text.c_str());
 
                 response.setStatus(HTTPResponse::HTTPStatus::HTTP_OK);
                 response.setContentType("application/octet-stream");
-                auto& os = response.send();
-                mes->respond_stream = &os;
+                mes->respond_stream = &response.send();
 
-                TalkServer::MessagePtr pmes(mes);
-                m_server->addMessage(pmes);
+                m_server->addMessage(mes);
                 if (mes->wait()) {
                     handled = true;
                 }
@@ -128,8 +126,17 @@ bool TalkServer::Message::wait()
             break;
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
+    if (task.valid()) {
+        task.wait();
+    }
     return ready.load();
 }
+
+bool TalkServer::Message::isSending()
+{
+    return task.valid() && task.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout;
+}
+
 
 TalkServer::TalkServer()
 {
@@ -178,23 +185,33 @@ void TalkServer::processMessages()
     lock_t lock(m_mutex);
 
     for (auto& mes : m_messages) {
+        if (mes->ready.load()) {
+            if (mes->isSending()) {
+                break;
+            }
+            else {
+                mes.reset();
+                continue;
+            }
+        }
+
         if (auto *pmes = dynamic_cast<ParamMessage*>(mes.get())) {
             for (auto& nvp : pmes->params)
                 onSetParam(nvp.first, nvp.second);
         }
         if (auto *tmes = dynamic_cast<TalkMessage*>(mes.get())) {
-            if (onTalk(tmes->text, *tmes->respond_stream)) {
-                // ok. nothing to do.
-            }
-            else {
-                // send empty audio data to notify end of stream.
-                AudioData dummy;
-                dummy.serialize(*tmes->respond_stream);
-            }
+            tmes->task = onTalk(tmes->text, *tmes->respond_stream);
         }
+
         mes->ready = true;
+        if (mes->isSending())
+            break;
+        else
+            mes.reset();
     }
-    m_messages.clear();
+    m_messages.erase(
+        std::remove_if(m_messages.begin(), m_messages.end(), [](MessagePtr &p) { return !p; }),
+        m_messages.end());
 }
 
 void TalkServer::addMessage(MessagePtr mes)

@@ -17,10 +17,12 @@ static rt::TalkClientSettings GetClientSettings()
 TestCase(RemoteTalkClient)
 {
     rt::TalkClient client(GetClientSettings());
-    client.setText("あー、あー、まいくてすと");
+    client.setText("hello voiceroid!");
 
     int n = 0;
     client.send([&](const rt::AudioData& ad) {
+        if (ad.data.empty())
+            return;
         char filename[128];
         sprintf(filename, "%04d.wav", n++);
         ad.exportAsWave(filename);
