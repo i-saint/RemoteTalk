@@ -25,7 +25,7 @@ private:
 
     System::Windows::Controls::TextBox^ m_tb_text;
     System::Windows::Controls::Button^ m_bu_play;
-    System::Windows::Controls::Button^ m_bu_save;
+    System::Windows::Controls::Button^ m_bu_stop;
 };
 
 class rtvr2TalkInterfaceImpl : public rtvr2TalkInterface
@@ -37,14 +37,12 @@ public:
     ~rtvr2TalkInterfaceImpl() override;
     void release() override;
     const char* getClientName() const override;
-    int getPluginVersion() const override;
-    int getProtocolVersion() const override;
 
-    bool hasParam(rt::TalkParamID pid) const override;
-    void setParam(rt::TalkParamID pid, const void *value) override;
-    void getParam(rt::TalkParamID pid, void *value) const override;
+    void getParams(rt::TalkParams& params) const override;
+    void setParams(const rt::TalkParams& params) override;
+
     int getNumTalkers() const override;
-    void getTalkerInfo(int i, rt::TalkerInfo *dst) const override;
+    bool getTalkerInfo(int i, rt::TalkerInfo *dst) const override;
 
     bool talk(const char *text, rt::TalkSampleCallback cb, void *userdata) override;
 
@@ -56,6 +54,8 @@ public:
     void dbgListWindows(std::vector<std::string>& dst);
 
 private:
+    rt::TalkParams m_params;
+
     bool m_is_playing = false;
     rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
@@ -142,8 +142,8 @@ bool rtvr2InterfaceManaged::setupControls()
         return false;
 
     m_bu_play = (System::Windows::Controls::Button^)buttons[0];
-    if (buttons->Count > 4)
-        m_bu_save = (System::Windows::Controls::Button^)buttons[4];
+    if (buttons->Count > 1)
+        m_bu_stop = (System::Windows::Controls::Button^)buttons[1];
 
     return true;
 }
@@ -171,6 +171,7 @@ rtvr2TalkInterfaceImpl::~rtvr2TalkInterfaceImpl()
 
 void rtvr2TalkInterfaceImpl::release()
 {
+    // do nothing
 }
 
 const char* rtvr2TalkInterfaceImpl::getClientName() const
@@ -178,42 +179,16 @@ const char* rtvr2TalkInterfaceImpl::getClientName() const
     return "VOICEROID2";
 }
 
-int rtvr2TalkInterfaceImpl::getPluginVersion() const
+void rtvr2TalkInterfaceImpl::getParams(rt::TalkParams& params) const
 {
-    return rtPluginVersion;
+    params = m_params;
 }
 
-int rtvr2TalkInterfaceImpl::getProtocolVersion() const
+void rtvr2TalkInterfaceImpl::setParams(const rt::TalkParams& params)
 {
-    return rtProtocolVersion;
+    m_params = params;
 }
 
-bool rtvr2TalkInterfaceImpl::hasParam(rt::TalkParamID pid) const
-{
-    switch (pid) {
-    case rt::TalkParamID::Volume:
-    case rt::TalkParamID::Speed:
-    case rt::TalkParamID::Pitch:
-    case rt::TalkParamID::Intonation:
-    case rt::TalkParamID::Joy:
-    case rt::TalkParamID::Anger:
-    case rt::TalkParamID::Sorrow:
-    case rt::TalkParamID::Talker:
-        return true;
-    default:
-        return false;
-    }
-}
-
-void rtvr2TalkInterfaceImpl::setParam(rt::TalkParamID pid, const void *value)
-{
-    // todo
-}
-
-void rtvr2TalkInterfaceImpl::getParam(rt::TalkParamID pid, void *value) const
-{
-    // todo
-}
 
 int rtvr2TalkInterfaceImpl::getNumTalkers() const
 {
@@ -221,15 +196,17 @@ int rtvr2TalkInterfaceImpl::getNumTalkers() const
     return 0;
 }
 
-void rtvr2TalkInterfaceImpl::getTalkerInfo(int i, rt::TalkerInfo *dst) const
+bool rtvr2TalkInterfaceImpl::getTalkerInfo(int i, rt::TalkerInfo *dst) const
 {
     // todo
+    return false;
 }
 
 bool rtvr2TalkInterfaceImpl::talk(const char *text, rt::TalkSampleCallback cb, void *userdata)
 {
     if (m_is_playing || !text)
         return false;
+
     m_sample_cb = cb;
     m_sample_cb_userdata = userdata;
     if (rtvr2InterfaceManaged::getInstance()->talk(text)) {

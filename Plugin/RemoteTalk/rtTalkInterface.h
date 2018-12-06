@@ -1,19 +1,48 @@
 #pragma once
 #include <cstdint>
+#include "rtFoundation.h"
 
 namespace rt {
 
-enum class TalkParamID
+#define rtEachTalkParams(Body)\
+    Body(silence) Body(force) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow)
+
+union TalkParamFlags
 {
-    Unknown,
-    Volume,     // float
-    Speed,      // float
-    Pitch,      // float
-    Intonation, // float
-    Joy,        // float
-    Anger,      // float
-    Sorrow,     // float
-    Talker,     // int
+    struct {
+        uint32_t silence : 1;
+        uint32_t force : 1;
+        uint32_t volume : 1;
+        uint32_t speed : 1;
+        uint32_t pitch : 1;
+        uint32_t intonation : 1;
+        uint32_t joy : 1;
+        uint32_t anger : 1;
+        uint32_t sorrow : 1;
+        uint32_t talker : 1;
+    } fields;
+    uint32_t bits;
+
+    TalkParamFlags() : bits(0) {}
+    TalkParamFlags(uint32_t v) : bits(v) {}
+
+    static TalkParamFlags none() { return TalkParamFlags(0); }
+    static TalkParamFlags all() { return TalkParamFlags(~0u); }
+};
+
+struct TalkParams
+{
+    TalkParamFlags flags;
+    bool silence;
+    bool force;
+    float volume;
+    float speed;
+    float pitch;
+    float intonation;
+    float joy;
+    float anger;
+    float sorrow;
+    int talker;
 };
 
 struct TalkerInfo
@@ -35,30 +64,25 @@ struct TalkSample
 using TalkSampleCallback = void(*)(const TalkSample *data, void *userdata);
 
 
+#pragma warning(push)
+#pragma warning(disable:4100)
 class TalkInterface
 {
 public:
     virtual ~TalkInterface() {}
     virtual void release() = 0;
     virtual const char* getClientName() const = 0;
-    virtual int getPluginVersion() const = 0;
-    virtual int getProtocolVersion() const = 0;
+    virtual int getPluginVersion() const { return rtPluginVersion; }
+    virtual int getProtocolVersion() const { return rtProtocolVersion; }
 
-    virtual bool hasParam(TalkParamID pid) const = 0;
-    virtual void setParam(TalkParamID pid, const void *value) = 0;
-    virtual void getParam(TalkParamID pid, void *value) const = 0;
-    virtual int getNumTalkers() const = 0;
-    virtual void getTalkerInfo(int i, TalkerInfo *dst) const = 0;
+    virtual void getParams(TalkParams& params) const = 0;
+    virtual void setParams(const TalkParams& params) = 0;
+    virtual int getNumTalkers() const { return 0; }
+    virtual bool getTalkerInfo(int i, TalkerInfo *dst) const { return false; }
 
     virtual bool talk(const char *text, TalkSampleCallback cb, void *userdata) = 0;
-
-
-    // utils
-    void setParam(TalkParamID pid, float v) { setParam(pid, &v); }
-    void setParam(TalkParamID pid, int v)   { setParam(pid, &v); }
-    void getParam(TalkParamID pid, float& v) const { getParam(pid, &v); }
-    void getParam(TalkParamID pid, int& v) const   { getParam(pid, &v); }
 };
+#pragma warning(pop)
 
 class AudioData;
 TalkSample ToTalkSample(const AudioData& ad);

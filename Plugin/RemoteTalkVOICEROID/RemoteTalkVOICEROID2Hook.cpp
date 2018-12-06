@@ -20,7 +20,7 @@ public:
     rtDefSingleton(rtvrTalkServer);
     void addMessage(MessagePtr mes) override;
     bool onSetParam(const std::string& name, const std::string& value) override;
-    std::future<void> onTalk(const std::string& text, std::ostream& os) override;
+    std::future<void> onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os) override;
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
     void sampleCallback(const rt::TalkSample *data);
@@ -68,15 +68,19 @@ bool rtvrTalkServer::onSetParam(const std::string& name, const std::string& valu
     return false;
 }
 
-std::future<void> rtvrTalkServer::onTalk(const std::string& text, std::ostream& os)
+std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os)
 {
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.clear();
     }
 
+    rtGetTalkInterface_()->setParams(params);
+    if (text.empty())
+        return {};
+
     if (!rtGetTalkInterface_()->talk(text.c_str(), &sampleCallbackS, this))
-        return std::future<void>();
+        return {};
 
     return std::async(std::launch::async, [this, &os]() {
         std::vector<rt::AudioDataPtr> tmp;

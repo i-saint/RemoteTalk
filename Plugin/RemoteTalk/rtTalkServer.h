@@ -6,6 +6,7 @@
 #include <mutex>
 #include <future>
 #include "rtAudioData.h"
+#include "rtTalkInterface.h"
 
 namespace Poco {
     namespace Net {
@@ -53,6 +54,7 @@ public:
     class TalkMessage : public ParamMessage
     {
     public:
+        TalkParams params;
         std::string text;
     };
 
@@ -68,7 +70,7 @@ public:
 
     virtual void processMessages();
     virtual bool onSetParam(const std::string& name, const std::string& value) = 0;
-    virtual std::future<void> onTalk(const std::string& text, std::ostream& os) = 0;
+    virtual std::future<void> onTalk(const TalkParams& params, const std::string& text, std::ostream& os) = 0;
 
     virtual void addMessage(MessagePtr mes);
 

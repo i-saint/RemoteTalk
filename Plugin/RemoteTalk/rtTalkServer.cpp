@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "rtFoundation.h"
+#include "rtSerialization.h"
 #include "rtTalkServer.h"
 
 namespace rt {
@@ -76,31 +77,36 @@ TalkServerRequestHandler::TalkServerRequestHandler(TalkServer *server)
 
 void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
-    auto& uri = request.getURI();
+    URI uri(request.getURI());
 
     bool handled = false;
     if (request.getMethod() == HTTPServerRequest::HTTP_GET) {
-        if (strncmp(uri.c_str(), "/talk", 5) == 0) {
-            auto pos = uri.find("t=");
-            if (pos != std::string::npos) {
-                auto mes = std::make_shared<TalkServer::TalkMessage>();
-                Poco::URI::decode(&uri[pos + 2], mes->text, true);
-                mes->text = ToANSI(mes->text.c_str());
+        if (uri.getPath() == "/talk") {
+            auto mes = std::make_shared<TalkServer::TalkMessage>();
 
-                response.setStatus(HTTPResponse::HTTPStatus::HTTP_OK);
-                response.setContentType("application/octet-stream");
-                mes->respond_stream = &response.send();
-
-                m_server->addMessage(mes);
-                if (mes->wait()) {
-                    handled = true;
+            auto qparams = uri.getQueryParameters();
+            for (auto& nvp : qparams) {
+                if (nvp.first == "text") {
+                    Poco::URI::decode(nvp.second, mes->text, true);
+                    mes->text = ToANSI(mes->text.c_str());
                 }
+#define Decode(N)\
+                if (nvp.first == #N) {\
+                    mes->params.flags.fields.N = 1;\
+                    mes->params.N = rt::from_string<decltype(mes->params.N)>(nvp.second);\
+                }
+                rtEachTalkParams(Decode)
+#undef Decode
             }
-        }
-        else if (strncmp(uri.c_str(), "/param", 6) == 0) {
-            // todo
-            ServeText(response, "", HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
-            handled = true;
+
+            response.setStatus(HTTPResponse::HTTPStatus::HTTP_OK);
+            response.setContentType("application/octet-stream");
+            mes->respond_stream = &response.send();
+
+            m_server->addMessage(mes);
+            if (mes->wait()) {
+                handled = true;
+            }
         }
     }
 
@@ -200,7 +206,7 @@ void TalkServer::processMessages()
                 onSetParam(nvp.first, nvp.second);
         }
         if (auto *tmes = dynamic_cast<TalkMessage*>(mes.get())) {
-            tmes->task = onTalk(tmes->text, *tmes->respond_stream);
+            tmes->task = onTalk(tmes->params, tmes->text, *tmes->respond_stream);
         }
 
         mes->ready = true;

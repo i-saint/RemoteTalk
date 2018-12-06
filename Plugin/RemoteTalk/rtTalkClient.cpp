@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "rtSerialization.h"
 #include "rtTalkClient.h"
 
 namespace rt {
@@ -18,14 +19,22 @@ TalkClient::~TalkClient()
 
 void TalkClient::clear()
 {
-    m_params.clear();
+    m_parmas = {};
     m_text.clear();
 }
 
-void TalkClient::setParam(const std::string& name, const std::string& value)
-{
-    m_params[name] = value;
-}
+
+#define Set(V) m_parmas.flags.fields.V = 1; m_parmas.##V = v;
+void TalkClient::setSilence(bool v)     { Set(silence); }
+void TalkClient::setForce(bool v)       { Set(force); }
+void TalkClient::setVolume(float v)     { Set(volume); }
+void TalkClient::setSpeed(float v)      { Set(speed); }
+void TalkClient::setPitch(float v)      { Set(pitch); }
+void TalkClient::setIntonation(float v) { Set(intonation); }
+void TalkClient::setJoy(float v)        { Set(joy); }
+void TalkClient::setAnger(float v)      { Set(anger); }
+void TalkClient::setSorrow(float v)     { Set(sorrow); }
+#undef Set
 
 void TalkClient::setText(const std::string& text)
 {
@@ -38,10 +47,12 @@ bool TalkClient::send(const std::function<void(const AudioData&)>& cb)
     try {
         URI uri;
         uri.setPath("/talk");
-        for (auto& kvp : m_params)
-            uri.addQueryParameter(kvp.first, kvp.second);
+
+#define AddParam(N) if(m_parmas.flags.fields.N) { uri.addQueryParameter(#N, to_string(m_parmas.##N)); }
+        rtEachTalkParams(AddParam)
+#undef AddParam
         if (!m_text.empty())
-            uri.addQueryParameter("t", m_text);
+            uri.addQueryParameter("text", m_text);
 
         HTTPClientSession session{ m_settings.server, m_settings.port };
         session.setTimeout(m_settings.timeout_ms * 1000);

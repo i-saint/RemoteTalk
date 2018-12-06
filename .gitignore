@@ -38,7 +38,7 @@ Temp/
 obj/
 TestLocal/
 TestLocal.meta
-MeshSyncAssets/
+RemoteTalk/RemoteTalk.sln
 MeshSyncAssets.meta
 
 MeshSync/*.csproj

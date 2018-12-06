@@ -172,4 +172,41 @@ template<> struct hash_impl<float> { uint64_t operator()(float v) { return (uint
 
 template<class T> inline uint64_t gen_hash(const T& v) { return hash_impl<T>()(v); }
 
+
+
+template<class T> inline std::string to_string(const T& v);
+
+template<> inline std::string to_string(const int& v)
+{
+    char buf[32];
+    sprintf(buf, "%d", v);
+    return buf;
+}
+template<> inline std::string to_string(const bool& v)
+{
+    return to_string((int)v);
+}
+template<> inline std::string to_string(const float& v)
+{
+    char buf[32];
+    sprintf(buf, "%.3f", v);
+    return buf;
+}
+
+
+template<class T> inline T from_string(const std::string& v);
+
+template<> inline int from_string(const std::string& v)
+{
+    return std::atoi(v.c_str());
+}
+template<> inline bool from_string(const std::string& v)
+{
+    return from_string<int>(v) != 0;
+}
+template<> inline float from_string(const std::string& v)
+{
+    return (float)std::atof(v.c_str());
+}
+
 } // namespace rt
