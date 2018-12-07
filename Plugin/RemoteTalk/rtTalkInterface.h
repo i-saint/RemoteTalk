@@ -79,6 +79,7 @@ public:
 
     virtual bool talk(const TalkParams& params, const char *text, TalkSampleCallback cb, void *userdata) = 0;
     virtual bool stop() = 0;
+    virtual bool ready() const = 0;
 };
 #pragma warning(pop)
 

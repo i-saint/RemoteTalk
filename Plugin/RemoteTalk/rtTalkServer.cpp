@@ -111,10 +111,12 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
         else if (uri.getPath() == "/stop") {
             auto mes = std::make_shared<TalkServer::StopMessage>();
             m_server->addMessage(mes);
-            if (mes->wait()) {
+            if (mes->wait())
                 handled = true;
-            }
             ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
+        }
+        else if (uri.getPath() == "/ready") {
+            ServeText(response, m_server->ready() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
         }
     }
 

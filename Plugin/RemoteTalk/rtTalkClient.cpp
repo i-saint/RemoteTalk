@@ -92,8 +92,38 @@ bool TalkClient::stop()
         session.sendRequest(request);
 
         HTTPResponse response;
-        session.receiveResponse(response);
-        ret = response.getStatus() == HTTPResponse::HTTP_OK;
+        auto& rs = session.receiveResponse(response);
+        if (response.getStatus() == HTTPResponse::HTTP_OK) {
+            char r;
+            rs.read(&r, 1);
+            ret = r == '1';
+        }
+    }
+    catch (Poco::Exception&) {
+    }
+    return ret;
+}
+
+bool TalkClient::ready()
+{
+    bool ret = false;
+    try {
+        URI uri;
+        uri.setPath("/ready");
+
+        HTTPClientSession session{ m_settings.server, m_settings.port };
+        session.setTimeout(m_settings.timeout_ms * 1000);
+
+        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+        session.sendRequest(request);
+
+        HTTPResponse response;
+        auto& rs = session.receiveResponse(response);
+        if (response.getStatus() == HTTPResponse::HTTP_OK) {
+            char r;
+            rs.read(&r, 1);
+            ret = r == '1';
+        }
     }
     catch (Poco::Exception&) {
     }

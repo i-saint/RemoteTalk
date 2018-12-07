@@ -20,7 +20,8 @@ public:
     rtDefSingleton(rtvrTalkServer);
     void addMessage(MessagePtr mes) override;
     std::future<void> onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os) override;
-    void onStop() override;
+    bool onStop() override;
+    bool ready() override;
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
     void sampleCallback(const rt::TalkSample *data);
@@ -94,9 +95,14 @@ std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std
     });
 }
 
-void rtvrTalkServer::onStop()
+bool rtvrTalkServer::onStop()
 {
-    rtGetTalkInterface_()->stop();
+    return rtGetTalkInterface_()->stop();
+}
+
+bool rtvrTalkServer::ready()
+{
+    return rtGetTalkInterface_()->ready();
 }
 
 

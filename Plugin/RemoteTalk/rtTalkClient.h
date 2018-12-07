@@ -30,6 +30,7 @@ public:
 
     bool talk(const std::function<void (const AudioData&)>& cb);
     bool stop();
+    bool ready();
 
 private:
     TalkClientSettings m_settings;

@@ -70,7 +70,8 @@ public:
 
     virtual void processMessages();
     virtual std::future<void> onTalk(const TalkParams& params, const std::string& text, std::ostream& os) = 0;
-    virtual void onStop() = 0;
+    virtual bool onStop() = 0;
+    virtual bool ready() = 0;
 
     virtual void addMessage(MessagePtr mes);
 

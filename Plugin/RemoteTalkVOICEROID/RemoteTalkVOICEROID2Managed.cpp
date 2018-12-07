@@ -51,7 +51,7 @@ public:
 
     bool talk(const rt::TalkParams& params, const char *text, rt::TalkSampleCallback cb, void *userdata) override;
     bool stop() override;
-
+    bool ready() const override;
 
     void onPlay() override;
     void onStop() override;
@@ -244,6 +244,11 @@ bool rtvr2TalkInterfaceImpl::talk(const rt::TalkParams& params, const char *text
 bool rtvr2TalkInterfaceImpl::stop()
 {
     return rtvr2InterfaceManaged::getInstance()->stop();
+}
+
+bool rtvr2TalkInterfaceImpl::ready() const
+{
+    return !m_is_playing;
 }
 
 
