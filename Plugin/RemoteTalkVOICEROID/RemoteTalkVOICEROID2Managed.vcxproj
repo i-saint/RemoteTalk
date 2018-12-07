@@ -116,7 +116,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WarningLevel>Level3</WarningLevel>
       <StringPooling>true</StringPooling>
-      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <ControlFlowGuard>false</ControlFlowGuard>
       <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>

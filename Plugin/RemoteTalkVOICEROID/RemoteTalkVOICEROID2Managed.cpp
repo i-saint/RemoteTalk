@@ -8,7 +8,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
-
+using namespace System::Windows::Controls;
 
 ref class rtvr2InterfaceManaged
 {
@@ -30,12 +30,13 @@ private:
     static rtvr2InterfaceManaged s_instance;
 
     bool setupControls();
+    bool setupControls_Style();
 
-    System::Windows::Controls::TextBox^ m_tb_text;
-    System::Windows::Controls::Button^ m_bu_play;
-    System::Windows::Controls::Button^ m_bu_stop;
-    System::Windows::Controls::Button^ m_bu_rewind;
-    System::Windows::Controls::ListView^ m_talker_list;
+    TextBox^ m_tb_text;
+    Button^ m_bu_play;
+    Button^ m_bu_stop;
+    Button^ m_bu_rewind;
+    ListView^ m_lv_talker;
 
     ref class TalkerInfo
     {
@@ -113,7 +114,7 @@ static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String
     return ret;
 }
 
-static void EmulateClick(System::Windows::Controls::Button^ button)
+static void EmulateClick(Button^ button)
 {
     if (!button)
         return;
@@ -154,7 +155,11 @@ void rtvr2InterfaceManaged::setVolume(float v)
 
 void rtvr2InterfaceManaged::setTalker(int id)
 {
-    // todo
+    setupControls();
+
+    if (m_lv_talker) {
+        m_lv_talker->SelectedIndex = id;
+    }
 }
 
 void rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
@@ -180,35 +185,43 @@ bool rtvr2InterfaceManaged::setupControls()
     if (tb->Count == 0)
         return false;
 
-    m_tb_text = (System::Windows::Controls::TextBox^)tb[0];
+    m_tb_text = (TextBox^)tb[0];
 
     auto buttons = SelectControlsByTypeName(tev[0], "System.Windows.Controls.Button", false);
     if (buttons->Count == 0)
         return false;
 
-    m_bu_play = (System::Windows::Controls::Button^)buttons[0];
+    m_bu_play = (Button^)buttons[0];
     if (buttons->Count >= 1)
-        m_bu_stop = (System::Windows::Controls::Button^)buttons[1];
+        m_bu_stop = (Button^)buttons[1];
     if (buttons->Count >= 2)
-        m_bu_rewind = (System::Windows::Controls::Button^)buttons[2];
+        m_bu_rewind = (Button^)buttons[2];
 
-    auto listview = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetListView", true);
-    if (listview->Count >= 1) {
-        m_talker_list = (System::Windows::Controls::ListView^)listview[0];
-        auto items = SelectControlsByTypeName(listview[0], "System.Windows.Controls.ListViewItem", false);
+    auto vplv = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetListView", true);
+    if (vplv->Count >= 1) {
+        auto listview = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListView", true);
+        if (listview->Count >= 1) {
+            m_lv_talker = (ListView^)listview[0];
 
-        m_talkers = gcnew List<TalkerInfo^>();
-        int index = 0;
-        for each(System::Windows::Controls::ListViewItem^ item in items) {
-            auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
-            if (tbs->Count >= 2) {
-                auto tb = (System::Windows::Controls::TextBlock^)tbs[1];
-                m_talkers->Add(gcnew TalkerInfo(index++, tb->Text));
+            m_talkers = gcnew List<TalkerInfo^>();
+            int index = 0;
+            auto items = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListViewItem", false);
+            for each(ListViewItem^ item in items) {
+                auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
+                if (tbs->Count >= 2) {
+                    auto tb = (TextBlock^)tbs[1];
+                    m_talkers->Add(gcnew TalkerInfo(index++, tb->Text));
+                }
             }
         }
     }
 
     return true;
+}
+
+bool rtvr2InterfaceManaged::setupControls_Style()
+{
+    return false;
 }
 
 bool rtvr2InterfaceManaged::stop()
@@ -225,6 +238,9 @@ bool rtvr2InterfaceManaged::talk(const rt::TalkParams& params, const char *text)
         if (!setupControls())
             return false;
     }
+    if (params.flags.fields.talker)
+        setTalker(params.talker);
+
     if (!text)
         return false;
     m_tb_text->Text = gcnew String(text);
@@ -326,6 +342,7 @@ void rtvr2TalkInterfaceImpl::onUpdateBuffer(const rt::AudioData& ad)
 }
 
 
+#ifdef rtDebug
 static void PrintControlInfo(System::Windows::DependencyObject^ obj, int depth = 0)
 {
     std::string t;
@@ -339,6 +356,7 @@ static void PrintControlInfo(System::Windows::DependencyObject^ obj, int depth =
     for (int i = 0; i < num_children; i++)
         PrintControlInfo(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), depth + 1);
 }
+
 void rtvr2TalkInterfaceImpl::onDebug()
 {
     if (System::Windows::Application::Current != nullptr) {
@@ -347,6 +365,8 @@ void rtvr2TalkInterfaceImpl::onDebug()
         }
     }
 }
+#endif
+
 
 rtExport rt::TalkInterface* rtGetTalkInterface()
 {

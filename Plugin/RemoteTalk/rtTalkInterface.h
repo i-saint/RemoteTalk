@@ -5,7 +5,7 @@
 namespace rt {
 
 #define rtEachTalkParams(Body)\
-    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow)
+    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow) Body(talker)
 
 union TalkParamFlags
 {
