@@ -50,6 +50,8 @@ void ServeBinary(Poco::Net::HTTPServerResponse& response, RawVector<char>& data,
     os.flush();
 }
 
+
+
 class TalkServerRequestHandler : public HTTPRequestHandler
 {
 public:
@@ -115,9 +117,25 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
                 handled = true;
             ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
         }
+        else if (uri.getPath() == "/talkers") {
+            auto mes = std::make_shared<TalkServer::ListTalkersMessage>();
+            m_server->addMessage(mes);
+            if (mes->wait())
+                handled = true;
+            ServeText(response, mes->result, HTTPResponse::HTTPStatus::HTTP_OK);
+        }
         else if (uri.getPath() == "/ready") {
             ServeText(response, m_server->ready() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
         }
+#ifdef rtDebug
+        else if (uri.getPath() == "/debug") {
+            auto mes = std::make_shared<TalkServer::DebugMessage>();
+            m_server->addMessage(mes);
+            if (mes->wait())
+                handled = true;
+            ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
+        }
+#endif
     }
 
     if (!handled)
@@ -212,6 +230,12 @@ void TalkServer::processMessages()
                 talk->task = onTalk(talk->params, talk->text, *talk->respond_stream);
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
                 onStop();
+            else if (auto *talkers = dynamic_cast<ListTalkersMessage*>(mes.get()))
+                onListTalkers(talkers->result);
+#ifdef rtDebug
+            else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
+                onDebug();
+#endif
             mes->ready = true;
         }
 

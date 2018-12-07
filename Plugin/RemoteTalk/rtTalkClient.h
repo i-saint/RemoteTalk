@@ -16,9 +16,13 @@ class TalkClient
 public:
     TalkClient(const TalkClientSettings& settings);
     virtual ~TalkClient();
-    void clear();
 
-    void setSilence(bool v);
+    // no communication with server
+
+    void clear();
+    const std::vector<TalkerInfoImpl>& getTalkerList();
+
+    void setMute(bool v);
     void setVolume(float v);
     void setSpeed(float v);
     void setPitch(float v);
@@ -26,9 +30,14 @@ public:
     void setJoy(float v);
     void setAnger(float v);
     void setSorrow(float v);
-    void setText(const std::string& text);
+    void setTalker(int v);
 
-    bool talk(const std::function<void (const AudioData&)>& cb);
+
+    // communicate with server 
+
+    bool isServerAvailable();
+    bool updateTalkerList();
+    bool talk(const std::string& text, const std::function<void (const AudioData&)>& cb);
     bool stop();
     bool ready();
 
@@ -36,7 +45,9 @@ private:
     TalkClientSettings m_settings;
 
     TalkParams m_parmas;
-    std::string m_text;
+    std::vector<TalkerInfoImpl> m_talkers;
+    std::future<void> m_fut_stop;
+    std::future<void> m_fut_talkers;
 };
 
 } // namespace rt

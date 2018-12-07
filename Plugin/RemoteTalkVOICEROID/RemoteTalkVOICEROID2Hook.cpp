@@ -21,7 +21,11 @@ public:
     void addMessage(MessagePtr mes) override;
     std::future<void> onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os) override;
     bool onStop() override;
+    bool onListTalkers(std::string& result) override;
     bool ready() override;
+#ifdef rtDebug
+    void onDebug() override;
+#endif
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
     void sampleCallback(const rt::TalkSample *data);
@@ -71,6 +75,9 @@ std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std
         m_data_queue.clear();
     }
 
+    auto& dsound = rtvrDSoundHandler::getInstance();
+    dsound.mute = params.mute;
+
     if (!rtGetTalkInterface_()->talk(params, text.c_str(), &sampleCallbackS, this))
         return {};
 
@@ -100,10 +107,32 @@ bool rtvrTalkServer::onStop()
     return rtGetTalkInterface_()->stop();
 }
 
+bool rtvrTalkServer::onListTalkers(std::string& result)
+{
+    auto ifs = rtGetTalkInterface_();
+    int n = ifs->getNumTalkers();
+    for (int i = 0; i < n; ++i) {
+        rt::TalkerInfo ti;
+        ifs->getTalkerInfo(i, &ti);
+        char buf[256];
+        sprintf(buf, "%d: %s\n", ti.id, ti.name);
+        result += buf;
+
+    }
+    return false;
+}
+
 bool rtvrTalkServer::ready()
 {
     return rtGetTalkInterface_()->ready();
 }
+
+#ifdef rtDebug
+void rtvrTalkServer::onDebug()
+{
+    return rtGetTalkInterface_()->onDebug();
+}
+#endif
 
 
 void rtvrTalkServer::sampleCallbackS(const rt::TalkSample *data, void *userdata)

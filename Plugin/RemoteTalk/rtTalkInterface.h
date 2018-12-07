@@ -5,12 +5,12 @@
 namespace rt {
 
 #define rtEachTalkParams(Body)\
-    Body(silence) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow)
+    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow)
 
 union TalkParamFlags
 {
     struct {
-        uint32_t silence : 1;
+        uint32_t mute : 1;
         uint32_t volume : 1;
         uint32_t speed : 1;
         uint32_t pitch : 1;
@@ -32,7 +32,7 @@ union TalkParamFlags
 struct TalkParams
 {
     TalkParamFlags flags;
-    bool silence;
+    bool mute;
     float volume;
     float speed;
     float pitch;
@@ -45,8 +45,8 @@ struct TalkParams
 
 struct TalkerInfo
 {
-    const char *name = nullptr;
     int id = 0;
+    const char *name = nullptr;
 };
 
 struct TalkSample
@@ -86,5 +86,11 @@ public:
 class AudioData;
 TalkSample ToTalkSample(const AudioData& ad);
 void ToAudioData(AudioData& dst, const TalkSample& ts);
+
+struct TalkerInfoImpl
+{
+    int id = 0;
+    std::string name;
+};
 
 } // namespace rt

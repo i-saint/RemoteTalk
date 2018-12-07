@@ -58,6 +58,19 @@ public:
     public:
     };
 
+    class ListTalkersMessage : public Message
+    {
+    public:
+        std::string result;
+    };
+
+#ifdef rtDebug
+    class DebugMessage : public Message
+    {
+    public:
+    };
+#endif
+
 public:
     TalkServer(const TalkServer&) = delete;
     TalkServer& operator=(const TalkServer&) = delete;
@@ -71,7 +84,12 @@ public:
     virtual void processMessages();
     virtual std::future<void> onTalk(const TalkParams& params, const std::string& text, std::ostream& os) = 0;
     virtual bool onStop() = 0;
+    virtual bool onListTalkers(std::string& result) = 0;
     virtual bool ready() = 0;
+
+#ifdef rtDebug
+    virtual void onDebug() {}
+#endif
 
     virtual void addMessage(MessagePtr mes);
 

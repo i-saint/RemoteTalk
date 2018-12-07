@@ -17,11 +17,11 @@ static rt::TalkClientSettings GetClientSettings()
 TestCase(RemoteTalkClient)
 {
     rt::TalkClient client(GetClientSettings());
-    client.setText("hello voiceroid!");
+    //client.setMute(true);
+    std::string text = "hello voiceroid! this is a test of remote talk client.";
 
-    int n = 0;
     rt::AudioData sequence;
-    client.talk([&](const rt::AudioData& ad) {
+    client.talk(text, [&](const rt::AudioData& ad) {
         if (ad.data.empty())
             return;
         sequence += ad;

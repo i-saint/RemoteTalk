@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "RemoteTalk/rtFoundation.h"
 #include "RemoteTalk/rtAudioData.h"
+#include "RemoteTalk/rtTalkInterface.h"
 #include "RemoteTalkVOICEROID2Controller.h"
 #include <atomic>
 
@@ -13,6 +14,8 @@ ref class rtvr2InterfaceManaged
 {
 public:
     static rtvr2InterfaceManaged^ getInstance();
+
+    std::vector<rt::TalkerInfoImpl> getTalkerList();
 
     void setVolume(float v);
     void setTalker(int id);
@@ -32,6 +35,17 @@ private:
     System::Windows::Controls::Button^ m_bu_play;
     System::Windows::Controls::Button^ m_bu_stop;
     System::Windows::Controls::Button^ m_bu_rewind;
+    System::Windows::Controls::ListView^ m_talker_list;
+
+    ref class TalkerInfo
+    {
+    public:
+        int id;
+        String^ name;
+
+        TalkerInfo(int i,  String^ n) : id(i), name(n) {}
+    };
+    List<TalkerInfo^>^ m_talkers;
 };
 
 class rtvr2TalkInterfaceImpl : public rtvr2TalkInterface
@@ -57,10 +71,13 @@ public:
     void onStop() override;
     void onUpdateBuffer(const rt::AudioData& ad) override;
 
-    void dbgListWindows(std::vector<std::string>& dst);
+#ifdef rtDebug
+    void onDebug() override;
+#endif
 
 private:
-    std::atomic_bool m_is_playing = false;
+    mutable std::vector<rt::TalkerInfoImpl> m_talkers;
+    std::atomic_bool m_is_playing{ false };
     rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
 };
@@ -118,6 +135,18 @@ rtvr2InterfaceManaged^ rtvr2InterfaceManaged::getInstance()
     return %s_instance;
 }
 
+std::vector<rt::TalkerInfoImpl> rtvr2InterfaceManaged::getTalkerList()
+{
+    setupControls();
+
+    std::vector<rt::TalkerInfoImpl> ret;
+    if (m_talkers) {
+        for each(auto ti in m_talkers)
+            ret.push_back({ ti->id, ToStdString(ti->name) });
+    }
+    return ret;
+}
+
 void rtvr2InterfaceManaged::setVolume(float v)
 {
     // todo
@@ -158,10 +187,26 @@ bool rtvr2InterfaceManaged::setupControls()
         return false;
 
     m_bu_play = (System::Windows::Controls::Button^)buttons[0];
-    if (buttons->Count > 1)
+    if (buttons->Count >= 1)
         m_bu_stop = (System::Windows::Controls::Button^)buttons[1];
-    if (buttons->Count > 2)
+    if (buttons->Count >= 2)
         m_bu_rewind = (System::Windows::Controls::Button^)buttons[2];
+
+    auto listview = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetListView", true);
+    if (listview->Count >= 1) {
+        m_talker_list = (System::Windows::Controls::ListView^)listview[0];
+        auto items = SelectControlsByTypeName(listview[0], "System.Windows.Controls.ListViewItem", false);
+
+        m_talkers = gcnew List<TalkerInfo^>();
+        int index = 0;
+        for each(System::Windows::Controls::ListViewItem^ item in items) {
+            auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
+            if (tbs->Count >= 2) {
+                auto tb = (System::Windows::Controls::TextBlock^)tbs[1];
+                m_talkers->Add(gcnew TalkerInfo(index++, tb->Text));
+            }
+        }
+    }
 
     return true;
 }
@@ -215,13 +260,18 @@ void rtvr2TalkInterfaceImpl::getParams(rt::TalkParams& params) const
 
 int rtvr2TalkInterfaceImpl::getNumTalkers() const
 {
-    // todo
-    return 0;
+    if (m_talkers.empty())
+        m_talkers = rtvr2InterfaceManaged::getInstance()->getTalkerList();
+    return (int)m_talkers.size();
 }
 
 bool rtvr2TalkInterfaceImpl::getTalkerInfo(int i, rt::TalkerInfo *dst) const
 {
-    // todo
+    if (i < (int)m_talkers.size()) {
+        dst->id = m_talkers[i].id;
+        dst->name = m_talkers[i].name.c_str();
+        return true;
+    }
     return false;
 }
 
@@ -276,19 +326,24 @@ void rtvr2TalkInterfaceImpl::onUpdateBuffer(const rt::AudioData& ad)
 }
 
 
-static void GetControlInfo(System::Windows::DependencyObject^ obj, std::vector<std::string>& dst)
+static void PrintControlInfo(System::Windows::DependencyObject^ obj, int depth = 0)
 {
-    dst.push_back(ToStdString(obj->GetType()->FullName));
+    std::string t;
+    for (int i = 0; i < depth; ++i)
+        t += "  ";
+    t += ToStdString(obj->GetType()->FullName);
+    t += "\n";
+    ::OutputDebugStringA(t.c_str());
 
     int num_children = System::Windows::Media::VisualTreeHelper::GetChildrenCount(obj);
     for (int i = 0; i < num_children; i++)
-        GetControlInfo(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), dst);
+        PrintControlInfo(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), depth + 1);
 }
-void rtvr2TalkInterfaceImpl::dbgListWindows(std::vector<std::string>& dst)
+void rtvr2TalkInterfaceImpl::onDebug()
 {
     if (System::Windows::Application::Current != nullptr) {
         for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows) {
-            GetControlInfo(w, dst);
+            PrintControlInfo(w);
         }
     }
 }

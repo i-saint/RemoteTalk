@@ -152,14 +152,13 @@ bool AudioData::convertSamplesToFloat(float *dst)
 
 AudioData& AudioData::operator+=(const AudioData& v)
 {
-    if (format == AudioFormat::RawFile || v.data.empty() || v.format == AudioFormat::Unknown || v.format == AudioFormat::RawFile ||
-        channels != v.channels || frequency != v.frequency)
+    if (format == AudioFormat::RawFile || v.data.empty() || v.format == AudioFormat::Unknown || v.format == AudioFormat::RawFile)
         return *this;
 
     if (format == AudioFormat::Unknown) {
         *this = v;
     }
-    else {
+    else if(channels == v.channels && frequency == v.frequency) {
         if (format == v.format) {
             data.insert(data.end(), v.data.begin(), v.data.end());
         }

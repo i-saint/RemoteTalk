@@ -20,12 +20,20 @@ TalkClient::~TalkClient()
 void TalkClient::clear()
 {
     m_parmas = {};
-    m_text.clear();
+    m_talkers.clear();
 }
 
+const std::vector<TalkerInfoImpl>& TalkClient::getTalkerList()
+{
+    if (m_fut_talkers.valid()) {
+        m_fut_talkers.wait();
+        m_fut_talkers = {};
+    }
+    return m_talkers;
+}
 
 #define Set(V) m_parmas.flags.fields.V = 1; m_parmas.##V = v;
-void TalkClient::setSilence(bool v)     { Set(silence); }
+void TalkClient::setMute(bool v)        { Set(mute); }
 void TalkClient::setVolume(float v)     { Set(volume); }
 void TalkClient::setSpeed(float v)      { Set(speed); }
 void TalkClient::setPitch(float v)      { Set(pitch); }
@@ -33,14 +41,92 @@ void TalkClient::setIntonation(float v) { Set(intonation); }
 void TalkClient::setJoy(float v)        { Set(joy); }
 void TalkClient::setAnger(float v)      { Set(anger); }
 void TalkClient::setSorrow(float v)     { Set(sorrow); }
+void TalkClient::setTalker(int v)       { Set(talker); }
 #undef Set
 
-void TalkClient::setText(const std::string& text)
+bool TalkClient::isServerAvailable()
 {
-    m_text = text;
+    bool ret = false;
+    try {
+        URI uri;
+        uri.setPath("/ready");
+
+        HTTPClientSession session{ m_settings.server, m_settings.port };
+        session.setTimeout(m_settings.timeout_ms * 1000);
+
+        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+        session.sendRequest(request);
+
+        HTTPResponse response;
+        session.receiveResponse(response);
+        ret = response.getStatus() == HTTPResponse::HTTP_OK;
+    }
+    catch (Poco::Exception&) {
+    }
+    return ret;
 }
 
-bool TalkClient::talk(const std::function<void(const AudioData&)>& cb)
+bool TalkClient::updateTalkerList()
+{
+    bool ret = false;
+    m_fut_talkers = std::async(std::launch::async, [this]() {
+        try {
+            URI uri;
+            uri.setPath("/list_talkers");
+
+            HTTPClientSession session{ m_settings.server, m_settings.port };
+            session.setTimeout(m_settings.timeout_ms * 1000);
+
+            HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+            session.sendRequest(request);
+
+            HTTPResponse response;
+            auto& rs = session.receiveResponse(response);
+            if (response.getStatus() == HTTPResponse::HTTP_OK) {
+                m_talkers.clear();
+                std::string line;
+                int id;
+                char name[256];
+                while (std::getline(rs, line)) {
+                    if (sscanf(line.c_str(), "%d: %s", &id, name) == 2) {
+                        m_talkers.push_back({ id, name });
+                    }
+                }
+            }
+        }
+        catch (Poco::Exception&) {
+        }
+    });
+    return ret;
+}
+
+bool TalkClient::ready()
+{
+    bool ret = false;
+    try {
+        URI uri;
+        uri.setPath("/ready");
+
+        HTTPClientSession session{ m_settings.server, m_settings.port };
+        session.setTimeout(m_settings.timeout_ms * 1000);
+
+        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+        session.sendRequest(request);
+
+        HTTPResponse response;
+        auto& rs = session.receiveResponse(response);
+        if (response.getStatus() == HTTPResponse::HTTP_OK) {
+            char r;
+            rs.read(&r, 1);
+            ret = r == '1';
+        }
+    }
+    catch (Poco::Exception&) {
+    }
+    return ret;
+}
+
+bool TalkClient::talk(const std::string& text, const std::function<void(const AudioData&)>& cb)
 {
     bool ret = false;
     try {
@@ -50,8 +136,8 @@ bool TalkClient::talk(const std::function<void(const AudioData&)>& cb)
 #define AddParam(N) if(m_parmas.flags.fields.N) { uri.addQueryParameter(#N, to_string(m_parmas.##N)); }
         rtEachTalkParams(AddParam)
 #undef AddParam
-        if (!m_text.empty())
-            uri.addQueryParameter("text", m_text);
+        if (!text.empty())
+            uri.addQueryParameter("text", text);
 
         HTTPClientSession session{ m_settings.server, m_settings.port };
         session.setTimeout(m_settings.timeout_ms * 1000);
@@ -84,32 +170,6 @@ bool TalkClient::stop()
     try {
         URI uri;
         uri.setPath("/stop");
-
-        HTTPClientSession session{ m_settings.server, m_settings.port };
-        session.setTimeout(m_settings.timeout_ms * 1000);
-
-        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
-        session.sendRequest(request);
-
-        HTTPResponse response;
-        auto& rs = session.receiveResponse(response);
-        if (response.getStatus() == HTTPResponse::HTTP_OK) {
-            char r;
-            rs.read(&r, 1);
-            ret = r == '1';
-        }
-    }
-    catch (Poco::Exception&) {
-    }
-    return ret;
-}
-
-bool TalkClient::ready()
-{
-    bool ret = false;
-    try {
-        URI uri;
-        uri.setPath("/ready");
 
         HTTPClientSession session{ m_settings.server, m_settings.port };
         session.setTimeout(m_settings.timeout_ms * 1000);
