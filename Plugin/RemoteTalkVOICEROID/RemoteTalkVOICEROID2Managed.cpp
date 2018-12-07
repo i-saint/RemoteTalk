@@ -2,6 +2,7 @@
 #include "RemoteTalk/rtFoundation.h"
 #include "RemoteTalk/rtAudioData.h"
 #include "RemoteTalkVOICEROID2Controller.h"
+#include <atomic>
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -16,7 +17,11 @@ public:
     void setVolume(float v);
     void setTalker(int id);
 
-    bool talk(const char *text);
+    void getParams(rt::TalkParams& params);
+    void setParams(const rt::TalkParams& params);
+
+    bool stop();
+    bool talk(const rt::TalkParams& params, const char *text);
 
 private:
     static rtvr2InterfaceManaged s_instance;
@@ -26,6 +31,7 @@ private:
     System::Windows::Controls::TextBox^ m_tb_text;
     System::Windows::Controls::Button^ m_bu_play;
     System::Windows::Controls::Button^ m_bu_stop;
+    System::Windows::Controls::Button^ m_bu_rewind;
 };
 
 class rtvr2TalkInterfaceImpl : public rtvr2TalkInterface
@@ -39,12 +45,12 @@ public:
     const char* getClientName() const override;
 
     void getParams(rt::TalkParams& params) const override;
-    void setParams(const rt::TalkParams& params) override;
 
     int getNumTalkers() const override;
     bool getTalkerInfo(int i, rt::TalkerInfo *dst) const override;
 
-    bool talk(const char *text, rt::TalkSampleCallback cb, void *userdata) override;
+    bool talk(const rt::TalkParams& params, const char *text, rt::TalkSampleCallback cb, void *userdata) override;
+    bool stop() override;
 
 
     void onPlay() override;
@@ -54,9 +60,7 @@ public:
     void dbgListWindows(std::vector<std::string>& dst);
 
 private:
-    rt::TalkParams m_params;
-
-    bool m_is_playing = false;
+    std::atomic_bool m_is_playing = false;
     rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
 };
@@ -94,6 +98,8 @@ static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String
 
 static void EmulateClick(System::Windows::Controls::Button^ button)
 {
+    if (!button)
+        return;
     using namespace System::Windows::Automation;
     auto peer = gcnew Peers::ButtonAutomationPeer(button);
     auto invoke = (Provider::IInvokeProvider^)peer->GetPattern(Peers::PatternInterface::Invoke);
@@ -122,6 +128,16 @@ void rtvr2InterfaceManaged::setTalker(int id)
     // todo
 }
 
+void rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
+{
+    // todo
+}
+
+void rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
+{
+    // todo
+}
+
 bool rtvr2InterfaceManaged::setupControls()
 {
     if (m_tb_text)
@@ -144,17 +160,30 @@ bool rtvr2InterfaceManaged::setupControls()
     m_bu_play = (System::Windows::Controls::Button^)buttons[0];
     if (buttons->Count > 1)
         m_bu_stop = (System::Windows::Controls::Button^)buttons[1];
+    if (buttons->Count > 2)
+        m_bu_rewind = (System::Windows::Controls::Button^)buttons[2];
 
     return true;
 }
 
-bool rtvr2InterfaceManaged::talk(const char *text)
+bool rtvr2InterfaceManaged::stop()
+{
+    if (!setupControls())
+        return false;
+    EmulateClick(m_bu_stop);
+    return true;
+}
+
+bool rtvr2InterfaceManaged::talk(const rt::TalkParams& params, const char *text)
 {
     if (!m_tb_text || !m_bu_play) {
         if (!setupControls())
             return false;
     }
+    if (!text)
+        return false;
     m_tb_text->Text = gcnew String(text);
+    EmulateClick(m_bu_rewind);
     EmulateClick(m_bu_play);
     return true;
 }
@@ -181,14 +210,8 @@ const char* rtvr2TalkInterfaceImpl::getClientName() const
 
 void rtvr2TalkInterfaceImpl::getParams(rt::TalkParams& params) const
 {
-    params = m_params;
+    rtvr2InterfaceManaged::getInstance()->getParams(params);
 }
-
-void rtvr2TalkInterfaceImpl::setParams(const rt::TalkParams& params)
-{
-    m_params = params;
-}
-
 
 int rtvr2TalkInterfaceImpl::getNumTalkers() const
 {
@@ -202,14 +225,14 @@ bool rtvr2TalkInterfaceImpl::getTalkerInfo(int i, rt::TalkerInfo *dst) const
     return false;
 }
 
-bool rtvr2TalkInterfaceImpl::talk(const char *text, rt::TalkSampleCallback cb, void *userdata)
+bool rtvr2TalkInterfaceImpl::talk(const rt::TalkParams& params, const char *text, rt::TalkSampleCallback cb, void *userdata)
 {
-    if (m_is_playing || !text)
+    if (m_is_playing)
         return false;
 
     m_sample_cb = cb;
     m_sample_cb_userdata = userdata;
-    if (rtvr2InterfaceManaged::getInstance()->talk(text)) {
+    if (rtvr2InterfaceManaged::getInstance()->talk(params, text)) {
         m_is_playing = true;
         return true;
     }
@@ -218,6 +241,10 @@ bool rtvr2TalkInterfaceImpl::talk(const char *text, rt::TalkSampleCallback cb, v
     }
 }
 
+bool rtvr2TalkInterfaceImpl::stop()
+{
+    return rtvr2InterfaceManaged::getInstance()->stop();
+}
 
 
 void rtvr2TalkInterfaceImpl::onPlay()

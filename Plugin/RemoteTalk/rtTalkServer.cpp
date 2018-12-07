@@ -108,6 +108,14 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
                 handled = true;
             }
         }
+        else if (uri.getPath() == "/stop") {
+            auto mes = std::make_shared<TalkServer::StopMessage>();
+            m_server->addMessage(mes);
+            if (mes->wait()) {
+                handled = true;
+            }
+            ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
+        }
     }
 
     if (!handled)
@@ -138,7 +146,7 @@ bool TalkServer::Message::wait()
     return ready.load();
 }
 
-bool TalkServer::Message::isSending()
+bool TalkServer::Message::isProcessing()
 {
     return task.valid() && task.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout;
 }
@@ -190,30 +198,25 @@ void TalkServer::processMessages()
 {
     lock_t lock(m_mutex);
 
+    bool processing = false;
     for (auto& mes : m_messages) {
-        if (mes->ready.load()) {
-            if (mes->isSending()) {
+        if (processing) {
+            if (!dynamic_cast<StopMessage*>(mes.get()))
                 break;
-            }
-            else {
-                mes.reset();
-                continue;
-            }
         }
 
-        if (auto *pmes = dynamic_cast<ParamMessage*>(mes.get())) {
-            for (auto& nvp : pmes->params)
-                onSetParam(nvp.first, nvp.second);
-        }
-        if (auto *tmes = dynamic_cast<TalkMessage*>(mes.get())) {
-            tmes->task = onTalk(tmes->params, tmes->text, *tmes->respond_stream);
+        if (!mes->ready.load()) {
+            if (auto *talk = dynamic_cast<TalkMessage*>(mes.get()))
+                talk->task = onTalk(talk->params, talk->text, *talk->respond_stream);
+            else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
+                onStop();
+            mes->ready = true;
         }
 
-        mes->ready = true;
-        if (mes->isSending())
-            break;
-        else
+        if (!mes->isProcessing())
             mes.reset();
+        else
+            processing = true;
     }
     m_messages.erase(
         std::remove_if(m_messages.begin(), m_messages.end(), [](MessagePtr &p) { return !p; }),

@@ -19,8 +19,8 @@ using super = rt::TalkServer;
 public:
     rtDefSingleton(rtvrTalkServer);
     void addMessage(MessagePtr mes) override;
-    bool onSetParam(const std::string& name, const std::string& value) override;
     std::future<void> onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os) override;
+    void onStop() override;
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
     void sampleCallback(const rt::TalkSample *data);
@@ -63,11 +63,6 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
     });
 }
 
-bool rtvrTalkServer::onSetParam(const std::string& name, const std::string& value)
-{
-    return false;
-}
-
 std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os)
 {
     {
@@ -75,11 +70,7 @@ std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std
         m_data_queue.clear();
     }
 
-    rtGetTalkInterface_()->setParams(params);
-    if (text.empty())
-        return {};
-
-    if (!rtGetTalkInterface_()->talk(text.c_str(), &sampleCallbackS, this))
+    if (!rtGetTalkInterface_()->talk(params, text.c_str(), &sampleCallbackS, this))
         return {};
 
     return std::async(std::launch::async, [this, &os]() {
@@ -101,6 +92,11 @@ std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     });
+}
+
+void rtvrTalkServer::onStop()
+{
+    rtGetTalkInterface_()->stop();
 }
 
 

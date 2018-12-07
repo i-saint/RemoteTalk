@@ -16,6 +16,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <list>
 #include <map>
 #include <functional>
 #include <future>

@@ -21,7 +21,7 @@ TestCase(RemoteTalkClient)
 
     int n = 0;
     rt::AudioData sequence;
-    client.send([&](const rt::AudioData& ad) {
+    client.talk([&](const rt::AudioData& ad) {
         if (ad.data.empty())
             return;
         sequence += ad;

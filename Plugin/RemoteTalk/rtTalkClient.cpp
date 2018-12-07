@@ -26,7 +26,6 @@ void TalkClient::clear()
 
 #define Set(V) m_parmas.flags.fields.V = 1; m_parmas.##V = v;
 void TalkClient::setSilence(bool v)     { Set(silence); }
-void TalkClient::setForce(bool v)       { Set(force); }
 void TalkClient::setVolume(float v)     { Set(volume); }
 void TalkClient::setSpeed(float v)      { Set(speed); }
 void TalkClient::setPitch(float v)      { Set(pitch); }
@@ -41,7 +40,7 @@ void TalkClient::setText(const std::string& text)
     m_text = text;
 }
 
-bool TalkClient::send(const std::function<void(const AudioData&)>& cb)
+bool TalkClient::talk(const std::function<void(const AudioData&)>& cb)
 {
     bool ret = false;
     try {
@@ -74,9 +73,29 @@ bool TalkClient::send(const std::function<void(const AudioData&)>& cb)
         }
         ret = response.getStatus() == HTTPResponse::HTTP_OK;
     }
-    catch (Poco::Exception& e) {
-        auto mes = e.what();
-        printf(mes);
+    catch (Poco::Exception&) {
+    }
+    return ret;
+}
+
+bool TalkClient::stop()
+{
+    bool ret = false;
+    try {
+        URI uri;
+        uri.setPath("/stop");
+
+        HTTPClientSession session{ m_settings.server, m_settings.port };
+        session.setTimeout(m_settings.timeout_ms * 1000);
+
+        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+        session.sendRequest(request);
+
+        HTTPResponse response;
+        session.receiveResponse(response);
+        ret = response.getStatus() == HTTPResponse::HTTP_OK;
+    }
+    catch (Poco::Exception&) {
     }
     return ret;
 }

@@ -5,13 +5,12 @@
 namespace rt {
 
 #define rtEachTalkParams(Body)\
-    Body(silence) Body(force) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow)
+    Body(silence) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow)
 
 union TalkParamFlags
 {
     struct {
         uint32_t silence : 1;
-        uint32_t force : 1;
         uint32_t volume : 1;
         uint32_t speed : 1;
         uint32_t pitch : 1;
@@ -34,7 +33,6 @@ struct TalkParams
 {
     TalkParamFlags flags;
     bool silence;
-    bool force;
     float volume;
     float speed;
     float pitch;
@@ -76,11 +74,11 @@ public:
     virtual int getProtocolVersion() const { return rtProtocolVersion; }
 
     virtual void getParams(TalkParams& params) const = 0;
-    virtual void setParams(const TalkParams& params) = 0;
     virtual int getNumTalkers() const { return 0; }
     virtual bool getTalkerInfo(int i, TalkerInfo *dst) const { return false; }
 
-    virtual bool talk(const char *text, TalkSampleCallback cb, void *userdata) = 0;
+    virtual bool talk(const TalkParams& params, const char *text, TalkSampleCallback cb, void *userdata) = 0;
+    virtual bool stop() = 0;
 };
 #pragma warning(pop)
 

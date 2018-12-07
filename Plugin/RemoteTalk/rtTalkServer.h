@@ -37,25 +37,25 @@ public:
     public:
         virtual ~Message() {}
         bool wait();
-        bool isSending();
+        bool isProcessing();
 
         std::atomic_bool ready = { false };
         std::ostream *respond_stream = nullptr;
         std::future<void> task;
+
     };
     using MessagePtr = std::shared_ptr<Message>;
 
-    class ParamMessage : public Message
-    {
-    public:
-        std::vector<std::pair<std::string, std::string>> params;
-    };
-
-    class TalkMessage : public ParamMessage
+    class TalkMessage : public Message
     {
     public:
         TalkParams params;
         std::string text;
+    };
+
+    class StopMessage : public Message
+    {
+    public:
     };
 
 public:
@@ -69,8 +69,8 @@ public:
     virtual void stop();
 
     virtual void processMessages();
-    virtual bool onSetParam(const std::string& name, const std::string& value) = 0;
     virtual std::future<void> onTalk(const TalkParams& params, const std::string& text, std::ostream& os) = 0;
+    virtual void onStop() = 0;
 
     virtual void addMessage(MessagePtr mes);
 

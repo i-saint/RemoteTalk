@@ -19,7 +19,6 @@ public:
     void clear();
 
     void setSilence(bool v);
-    void setForce(bool v);
     void setVolume(float v);
     void setSpeed(float v);
     void setPitch(float v);
@@ -28,7 +27,9 @@ public:
     void setAnger(float v);
     void setSorrow(float v);
     void setText(const std::string& text);
-    bool send(const std::function<void (const AudioData&)>& cb);
+
+    bool talk(const std::function<void (const AudioData&)>& cb);
+    bool stop();
 
 private:
     TalkClientSettings m_settings;
