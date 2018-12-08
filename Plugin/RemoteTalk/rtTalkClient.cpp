@@ -39,9 +39,9 @@ bool TalkClient::isServerAvailable()
     return ret;
 }
 
-TalkParams TalkClient::getParams()
+bool TalkClient::getParams(TalkParams& params, std::vector<AvatorInfoImpl>& avators)
 {
-    TalkParams ret;
+    bool ret = false;
     try {
         URI uri;
         uri.setPath("/params");
@@ -56,32 +56,12 @@ TalkParams TalkClient::getParams()
         auto& rs = session.receiveResponse(response);
         if (response.getStatus() == HTTPResponse::HTTP_OK) {
             std::string s(std::istreambuf_iterator<char>(rs), {});
-            from_json(ret, s);
-        }
-    }
-    catch (Poco::Exception&) {
-    }
-    return ret;
-}
-
-std::vector<AvatorInfoImpl> TalkClient::getAvators()
-{
-    std::vector<AvatorInfoImpl> ret;
-    try {
-        URI uri;
-        uri.setPath("/avators");
-
-        HTTPClientSession session{ m_settings.server, m_settings.port };
-        session.setTimeout(m_settings.timeout_ms * 1000);
-
-        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
-        session.sendRequest(request);
-
-        HTTPResponse response;
-        auto& rs = session.receiveResponse(response);
-        if (response.getStatus() == HTTPResponse::HTTP_OK) {
-            std::string s(std::istreambuf_iterator<char>(rs), {});
-            from_json(ret, s);
+            TalkServer::GetParamsMessage mes;
+            if (mes.from_json(s)) {
+                params = std::move(mes.params);
+                avators = std::move(mes.avators);
+                ret = true;
+            }
         }
     }
     catch (Poco::Exception&) {

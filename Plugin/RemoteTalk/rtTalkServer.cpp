@@ -2,31 +2,12 @@
 #include "rtFoundation.h"
 #include "rtSerialization.h"
 #include "rtTalkServer.h"
+#include "picojson/picojson.h"
 
 namespace rt {
 
 using namespace Poco::Net;
 using Poco::URI;
-
-std::string ToANSI(const char *src)
-{
-#ifdef _WIN32
-    // to UTF-16
-    const int wsize = ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)src, -1, nullptr, 0);
-    std::wstring ws;
-    ws.resize(wsize);
-    ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)src, -1, (LPWSTR)ws.data(), wsize);
-
-    // to ANSI
-    const int u8size = ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.data(), -1, nullptr, 0, nullptr, nullptr);
-    std::string u8s;
-    u8s.resize(u8size);
-    ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.data(), -1, (LPSTR)u8s.data(), u8size, nullptr, nullptr);
-    return u8s;
-#else
-    return src;
-#endif
-}
 
 void ServeText(Poco::Net::HTTPServerResponse& response, const std::string& data, int stat, const std::string& mimetype)
 {
@@ -82,7 +63,10 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
     URI uri(request.getURI());
 
     bool handled = false;
-    if (uri.getPath() == "/talk") {
+    if (uri.getPath() == "/ready") {
+        ServeText(response, m_server->ready() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
+    }
+    else if (uri.getPath() == "/talk") {
         auto mes = std::make_shared<TalkServer::TalkMessage>();
 
         auto qparams = uri.getQueryParameters();
@@ -121,17 +105,7 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
         m_server->addMessage(mes);
         if (mes->wait())
             handled = true;
-        ServeText(response, to_json(mes->params), HTTPResponse::HTTPStatus::HTTP_OK);
-    }
-    else if (uri.getPath() == "/avators") {
-        auto mes = std::make_shared<TalkServer::AvatorsMessage>();
-        m_server->addMessage(mes);
-        if (mes->wait())
-            handled = true;
-        ServeText(response, to_json(mes->avators), HTTPResponse::HTTPStatus::HTTP_OK);
-    }
-    else if (uri.getPath() == "/ready") {
-        ServeText(response, m_server->ready() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
+        ServeText(response, mes->to_json(), HTTPResponse::HTTPStatus::HTTP_OK, "application/json");
     }
 #ifdef rtDebug
     else if (uri.getPath() == "/debug") {
@@ -174,6 +148,30 @@ bool TalkServer::Message::wait()
 bool TalkServer::Message::isProcessing()
 {
     return task.valid() && task.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout;
+}
+
+
+std::string TalkServer::GetParamsMessage::to_json()
+{
+    using namespace picojson;
+    object ret;
+    ret["params"] = rt::to_json(params);
+    ret["avators"] = rt::to_json(avators);
+    return value(std::move(ret)).serialize(true);
+}
+
+bool TalkServer::GetParamsMessage::from_json(const std::string& str)
+{
+    using namespace picojson;
+    value val;
+    parse(val, str);
+
+    bool ret = false;
+    if (rt::from_json(params, val.get("params")))
+        ret = true;
+    if (rt::from_json(avators, val.get("avators")))
+        ret = true;
+    return ret;
 }
 
 
@@ -238,8 +236,6 @@ void TalkServer::processMessages()
                 handled = onStop(*stop);
             else if (auto *get_params = dynamic_cast<GetParamsMessage*>(mes.get()))
                 handled = onGetParams(*get_params);
-            else if (auto *avators = dynamic_cast<AvatorsMessage*>(mes.get()))
-                handled = onAvators(*avators);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
                 handled = onDebug();

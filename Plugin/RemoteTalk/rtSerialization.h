@@ -4,7 +4,17 @@
 #include <memory>
 #include "rtRawVector.h"
 
+namespace picojson {
+    class value;
+} // namespace picojson
+
 namespace rt {
+
+std::string ToUTF8(const char *src);
+std::string ToUTF8(const std::string& src);
+std::string ToANSI(const char *src);
+std::string ToANSI(const std::string& src);
+
 
 template<class T> struct serializable { static const bool result = false; };
 
@@ -173,40 +183,10 @@ template<> struct hash_impl<float> { uint64_t operator()(float v) { return (uint
 template<class T> inline uint64_t gen_hash(const T& v) { return hash_impl<T>()(v); }
 
 
+template<class T> std::string to_string(const T& v);
+template<class T> T from_string(const std::string& v);
 
-template<class T> inline std::string to_string(const T& v);
-
-template<> inline std::string to_string(const int& v)
-{
-    char buf[32];
-    sprintf(buf, "%d", v);
-    return buf;
-}
-template<> inline std::string to_string(const bool& v)
-{
-    return to_string((int)v);
-}
-template<> inline std::string to_string(const float& v)
-{
-    char buf[32];
-    sprintf(buf, "%.3f", v);
-    return buf;
-}
-
-
-template<class T> inline T from_string(const std::string& v);
-
-template<> inline int from_string(const std::string& v)
-{
-    return std::atoi(v.c_str());
-}
-template<> inline bool from_string(const std::string& v)
-{
-    return from_string<int>(v) != 0;
-}
-template<> inline float from_string(const std::string& v)
-{
-    return (float)std::atof(v.c_str());
-}
+template<class T> picojson::value to_json(const T& v);
+template<class T> bool from_json(T& dst, const picojson::value& v);
 
 } // namespace rt

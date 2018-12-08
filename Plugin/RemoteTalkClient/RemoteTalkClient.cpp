@@ -19,7 +19,7 @@ bool rtHTTPClient::talk(const rt::TalkParams& params, const char *text)
     m_buf_receiving.clear();
 
     m_processing = true;
-    return m_client.talk(params, text, [this](const rt::AudioData& ad) {
+    bool ret = m_client.talk(params, text, [this](const rt::AudioData& ad) {
         if (ad.getSampleLength() == 0) {
             m_processing = false;
         }
@@ -28,6 +28,9 @@ bool rtHTTPClient::talk(const rt::TalkParams& params, const char *text)
             m_buf_receiving += ad;
         }
     });
+    if (!ret)
+        m_processing = false;
+    return ret;
 }
 
 bool rtHTTPClient::stop()

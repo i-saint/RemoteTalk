@@ -2,6 +2,7 @@
 #include "RemoteTalk/rtFoundation.h"
 #include "RemoteTalk/rtAudioData.h"
 #include "RemoteTalk/rtTalkInterfaceImpl.h"
+#include "RemoteTalk/rtSerialization.h"
 #include "RemoteTalkVOICEROIDCommon.h"
 #include <atomic>
 
@@ -140,7 +141,7 @@ static void UpdateValue(Slider^ slider, double v)
 static std::string ToStdString(String^ str)
 {
     IntPtr ptr = Marshal::StringToHGlobalAnsi(str);
-    return (const char*)ptr.ToPointer();
+    return rt::ToUTF8((const char*)ptr.ToPointer());
 }
 
 

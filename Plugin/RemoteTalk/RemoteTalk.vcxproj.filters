@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="rtAudioData.cpp" />
+    <ClCompile Include="rtHook.cpp" />
+    <ClCompile Include="rtHookDSound.cpp" />
+    <ClCompile Include="rtHookKernel.cpp" />
+    <ClCompile Include="rtHookWave.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="rtTalkClient.cpp" />
+    <ClCompile Include="rtTalkInterfaceImpl.cpp" />
+    <ClCompile Include="rtTalkReceiver.cpp" />
+    <ClCompile Include="rtTalkServer.cpp" />
+    <ClCompile Include="rtSerialization.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RemoteTalkNet.h" />
+    <ClInclude Include="rtAudioData.h" />
+    <ClInclude Include="RemoteTalk.h" />
+    <ClInclude Include="rtFoundation.h" />
+    <ClInclude Include="rtHook.h" />
+    <ClInclude Include="rtHookDSound.h" />
+    <ClInclude Include="rtHookKernel.h" />
+    <ClInclude Include="rtHookWave.h" />
+    <ClInclude Include="rtNorm.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="rtRawVector.h" />
+    <ClInclude Include="rtSerialization.h" />
+    <ClInclude Include="rtTalkClient.h" />
+    <ClInclude Include="rtTalkInterface.h" />
+    <ClInclude Include="rtTalkInterfaceImpl.h" />
+    <ClInclude Include="rtTalkReceiver.h" />
+    <ClInclude Include="rtTalkServer.h" />
+    <ClInclude Include="picojson\picojson.h">
+      <Filter>picojson</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="picojson">
+      <UniqueIdentifier>{33a2f2ee-5db1-434d-b450-a0ee4c642ce4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

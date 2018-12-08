@@ -269,7 +269,7 @@ namespace IST.RemoteTalk
         {
             get { return rtHTTPClientReady(self) != 0; }
         }
-        public bool isFinished
+        public bool finished
         {
             get { return rtHTTPClientIsFinished(self) != 0; }
         }

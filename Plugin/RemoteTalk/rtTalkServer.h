@@ -18,7 +18,6 @@ namespace Poco {
 
 namespace rt {
 
-std::string ToANSI(const char *src);
 void ServeText(Poco::Net::HTTPServerResponse& response, const std::string& data, int stat, const std::string& mimetype = "text/plain");
 void ServeBinary(Poco::Net::HTTPServerResponse& response, RawVector<char>& data, const std::string& mimetype = "application/octet-stream");
 
@@ -62,12 +61,10 @@ public:
     {
     public:
         TalkParams params;
-    };
-
-    class AvatorsMessage : public Message
-    {
-    public:
         std::vector<AvatorInfoImpl> avators;
+
+        std::string to_json();
+        bool from_json(const std::string& str);
     };
 
 #ifdef rtDebug
@@ -91,7 +88,6 @@ public:
     virtual bool onTalk(TalkMessage& mes) = 0;
     virtual bool onStop(StopMessage& mes) = 0;
     virtual bool onGetParams(GetParamsMessage& mes) = 0;
-    virtual bool onAvators(AvatorsMessage& mes) = 0;
     virtual bool ready() = 0;
 
 #ifdef rtDebug

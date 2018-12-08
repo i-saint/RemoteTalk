@@ -79,6 +79,7 @@ namespace IST.RemoteTalk
         public AvatorInfo[] avators { get { return m_avators; } }
         #endregion
 
+
 #if UNITY_EDITOR
         [MenuItem("GameObject/RemoteTalk/Create Client", false, 10)]
         public static void CreateRemoteTalkClient(MenuCommand menuCommand)

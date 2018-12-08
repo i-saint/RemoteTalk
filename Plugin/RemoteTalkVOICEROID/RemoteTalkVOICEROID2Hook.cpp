@@ -22,7 +22,6 @@ public:
     bool onTalk(TalkMessage& mes) override;
     bool onStop(StopMessage& mes) override;
     bool onGetParams(GetParamsMessage& mes) override;
-    bool onAvators(AvatorsMessage& mes) override;
     bool ready() override;
 #ifdef rtDebug
     bool onDebug() override;
@@ -133,21 +132,13 @@ bool rtvrTalkServer::onGetParams(GetParamsMessage& mes)
         return false;
     if (!ifs->getParams(mes.params))
         return false;
-    return true;
-}
-
-bool rtvrTalkServer::onAvators(AvatorsMessage& mes)
-{
-    auto ifs = rtGetTalkInterface_();
-    if (!ifs->prepareUI())
-        return false;
-
-    int n = ifs->getNumAvators();
-    for (int i = 0; i < n; ++i) {
-        rt::AvatorInfo ti;
-        ifs->getAvatorInfo(i, &ti);
-        mes.avators.push_back({ ti.id, ti.name });
-
+    {
+        int n = ifs->getNumAvators();
+        for (int i = 0; i < n; ++i) {
+            rt::AvatorInfo ti;
+            ifs->getAvatorInfo(i, &ti);
+            mes.avators.push_back({ ti.id, ti.name });
+        }
     }
     return true;
 }

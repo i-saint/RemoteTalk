@@ -47,6 +47,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="rtSerialization.cpp" />
     <ClCompile Include="rtTalkClient.cpp" />
     <ClCompile Include="rtTalkInterfaceImpl.cpp" />
     <ClCompile Include="rtTalkReceiver.cpp" />
