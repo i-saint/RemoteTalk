@@ -39,7 +39,7 @@ bool TalkClient::isServerAvailable()
     return ret;
 }
 
-bool TalkClient::getParams(TalkParams& params, std::vector<AvatorInfoImpl>& avators)
+bool TalkClient::getParams(TalkParams& params, AvatorList& avators)
 {
     bool ret = false;
     try {

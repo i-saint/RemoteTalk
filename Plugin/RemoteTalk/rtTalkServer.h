@@ -38,7 +38,7 @@ public:
         bool wait();
         bool isProcessing();
 
-        std::atomic_bool ready = { false };
+        std::atomic_bool handled = { false };
         std::ostream *respond_stream = nullptr;
         std::future<void> task;
 
@@ -50,6 +50,9 @@ public:
     public:
         TalkParams params;
         std::string text;
+
+        std::string to_json();
+        bool from_json(const std::string& str);
     };
 
     class StopMessage : public Message
@@ -61,7 +64,7 @@ public:
     {
     public:
         TalkParams params;
-        std::vector<AvatorInfoImpl> avators;
+        AvatorList avators;
 
         std::string to_json();
         bool from_json(const std::string& str);

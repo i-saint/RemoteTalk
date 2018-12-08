@@ -12,5 +12,6 @@ struct AvatorInfoImpl
     int id = 0;
     std::string name;
 };
+using AvatorList = std::vector<AvatorInfoImpl>;
 
 } // namespace rt

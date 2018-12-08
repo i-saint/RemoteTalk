@@ -85,6 +85,34 @@ template<> float from_string(const std::string& v)
 }
 
 
+template<> picojson::value to_json(const float& v)
+{
+    using namespace picojson;
+    return value(v);
+}
+template<> bool from_json(float& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<float>())
+        return false;
+    dst = v.get<float>();
+    return true;
+}
+
+template<> picojson::value to_json(const std::string& v)
+{
+    using namespace picojson;
+    return value(v);
+}
+template<> bool from_json(std::string& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<std::string>())
+        return false;
+    dst = v.get<std::string>();
+    return true;
+}
+
 template<> picojson::value to_json(const TalkParams& v)
 {
     using namespace picojson;
@@ -119,40 +147,52 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
     return true;
 }
 
-template<> picojson::value to_json(const std::vector<AvatorInfoImpl>& v)
+template<> picojson::value to_json(const AvatorInfoImpl& v)
+{
+    using namespace picojson;
+    object o;
+    o["id"] = value((float)v.id);
+    o["name"] = value(v.name);
+    return value(std::move(o));
+}
+template<> bool from_json(AvatorInfoImpl& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<object>())
+        return false;
+
+    auto& o = v.get<object>();
+    {
+        auto it = o.find("id");
+        if (it != o.end() && it->second.is<float>())
+            dst.id = (int)it->second.get<float>();
+    }
+    {
+        auto it = o.find("name");
+        if (it != o.end() && it->second.is<std::string>())
+            dst.name = it->second.get<std::string>();
+    }
+    return true;
+}
+
+template<> picojson::value to_json(const AvatorList& v)
 {
     using namespace picojson;
     array t(v.size());
-    for (size_t i = 0; i < v.size(); ++i) {
-        object o;
-        o["id"] = value((float)v[i].id);
-        o["name"] = value(v[i].name);
-        t[i] = value(std::move(o));
-    }
+    for (size_t i = 0; i < v.size(); ++i)
+        t[i] = to_json(v[i]);
     return value(std::move(t));
 }
-template<> bool from_json(std::vector<AvatorInfoImpl>& dst, const picojson::value& v)
+template<> bool from_json(AvatorList& dst, const picojson::value& v)
 {
     using namespace picojson;
     if (!v.is<array>())
         return false;
 
     for (auto& e : v.get<array>()) {
-        if (!e.is<object>())
-            continue;
-        auto& o = e.get<object>();
         AvatorInfoImpl ai;
-        {
-            auto it = o.find("id");
-            if (it != o.end() && it->second.is<float>())
-                ai.id = (int)it->second.get<float>();
-        }
-        {
-            auto it = o.find("name");
-            if (it != o.end() && it->second.is<std::string>())
-                ai.name = it->second.get<std::string>();
-        }
-        dst.push_back(ai);
+        if(from_json(ai, e))
+            dst.push_back(ai);
     }
     return true;
 }

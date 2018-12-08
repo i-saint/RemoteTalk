@@ -17,7 +17,7 @@ public:
     static rtvr2InterfaceManaged^ getInstance();
 
     bool prepareUI();
-    std::vector<rt::AvatorInfoImpl> getAvatorList();
+    rt::AvatorList getAvatorList();
 
     bool getParams(rt::TalkParams& params);
     bool setParams(const rt::TalkParams& params);
@@ -81,7 +81,7 @@ public:
 #endif
 
 private:
-    mutable std::vector<rt::AvatorInfoImpl> m_avators;
+    mutable rt::AvatorList m_avators;
     std::atomic_bool m_is_playing{ false };
     rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
@@ -167,11 +167,11 @@ bool rtvr2InterfaceManaged::prepareUI()
     return true;
 }
 
-std::vector<rt::AvatorInfoImpl> rtvr2InterfaceManaged::getAvatorList()
+rt::AvatorList rtvr2InterfaceManaged::getAvatorList()
 {
     setupControls();
 
-    std::vector<rt::AvatorInfoImpl> ret;
+    rt::AvatorList ret;
     if (m_avators) {
         for each(auto ti in m_avators)
             ret.push_back({ ti->id, ToStdString(ti->name) });

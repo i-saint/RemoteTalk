@@ -10,6 +10,11 @@ namespace IST.RemoteTalk
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+            EditorGUILayout.Space();
+
+            var t = target as RemoteTalkClient;
+            if (GUILayout.Button("Talk"))
+                t.Talk();
         }
     }
 }

@@ -84,14 +84,19 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
 #undef Decode
         }
 
+        {
+            std::string s(std::istreambuf_iterator<char>(request.stream()), {});
+            if (!s.empty())
+                mes->from_json(s);
+        }
+
         response.setStatus(HTTPResponse::HTTPStatus::HTTP_OK);
         response.setContentType("application/octet-stream");
         mes->respond_stream = &response.send();
 
         m_server->addMessage(mes);
-        if (mes->wait()) {
+        if (mes->wait())
             handled = true;
-        }
     }
     else if (uri.getPath() == "/stop") {
         auto mes = std::make_shared<TalkServer::StopMessage>();
@@ -135,14 +140,14 @@ HTTPRequestHandler* TalkServerRequestHandlerFactory::createRequestHandler(const 
 bool TalkServer::Message::wait()
 {
     for (int i = 0; i < 10000; ++i) {
-        if (ready.load())
+        if (handled.load())
             break;
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
     if (task.valid()) {
         task.wait();
     }
-    return ready.load();
+    return handled.load();
 }
 
 bool TalkServer::Message::isProcessing()
@@ -150,6 +155,29 @@ bool TalkServer::Message::isProcessing()
     return task.valid() && task.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout;
 }
 
+
+std::string TalkServer::TalkMessage::to_json()
+{
+    using namespace picojson;
+    object ret;
+    ret["params"] = rt::to_json(params);
+    ret["text"] = rt::to_json(text);
+    return value(std::move(ret)).serialize(true);
+}
+
+bool TalkServer::TalkMessage::from_json(const std::string & str)
+{
+    using namespace picojson;
+    value val;
+    parse(val, str);
+
+    bool ret = false;
+    if (rt::from_json(params, val.get("params")))
+        ret = true;
+    if (rt::from_json(text, val.get("text")))
+        ret = true;
+    return ret;
+}
 
 std::string TalkServer::GetParamsMessage::to_json()
 {
@@ -228,7 +256,7 @@ void TalkServer::processMessages()
         //        break;
         //}
 
-        if (!mes->ready.load()) {
+        if (!mes->handled.load()) {
             bool handled = true;
             if (auto *talk = dynamic_cast<TalkMessage*>(mes.get()))
                 handled = onTalk(*talk);
@@ -243,8 +271,7 @@ void TalkServer::processMessages()
 
             if (!handled)
                 break;
-
-            mes->ready = true;
+            mes->handled = true;
         }
 
         if (!mes->isProcessing())

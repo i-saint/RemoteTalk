@@ -18,7 +18,7 @@ TestCase(RemoteTalkClient)
 {
     rt::TalkClient client(GetClientSettings());
     rt::TalkParams params;
-    std::vector<rt::AvatorInfoImpl> avators;
+    rt::AvatorList avators;
     client.getParams(params, avators);
 
     params.setMute(true);

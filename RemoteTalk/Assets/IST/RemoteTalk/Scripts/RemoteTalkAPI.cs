@@ -110,9 +110,10 @@ namespace IST.RemoteTalk
     }
 
 
+    [Serializable]
     public struct rtTalkParamFlags
     {
-        public BitFlags bits;
+        [SerializeField] public BitFlags bits;
         public bool mute
         {
             get { return bits[0]; }
@@ -160,18 +161,33 @@ namespace IST.RemoteTalk
         }
     }
 
+    [Serializable]
     public struct rtTalkParams
     {
-        public rtTalkParamFlags flags;
-        int m_mute;
-        float m_volume;
-        float m_speed;
-        float m_pitch;
-        float m_intonation;
-        float m_joy;
-        float m_anger;
-        float m_sorrow;
-        int m_avator;
+        [SerializeField] public rtTalkParamFlags flags;
+        [SerializeField] int m_mute;
+        [SerializeField] float m_volume;
+        [SerializeField] float m_speed;
+        [SerializeField] float m_pitch;
+        [SerializeField] float m_intonation;
+        [SerializeField] float m_joy;
+        [SerializeField] float m_anger;
+        [SerializeField] float m_sorrow;
+        [SerializeField] int m_avator;
+
+        public static rtTalkParams defaultValue
+        {
+            get
+            {
+                return new rtTalkParams {
+                    m_mute = 0,
+                    m_volume = 1.0f,
+                    m_speed = 1.0f,
+                    m_pitch = 1.0f,
+                    m_intonation = 1.0f,
+                };
+            }
+        }
 
         public bool mute
         {
@@ -245,7 +261,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsServerAvailable(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientGetParams(IntPtr self, ref rtTalkParams st);
 
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientReady(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsReady(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientTalk(IntPtr self, ref rtTalkParams p, string t);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientStop(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsFinished(IntPtr self);
@@ -265,11 +281,11 @@ namespace IST.RemoteTalk
             }
         }
 
-        public bool ready
+        public bool isReady
         {
-            get { return rtHTTPClientReady(self) != 0; }
+            get { return rtHTTPClientIsReady(self) != 0; }
         }
-        public bool finished
+        public bool isFinished
         {
             get { return rtHTTPClientIsFinished(self) != 0; }
         }
@@ -279,7 +295,7 @@ namespace IST.RemoteTalk
         }
 
         public static rtHTTPClient Create(string server, int port) { return rtHTTPClientCreate(server, port); }
-        public void Release() { rtHTTPClientRelease(self); }
+        public void Release() { rtHTTPClientRelease(self); self = IntPtr.Zero; }
         public bool Talk(ref rtTalkParams para, string text) { return rtHTTPClientTalk(self, ref para, text) != 0; }
         public bool Stop() { return rtHTTPClientStop(self) != 0; }
         public rtAudioData SyncBuffers() { return rtHTTPClientSyncBuffers(self); }

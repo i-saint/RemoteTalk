@@ -85,7 +85,8 @@ void* AudioData::allocateSample(size_t num_samples)
 
 size_t AudioData::getSampleLength() const
 {
-    return data.size() / SizeOf(format);
+    auto s = SizeOf(format);
+    return s > 0 ? data.size() / s : 0;
 }
 
 double AudioData::getDuration() const
