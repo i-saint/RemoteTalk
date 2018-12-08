@@ -66,9 +66,9 @@ public:
     bool getAvatorInfo(int i, rt::AvatorInfo *dst) const override;
     bool setText(const char *text) override;
 
+    bool ready() const override;
     bool talk(rt::TalkSampleCallback cb, void *userdata) override;
     bool stop() override;
-    bool ready() const override;
 
     bool prepareUI() override;
     void onPlay() override;
@@ -76,7 +76,7 @@ public:
     void onUpdateBuffer(const rt::AudioData& ad) override;
 
 #ifdef rtDebug
-    void onDebug() override;
+    bool onDebug() override;
 #endif
 
 private:
@@ -156,6 +156,7 @@ bool rtvr2InterfaceManaged::prepareUI()
         return true;
 
     auto tc = dynamic_cast<TabControl^>(ttcs[1]);
+    // select "voice" tab
     if (tc->SelectedIndex != 1) {
         tc->SelectedIndex = 1;
         return false;
@@ -179,7 +180,14 @@ std::vector<rt::AvatorInfoImpl> rtvr2InterfaceManaged::getAvatorList()
 
 bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
 {
-    // todo
+    if (m_sl_volume)    params.setVolume((float)m_sl_volume->Value);
+    if (m_sl_speed)     params.setSpeed((float)m_sl_speed->Value);
+    if (m_sl_pitch)     params.setPitch((float)m_sl_pitch->Value);
+    if (m_sl_intonation)params.setIntonation((float)m_sl_intonation->Value);
+    if (m_sl_joy)       params.setJoy((float)m_sl_joy->Value);
+    if (m_sl_anger)     params.setAnger((float)m_sl_anger->Value);
+    if (m_sl_sorrow)    params.setSorrow((float)m_sl_sorrow->Value);
+    if (m_lv_avators)   params.setAvator(m_lv_avators->SelectedIndex);
     return true;
 }
 
@@ -188,20 +196,15 @@ bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
     if (params.flags.avator && m_lv_avators)
         m_lv_avators->SelectedIndex = params.avator;
 
-    if (params.flags.volume && m_sl_volume)
-        UpdateValue(m_sl_volume, params.volume);
-    if (params.flags.speed && m_sl_speed)
-        UpdateValue(m_sl_speed, params.speed);
-    if (params.flags.pitch && m_sl_pitch)
-        UpdateValue(m_sl_pitch, params.pitch);
-    if (params.flags.intonation && m_sl_intonation)
-        UpdateValue(m_sl_intonation, params.intonation);
-    if (params.flags.joy && m_sl_joy)
-        UpdateValue(m_sl_joy, params.joy);
-    if (params.flags.anger && m_sl_anger)
-        UpdateValue(m_sl_anger, params.anger);
-    if (params.flags.sorrow && m_sl_sorrow)
-        UpdateValue(m_sl_sorrow, params.sorrow);
+#define DoSetParam(N) if (params.flags.N && m_sl_##N) UpdateValue(m_sl_##N, params.N);
+    DoSetParam(volume);
+    DoSetParam(speed);
+    DoSetParam(pitch);
+    DoSetParam(intonation);
+    DoSetParam(joy);
+    DoSetParam(anger);
+    DoSetParam(sorrow);
+#undef DoSetParam
 
     return true;
 }
@@ -356,6 +359,11 @@ bool rtvr2TalkInterfaceImpl::setText(const char *text)
     return rtvr2InterfaceManaged::getInstance()->setText(text);
 }
 
+bool rtvr2TalkInterfaceImpl::ready() const
+{
+    return !m_is_playing;
+}
+
 bool rtvr2TalkInterfaceImpl::talk(rt::TalkSampleCallback cb, void *userdata)
 {
     if (m_is_playing)
@@ -377,11 +385,6 @@ bool rtvr2TalkInterfaceImpl::stop()
     if (!m_is_playing)
         return false;
     return rtvr2InterfaceManaged::getInstance()->stop();
-}
-
-bool rtvr2TalkInterfaceImpl::ready() const
-{
-    return !m_is_playing;
 }
 
 
@@ -429,13 +432,14 @@ static void PrintControlInfo(System::Windows::DependencyObject^ obj, int depth =
         PrintControlInfo(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), depth + 1);
 }
 
-void rtvr2TalkInterfaceImpl::onDebug()
+bool rtvr2TalkInterfaceImpl::onDebug()
 {
     if (System::Windows::Application::Current != nullptr) {
         for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows) {
             PrintControlInfo(w);
         }
     }
+    return true;
 }
 #endif
 

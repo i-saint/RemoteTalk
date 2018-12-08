@@ -142,10 +142,8 @@ bool AudioData::exportAsWave(const char *path) const
 
 bool AudioData::convertSamplesToFloat(float *dst, int beg, int end)
 {
-    if (beg < 0)
-        beg = 0;
-    if (end < 0)
-        end = (int)getSampleLength();
+    beg = std::max(beg, 0);
+    end = end < 0 ? (int)getSampleLength() : std::min(end, (int)getSampleLength());
     int len = end - beg;
 
     auto convert = [dst](auto *src, size_t n) {

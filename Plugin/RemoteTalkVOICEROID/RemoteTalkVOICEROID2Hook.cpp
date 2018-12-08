@@ -21,10 +21,11 @@ public:
     void addMessage(MessagePtr mes) override;
     bool onTalk(TalkMessage& mes) override;
     bool onStop(StopMessage& mes) override;
+    bool onGetParams(GetParamsMessage& mes) override;
     bool onAvators(AvatorsMessage& mes) override;
     bool ready() override;
 #ifdef rtDebug
-    void onDebug() override;
+    bool onDebug() override;
 #endif
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
@@ -125,6 +126,16 @@ bool rtvrTalkServer::onStop(StopMessage& mes)
     return rtGetTalkInterface_()->stop();
 }
 
+bool rtvrTalkServer::onGetParams(GetParamsMessage& mes)
+{
+    auto ifs = rtGetTalkInterface_();
+    if (!ifs->prepareUI())
+        return false;
+    if (!ifs->getParams(mes.params))
+        return false;
+    return true;
+}
+
 bool rtvrTalkServer::onAvators(AvatorsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
@@ -135,9 +146,7 @@ bool rtvrTalkServer::onAvators(AvatorsMessage& mes)
     for (int i = 0; i < n; ++i) {
         rt::AvatorInfo ti;
         ifs->getAvatorInfo(i, &ti);
-        char buf[256];
-        sprintf(buf, "%d: %s\n", ti.id, ti.name);
-        mes.result += buf;
+        mes.avators.push_back({ ti.id, ti.name });
 
     }
     return true;
@@ -149,7 +158,7 @@ bool rtvrTalkServer::ready()
 }
 
 #ifdef rtDebug
-void rtvrTalkServer::onDebug()
+bool rtvrTalkServer::onDebug()
 {
     return rtGetTalkInterface_()->onDebug();
 }

@@ -6,7 +6,7 @@
 #include <mutex>
 #include <future>
 #include "rtAudioData.h"
-#include "rtTalkInterface.h"
+#include "rtTalkInterfaceImpl.h"
 
 namespace Poco {
     namespace Net {
@@ -58,10 +58,16 @@ public:
     public:
     };
 
+    class GetParamsMessage : public Message
+    {
+    public:
+        TalkParams params;
+    };
+
     class AvatorsMessage : public Message
     {
     public:
-        std::string result;
+        std::vector<AvatorInfoImpl> avators;
     };
 
 #ifdef rtDebug
@@ -84,11 +90,12 @@ public:
     virtual void processMessages();
     virtual bool onTalk(TalkMessage& mes) = 0;
     virtual bool onStop(StopMessage& mes) = 0;
+    virtual bool onGetParams(GetParamsMessage& mes) = 0;
     virtual bool onAvators(AvatorsMessage& mes) = 0;
     virtual bool ready() = 0;
 
 #ifdef rtDebug
-    virtual void onDebug() {}
+    virtual bool onDebug() { return true; }
 #endif
 
     virtual void addMessage(MessagePtr mes);

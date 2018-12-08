@@ -82,61 +82,66 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
     URI uri(request.getURI());
 
     bool handled = false;
-    if (request.getMethod() == HTTPServerRequest::HTTP_GET) {
-        if (uri.getPath() == "/talk") {
-            auto mes = std::make_shared<TalkServer::TalkMessage>();
+    if (uri.getPath() == "/talk") {
+        auto mes = std::make_shared<TalkServer::TalkMessage>();
 
-            auto qparams = uri.getQueryParameters();
-            for (auto& nvp : qparams) {
-                if (nvp.first == "text") {
-                    Poco::URI::decode(nvp.second, mes->text, true);
-                    mes->text = ToANSI(mes->text.c_str());
-                }
+        auto qparams = uri.getQueryParameters();
+        for (auto& nvp : qparams) {
+            if (nvp.first == "text") {
+                Poco::URI::decode(nvp.second, mes->text, true);
+                mes->text = ToANSI(mes->text.c_str());
+            }
 #define Decode(N)\
-                if (nvp.first == #N) {\
-                    mes->params.flags.N = 1;\
-                    mes->params.N = rt::from_string<decltype(mes->params.N)>(nvp.second);\
-                }
-                rtEachTalkParams(Decode)
+            if (nvp.first == #N) {\
+                mes->params.flags.N = 1;\
+                mes->params.N = rt::from_string<decltype(mes->params.N)>(nvp.second);\
+            }
+            rtEachTalkParams(Decode)
 #undef Decode
-            }
+        }
 
-            response.setStatus(HTTPResponse::HTTPStatus::HTTP_OK);
-            response.setContentType("application/octet-stream");
-            mes->respond_stream = &response.send();
+        response.setStatus(HTTPResponse::HTTPStatus::HTTP_OK);
+        response.setContentType("application/octet-stream");
+        mes->respond_stream = &response.send();
 
-            m_server->addMessage(mes);
-            if (mes->wait()) {
-                handled = true;
-            }
+        m_server->addMessage(mes);
+        if (mes->wait()) {
+            handled = true;
         }
-        else if (uri.getPath() == "/stop") {
-            auto mes = std::make_shared<TalkServer::StopMessage>();
-            m_server->addMessage(mes);
-            if (mes->wait())
-                handled = true;
-            ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
-        }
-        else if (uri.getPath() == "/avators") {
-            auto mes = std::make_shared<TalkServer::AvatorsMessage>();
-            m_server->addMessage(mes);
-            if (mes->wait())
-                handled = true;
-            ServeText(response, mes->result, HTTPResponse::HTTPStatus::HTTP_OK);
-        }
-        else if (uri.getPath() == "/ready") {
-            ServeText(response, m_server->ready() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
-        }
-#ifdef rtDebug
-        else if (uri.getPath() == "/debug") {
-            auto mes = std::make_shared<TalkServer::DebugMessage>();
-            m_server->addMessage(mes);
-            if (mes->wait())
-                handled = true;
-            ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
-        }
-#endif
     }
+    else if (uri.getPath() == "/stop") {
+        auto mes = std::make_shared<TalkServer::StopMessage>();
+        m_server->addMessage(mes);
+        if (mes->wait())
+            handled = true;
+        ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
+    }
+    else if (uri.getPath() == "/params") {
+        auto mes = std::make_shared<TalkServer::GetParamsMessage>();
+        m_server->addMessage(mes);
+        if (mes->wait())
+            handled = true;
+        ServeText(response, to_json(mes->params), HTTPResponse::HTTPStatus::HTTP_OK);
+    }
+    else if (uri.getPath() == "/avators") {
+        auto mes = std::make_shared<TalkServer::AvatorsMessage>();
+        m_server->addMessage(mes);
+        if (mes->wait())
+            handled = true;
+        ServeText(response, to_json(mes->avators), HTTPResponse::HTTPStatus::HTTP_OK);
+    }
+    else if (uri.getPath() == "/ready") {
+        ServeText(response, m_server->ready() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
+    }
+#ifdef rtDebug
+    else if (uri.getPath() == "/debug") {
+        auto mes = std::make_shared<TalkServer::DebugMessage>();
+        m_server->addMessage(mes);
+        if (mes->wait())
+            handled = true;
+        ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
+    }
+#endif
 
     if (!handled)
         ServeText(response, "", HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
@@ -231,11 +236,13 @@ void TalkServer::processMessages()
                 handled = onTalk(*talk);
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
                 handled = onStop(*stop);
+            else if (auto *get_params = dynamic_cast<GetParamsMessage*>(mes.get()))
+                handled = onGetParams(*get_params);
             else if (auto *avators = dynamic_cast<AvatorsMessage*>(mes.get()))
                 handled = onAvators(*avators);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
-                onDebug();
+                handled = onDebug();
 #endif
 
             if (!handled)

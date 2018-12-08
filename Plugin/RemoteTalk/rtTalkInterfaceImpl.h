@@ -13,4 +13,7 @@ struct AvatorInfoImpl
     std::string name;
 };
 
+template<class T> std::string to_json(const T& v);
+template<class T> void from_json(T& v, const std::string& json);
+
 } // namespace rt

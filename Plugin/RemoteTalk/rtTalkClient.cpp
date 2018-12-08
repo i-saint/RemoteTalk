@@ -17,20 +17,6 @@ TalkClient::~TalkClient()
 {
 }
 
-void TalkClient::clear()
-{
-    m_avators.clear();
-}
-
-const std::vector<AvatorInfoImpl>& TalkClient::getAvatorList()
-{
-    if (m_task_avators.valid()) {
-        m_task_avators.wait();
-        m_task_avators = {};
-    }
-    return m_avators;
-}
-
 bool TalkClient::isServerAvailable()
 {
     bool ret = false;
@@ -53,37 +39,53 @@ bool TalkClient::isServerAvailable()
     return ret;
 }
 
-bool TalkClient::updateAvatorList()
+TalkParams TalkClient::getParams()
 {
-    bool ret = false;
-    m_task_avators = std::async(std::launch::async, [this]() {
-        try {
-            URI uri;
-            uri.setPath("/avators");
+    TalkParams ret;
+    try {
+        URI uri;
+        uri.setPath("/params");
 
-            HTTPClientSession session{ m_settings.server, m_settings.port };
-            session.setTimeout(m_settings.timeout_ms * 1000);
+        HTTPClientSession session{ m_settings.server, m_settings.port };
+        session.setTimeout(m_settings.timeout_ms * 1000);
 
-            HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
-            session.sendRequest(request);
+        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+        session.sendRequest(request);
 
-            HTTPResponse response;
-            auto& rs = session.receiveResponse(response);
-            if (response.getStatus() == HTTPResponse::HTTP_OK) {
-                m_avators.clear();
-                std::string line;
-                int id;
-                char name[256];
-                while (std::getline(rs, line)) {
-                    if (sscanf(line.c_str(), "%d: %s", &id, name) == 2) {
-                        m_avators.push_back({ id, name });
-                    }
-                }
-            }
+        HTTPResponse response;
+        auto& rs = session.receiveResponse(response);
+        if (response.getStatus() == HTTPResponse::HTTP_OK) {
+            std::string s(std::istreambuf_iterator<char>(rs), {});
+            from_json(ret, s);
         }
-        catch (Poco::Exception&) {
+    }
+    catch (Poco::Exception&) {
+    }
+    return ret;
+}
+
+std::vector<AvatorInfoImpl> TalkClient::getAvators()
+{
+    std::vector<AvatorInfoImpl> ret;
+    try {
+        URI uri;
+        uri.setPath("/avators");
+
+        HTTPClientSession session{ m_settings.server, m_settings.port };
+        session.setTimeout(m_settings.timeout_ms * 1000);
+
+        HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
+        session.sendRequest(request);
+
+        HTTPResponse response;
+        auto& rs = session.receiveResponse(response);
+        if (response.getStatus() == HTTPResponse::HTTP_OK) {
+            std::string s(std::istreambuf_iterator<char>(rs), {});
+            from_json(ret, s);
         }
-    });
+    }
+    catch (Poco::Exception&) {
+    }
     return ret;
 }
 

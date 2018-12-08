@@ -10,6 +10,6 @@ public:
     virtual void onStop() = 0;
     virtual void onUpdateBuffer(const rt::AudioData& ad) = 0;
 #ifdef rtDebug
-    virtual void onDebug() = 0;
+    virtual bool onDebug() = 0;
 #endif
 };

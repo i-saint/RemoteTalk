@@ -8,22 +8,22 @@ namespace rt {
 #define rtEachTalkParams(Body)\
     Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow) Body(avator)
 
-struct TalkParamFlags
-{
-    uint32_t mute : 1;
-    uint32_t volume : 1;
-    uint32_t speed : 1;
-    uint32_t pitch : 1;
-    uint32_t intonation : 1;
-    uint32_t joy : 1;
-    uint32_t anger : 1;
-    uint32_t sorrow : 1;
-    uint32_t avator : 1;
-};
-
 struct TalkParams
 {
-    TalkParamFlags flags = {};
+    struct Flags
+    {
+        uint32_t mute : 1;
+        uint32_t volume : 1;
+        uint32_t speed : 1;
+        uint32_t pitch : 1;
+        uint32_t intonation : 1;
+        uint32_t joy : 1;
+        uint32_t anger : 1;
+        uint32_t sorrow : 1;
+        uint32_t avator : 1;
+    };
+    
+    Flags flags = {};
     bool mute = false;
     float volume = 1.0f;
     float speed = 1.0f;
@@ -65,9 +65,6 @@ struct TalkSample
 // one talk() will call this callback several times. last one has null data to notify end.
 using TalkSampleCallback = void(*)(const TalkSample *data, void *userdata);
 
-
-#pragma warning(push)
-#pragma warning(disable:4100)
 class TalkInterface
 {
 public:
@@ -83,10 +80,9 @@ public:
     virtual bool getAvatorInfo(int i, AvatorInfo *dst) const = 0;
     virtual bool setText(const char *text) = 0;
 
+    virtual bool ready() const = 0;
     virtual bool talk(TalkSampleCallback cb, void *userdata) = 0;
     virtual bool stop() = 0;
-    virtual bool ready() const = 0;
 };
-#pragma warning(pop)
 
 } // namespace rt
