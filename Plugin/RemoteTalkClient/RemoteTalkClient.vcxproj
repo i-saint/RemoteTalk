@@ -80,6 +80,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\RemoteTalk\Assets\IST\RemoteTalk\Plugins\x86\</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\RemoteTalk\Assets\IST\RemoteTalk\Plugins\x86_64\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Master'">
     <ClCompile>
@@ -104,6 +110,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\RemoteTalk\Assets\IST\RemoteTalk\Plugins\x86\</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Master|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\RemoteTalk\Assets\IST\RemoteTalk\Plugins\x86_64\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

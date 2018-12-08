@@ -33,7 +33,7 @@ void ToAudioData(AudioData& dst, const TalkSample& ts)
 template<> std::string to_json(const TalkParams& v)
 {
     picojson::object r;
-    if (v.flags.mute) r["mute"] = picojson::value(v.mute);
+    if (v.flags.mute) r["mute"] = picojson::value((float)v.mute);
     if (v.flags.volume) r["volume"] = picojson::value(v.volume);
     if (v.flags.speed) r["speed"] = picojson::value(v.speed);
     if (v.flags.pitch) r["pitch"] = picojson::value(v.pitch);
@@ -55,7 +55,7 @@ template<> void from_json(TalkParams& v, const std::string& json)
     if (tmp.is<picojson::object>()) {
         auto& obj = tmp.get<picojson::object>();
         for (auto& kvp : obj) {
-            if      (kvp.first == "mute") { v.setMute(kvp.second.get<bool>() != 0); }
+            if      (kvp.first == "mute") { v.setMute((int)kvp.second.get<float>() != 0); }
             else if (kvp.first == "volume") { v.setVolume(kvp.second.get<float>()); }
             else if (kvp.first == "speed") { v.setSpeed(kvp.second.get<float>()); }
             else if (kvp.first == "pitch") { v.setPitch(kvp.second.get<float>()); }

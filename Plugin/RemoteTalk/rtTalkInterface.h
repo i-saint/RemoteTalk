@@ -24,7 +24,7 @@ struct TalkParams
     };
     
     Flags flags = {};
-    bool mute = false;
+    int mute = false; // as bool
     float volume = 1.0f;
     float speed = 1.0f;
     float pitch = 1.0f;

@@ -18,11 +18,16 @@ bool rtHTTPClient::talk(const rt::TalkParams& params, const char *text)
     m_buf_public.clear();
     m_buf_receiving.clear();
 
-    m_client.talk(params, text, [this](const rt::AudioData& ad) {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_buf_receiving += ad;
+    m_processing = true;
+    return m_client.talk(params, text, [this](const rt::AudioData& ad) {
+        if (ad.getSampleLength() == 0) {
+            m_processing = false;
+        }
+        else {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_buf_receiving += ad;
+        }
     });
-    return false;
 }
 
 bool rtHTTPClient::stop()
@@ -35,10 +40,11 @@ bool rtHTTPClient::ready()
     return m_client.ready();
 }
 
-void rtHTTPClient::syncBuffer()
+rt::AudioData* rtHTTPClient::syncBuffers()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_buf_public = m_buf_receiving;
+    return getBuffer();
 }
 
 rt::AudioData* rtHTTPClient::getBuffer()
@@ -85,10 +91,10 @@ rtExport int rtAudioDataGetFrequency(rtAudioData *self)
 
 rtExport int rtAudioDataGetSampleLength(rtAudioData *self)
 {
-    return self->getSampleLength();
+    return (int)self->getSampleLength();
 }
 
-rtExport bool rtAudioDataGetDataAsFloat(rtAudioData *self, float *dst, int beg, int end)
+rtExport bool rtAudioDataReadSamplesFloat(rtAudioData *self, float *dst, int beg, int end)
 {
     return self->convertSamplesToFloat(dst, beg, end);
 }
@@ -129,11 +135,16 @@ rtExport bool rtHTTPClientReady(rtHTTPClient *self)
 
 rtExport bool rtHTTPClientIsFinished(rtHTTPClient *self)
 {
-    return true;
+    return self;
 }
 
-rtExport int rtHTTPClientConsumeAudioData(rtHTTPClient *self, rt::TalkSampleCallback cb)
+rtExport rtAudioData* rtHTTPClientSyncBuffers(rtHTTPClient *self)
 {
-    return 0;
+    return self->syncBuffers();
+}
+
+rtExport rtAudioData* rtHTTPClientGetBuffer(rtHTTPClient *self)
+{
+    return self->getBuffer();
 }
 #pragma endregion

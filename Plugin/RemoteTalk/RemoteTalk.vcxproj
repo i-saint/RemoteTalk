@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="picojson\picojson.h" />
     <ClInclude Include="RemoteTalkNet.h" />
     <ClInclude Include="rtAudioData.h" />
     <ClInclude Include="RemoteTalk.h" />

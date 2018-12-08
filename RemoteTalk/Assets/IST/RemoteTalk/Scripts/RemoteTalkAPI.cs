@@ -78,14 +78,11 @@ namespace IST.RemoteTalk
     {
         #region internal
         public IntPtr self;
-        [DllImport("RemoteTalkClient")] static extern rtAudioData rtAudioDataCreate();
-        [DllImport("RemoteTalkClient")] static extern void rtAudioDataRelease(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern void rtAudioDataAppend(IntPtr self, rtAudioData v);
         [DllImport("RemoteTalkClient")] static extern rtAudioFormat rtAudioDataGetFormat(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetChannels(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetFrequency(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetSampleLength(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern byte rtAudioDataGetDataAsFloat(IntPtr self, float[] dst);
+        [DllImport("RemoteTalkClient")] static extern byte rtAudioDataReadSamplesFloat(IntPtr self, float[] dst, int begin, int end);
         [DllImport("RemoteTalkClient")] static extern byte rtAudioDataExportAsWave(IntPtr self, string path);
         #endregion
 
@@ -108,20 +105,7 @@ namespace IST.RemoteTalk
             get { return rtAudioDataGetSampleLength(self); }
         }
 
-        public float[] samples
-        {
-            get
-            {
-                var ret = new float[sampleLength];
-                rtAudioDataGetDataAsFloat(self, ret);
-                return ret;
-            }
-        }
-
-        public static rtAudioData Create() { return rtAudioDataCreate(); }
-        public void Release() { rtAudioDataRelease(self); }
-        public void Append(rtAudioData v) { rtAudioDataAppend(self, v); }
-        public bool WriteToFile(string path) { return rtAudioDataWriteToFile(self, path) != 0; }
+        public void ReadSamples(float[] dst, int begin, int end) { rtAudioDataReadSamplesFloat(self, dst, begin, end); }
         public bool ExportAsWave(string path) { return rtAudioDataExportAsWave(self, path) != 0; }
     }
 
@@ -129,30 +113,124 @@ namespace IST.RemoteTalk
     public struct rtTalkParamFlags
     {
         public BitFlags bits;
-        public bool mute { get { return bits[0]; } }
-        public bool volume { get { return bits[1]; } }
-        public bool speed { get { return bits[2]; } }
-        public bool pitch { get { return bits[3]; } }
-        public bool intonation { get { return bits[4]; } }
-        public bool joy { get { return bits[5]; } }
-        public bool anger { get { return bits[6]; } }
-        public bool sorrow { get { return bits[7]; } }
-        public bool avator { get { return bits[8]; } }
+        public bool mute
+        {
+            get { return bits[0]; }
+            set { bits[0] = value; }
+        }
+        public bool volume
+        {
+            get { return bits[1]; }
+            set { bits[1] = value; }
+        }
+        public bool speed
+        {
+            get { return bits[2]; }
+            set { bits[2] = value; }
+        }
+        public bool pitch
+        {
+            get { return bits[3]; }
+            set { bits[3] = value; }
+        }
+        public bool intonation
+        {
+            get { return bits[4]; }
+            set { bits[4] = value; }
+        }
+        public bool joy
+        {
+            get { return bits[5]; }
+            set { bits[5] = value; }
+        }
+        public bool anger
+        {
+            get { return bits[6]; }
+            set { bits[6] = value; }
+        }
+        public bool sorrow
+        {
+            get { return bits[7]; }
+            set { bits[7] = value; }
+        }
+        public bool avator
+        {
+            get { return bits[8]; }
+            set { bits[8] = value; }
+        }
     }
 
     public struct rtTalkParams
     {
         public rtTalkParamFlags flags;
-        public bool mute;
-        public float volume;
-        public float speed;
-        public float pitch;
-        public float intonation;
-        public float joy;
-        public float anger;
-        public float sorrow;
-        public int avator;
+        int m_mute;
+        float m_volume;
+        float m_speed;
+        float m_pitch;
+        float m_intonation;
+        float m_joy;
+        float m_anger;
+        float m_sorrow;
+        int m_avator;
+
+        public bool mute
+        {
+            get { return m_mute != 0; }
+            set { m_mute = value ? 1 : 0; flags.mute = true; }
+        }
+        public float volume
+        {
+            get { return m_volume; }
+            set { m_volume = value; flags.volume = true; }
+        }
+        public float speed
+        {
+            get { return m_speed; }
+            set { m_speed = value; flags.speed = true; }
+        }
+        public float pitch
+        {
+            get { return m_pitch; }
+            set { m_pitch = value; flags.pitch = true; }
+        }
+        public float intonation
+        {
+            get { return m_intonation; }
+            set { m_intonation = value; flags.intonation = true; }
+        }
+        public float joy
+        {
+            get { return m_joy; }
+            set { m_joy = value; flags.joy = true; }
+        }
+        public float anger
+        {
+            get { return m_anger; }
+            set { m_anger = value; flags.anger = true; }
+        }
+        public float sorrow
+        {
+            get { return m_sorrow; }
+            set { m_sorrow = value; flags.sorrow = true; }
+        }
+        public int avator
+        {
+            get { return m_avator; }
+            set { m_avator = value; flags.avator = true; }
+        }
     };
+
+    public struct rtAvatorInfo
+    {
+        #region internal
+        public IntPtr self;
+        [DllImport("RemoteTalkClient")] static extern int rtAvatorInfoGetID(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern IntPtr rtAvatorInfoGetName(IntPtr self);
+        #endregion
+
+        public int id { get { return rtAvatorInfoGetID(self); } }
+        public string name { get { return Misc.S(rtAvatorInfoGetName(self)); } }
+    }
 
 
     public delegate void rtAudioDataCallback(rtAudioData curve);
@@ -163,14 +241,29 @@ namespace IST.RemoteTalk
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate(string server, int port);
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientRelease(IntPtr self);
+
+        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsServerAvailable(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientGetParams(IntPtr self, ref rtTalkParams st);
+
+        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientReady(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientTalk(IntPtr self, ref rtTalkParams p, string t);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientStop(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientReady(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsFinished(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern int rtHTTPClientConsumeAudioData(IntPtr self, rtAudioDataCallback cb);
+        [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientSyncBuffers(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientGetBuffer(IntPtr self);
         #endregion
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
+
+        rtTalkParams talkParams
+        {
+            get
+            {
+                var ret = default(rtTalkParams);
+                rtHTTPClientGetParams(self, ref ret);
+                return ret;
+            }
+        }
 
         public bool ready
         {
@@ -180,12 +273,16 @@ namespace IST.RemoteTalk
         {
             get { return rtHTTPClientIsFinished(self) != 0; }
         }
+        public rtAudioData buffer
+        {
+            get { return rtHTTPClientGetBuffer(self); }
+        }
 
         public static rtHTTPClient Create(string server, int port) { return rtHTTPClientCreate(server, port); }
         public void Release() { rtHTTPClientRelease(self); }
         public bool Talk(ref rtTalkParams para, string text) { return rtHTTPClientTalk(self, ref para, text) != 0; }
         public bool Stop() { return rtHTTPClientStop(self) != 0; }
-        public int Consume(rtAudioDataCallback cb) { return rtHTTPClientConsumeAudioData(self, cb); }
+        public rtAudioData SyncBuffers() { return rtHTTPClientSyncBuffers(self); }
     }
 
 
@@ -203,5 +300,13 @@ namespace IST.RemoteTalk
         public static rtHTTPReceiver Create() { return rtHTTPReceiverCreate(); }
         public void Release() { rtHTTPReceiverRelease(self); }
         public int Consume(rtAudioDataCallback cb) { return rtHTTPReceiverConsumeAudioData(self, cb); }
+    }
+
+
+    [Serializable]
+    public class AvatorInfo
+    {
+        public int id;
+        public string name;
     }
 }

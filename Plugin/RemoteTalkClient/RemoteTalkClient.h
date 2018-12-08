@@ -12,7 +12,7 @@ public:
     bool stop();
     bool ready();
 
-    void syncBuffer();
+    rt::AudioData* syncBuffers();
     rt::AudioData* getBuffer();
 
 private:
