@@ -117,8 +117,8 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
                 handled = true;
             ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
         }
-        else if (uri.getPath() == "/talkers") {
-            auto mes = std::make_shared<TalkServer::ListTalkersMessage>();
+        else if (uri.getPath() == "/avators") {
+            auto mes = std::make_shared<TalkServer::AvatorsMessage>();
             m_server->addMessage(mes);
             if (mes->wait())
                 handled = true;
@@ -231,8 +231,8 @@ void TalkServer::processMessages()
                 handled = onTalk(*talk);
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
                 handled = onStop(*stop);
-            else if (auto *talkers = dynamic_cast<ListTalkersMessage*>(mes.get()))
-                handled = onListTalkers(*talkers);
+            else if (auto *avators = dynamic_cast<AvatorsMessage*>(mes.get()))
+                handled = onListAvators(*avators);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
                 onDebug();

@@ -20,16 +20,16 @@ TalkClient::~TalkClient()
 void TalkClient::clear()
 {
     m_parmas = {};
-    m_talkers.clear();
+    m_avators.clear();
 }
 
-const std::vector<TalkerInfoImpl>& TalkClient::getTalkerList()
+const std::vector<AvatorInfoImpl>& TalkClient::getAvatorList()
 {
-    if (m_fut_talkers.valid()) {
-        m_fut_talkers.wait();
-        m_fut_talkers = {};
+    if (m_task_avators.valid()) {
+        m_task_avators.wait();
+        m_task_avators = {};
     }
-    return m_talkers;
+    return m_avators;
 }
 
 #define Set(V) m_parmas.flags.fields.V = 1; m_parmas.##V = v;
@@ -41,7 +41,7 @@ void TalkClient::setIntonation(float v) { Set(intonation); }
 void TalkClient::setJoy(float v)        { Set(joy); }
 void TalkClient::setAnger(float v)      { Set(anger); }
 void TalkClient::setSorrow(float v)     { Set(sorrow); }
-void TalkClient::setTalker(int v)       { Set(talker); }
+void TalkClient::setAvator(int v)       { Set(avator); }
 #undef Set
 
 bool TalkClient::isServerAvailable()
@@ -66,13 +66,13 @@ bool TalkClient::isServerAvailable()
     return ret;
 }
 
-bool TalkClient::updateTalkerList()
+bool TalkClient::updateAvatorList()
 {
     bool ret = false;
-    m_fut_talkers = std::async(std::launch::async, [this]() {
+    m_task_avators = std::async(std::launch::async, [this]() {
         try {
             URI uri;
-            uri.setPath("/list_talkers");
+            uri.setPath("/avators");
 
             HTTPClientSession session{ m_settings.server, m_settings.port };
             session.setTimeout(m_settings.timeout_ms * 1000);
@@ -83,13 +83,13 @@ bool TalkClient::updateTalkerList()
             HTTPResponse response;
             auto& rs = session.receiveResponse(response);
             if (response.getStatus() == HTTPResponse::HTTP_OK) {
-                m_talkers.clear();
+                m_avators.clear();
                 std::string line;
                 int id;
                 char name[256];
                 while (std::getline(rs, line)) {
                     if (sscanf(line.c_str(), "%d: %s", &id, name) == 2) {
-                        m_talkers.push_back({ id, name });
+                        m_avators.push_back({ id, name });
                     }
                 }
             }

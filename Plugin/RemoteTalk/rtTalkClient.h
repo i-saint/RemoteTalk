@@ -20,7 +20,7 @@ public:
     // no communication with server
 
     void clear();
-    const std::vector<TalkerInfoImpl>& getTalkerList();
+    const std::vector<AvatorInfoImpl>& getAvatorList();
 
     void setMute(bool v);
     void setVolume(float v);
@@ -30,13 +30,13 @@ public:
     void setJoy(float v);
     void setAnger(float v);
     void setSorrow(float v);
-    void setTalker(int v);
+    void setAvator(int v);
 
 
     // communicate with server 
 
     bool isServerAvailable();
-    bool updateTalkerList();
+    bool updateAvatorList();
     bool talk(const std::string& text, const std::function<void (const AudioData&)>& cb);
     bool stop();
     bool ready();
@@ -45,9 +45,9 @@ private:
     TalkClientSettings m_settings;
 
     TalkParams m_parmas;
-    std::vector<TalkerInfoImpl> m_talkers;
-    std::future<void> m_fut_stop;
-    std::future<void> m_fut_talkers;
+    std::vector<AvatorInfoImpl> m_avators;
+    std::future<void> m_task_stop;
+    std::future<void> m_task_avators;
 };
 
 } // namespace rt

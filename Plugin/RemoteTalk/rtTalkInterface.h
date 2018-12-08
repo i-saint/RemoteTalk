@@ -5,7 +5,7 @@
 namespace rt {
 
 #define rtEachTalkParams(Body)\
-    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow) Body(talker)
+    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow) Body(avator)
 
 union TalkParamFlags
 {
@@ -18,7 +18,7 @@ union TalkParamFlags
         uint32_t joy : 1;
         uint32_t anger : 1;
         uint32_t sorrow : 1;
-        uint32_t talker : 1;
+        uint32_t avator : 1;
     } fields;
     uint32_t bits;
 
@@ -40,10 +40,10 @@ struct TalkParams
     float joy;
     float anger;
     float sorrow;
-    int talker;
+    int avator;
 };
 
-struct TalkerInfo
+struct AvatorInfo
 {
     int id = 0;
     const char *name = nullptr;
@@ -74,8 +74,8 @@ public:
     virtual int getProtocolVersion() const { return rtProtocolVersion; }
 
     virtual void getParams(TalkParams& params) const = 0;
-    virtual int getNumTalkers() const { return 0; }
-    virtual bool getTalkerInfo(int i, TalkerInfo *dst) const { return false; }
+    virtual int getNumAvators() const { return 0; }
+    virtual bool getAvatorInfo(int i, AvatorInfo *dst) const { return false; }
 
     virtual bool talk(const TalkParams& params, const char *text, TalkSampleCallback cb, void *userdata) = 0;
     virtual bool stop() = 0;
@@ -87,7 +87,7 @@ class AudioData;
 TalkSample ToTalkSample(const AudioData& ad);
 void ToAudioData(AudioData& dst, const TalkSample& ts);
 
-struct TalkerInfoImpl
+struct AvatorInfoImpl
 {
     int id = 0;
     std::string name;

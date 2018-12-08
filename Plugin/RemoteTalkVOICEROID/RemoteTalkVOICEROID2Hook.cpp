@@ -21,7 +21,7 @@ public:
     void addMessage(MessagePtr mes) override;
     bool onTalk(TalkMessage& mes) override;
     bool onStop(StopMessage& mes) override;
-    bool onListTalkers(ListTalkersMessage& mes) override;
+    bool onListAvators(AvatorsMessage& mes) override;
     bool ready() override;
 #ifdef rtDebug
     void onDebug() override;
@@ -119,13 +119,13 @@ bool rtvrTalkServer::onStop(StopMessage& mes)
     return rtGetTalkInterface_()->stop();
 }
 
-bool rtvrTalkServer::onListTalkers(ListTalkersMessage& mes)
+bool rtvrTalkServer::onListAvators(AvatorsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
-    int n = ifs->getNumTalkers();
+    int n = ifs->getNumAvators();
     for (int i = 0; i < n; ++i) {
-        rt::TalkerInfo ti;
-        ifs->getTalkerInfo(i, &ti);
+        rt::AvatorInfo ti;
+        ifs->getAvatorInfo(i, &ti);
         char buf[256];
         sprintf(buf, "%d: %s\n", ti.id, ti.name);
         mes.result += buf;

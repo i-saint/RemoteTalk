@@ -58,7 +58,7 @@ public:
     public:
     };
 
-    class ListTalkersMessage : public Message
+    class AvatorsMessage : public Message
     {
     public:
         std::string result;
@@ -84,7 +84,7 @@ public:
     virtual void processMessages();
     virtual bool onTalk(TalkMessage& mes) = 0;
     virtual bool onStop(StopMessage& mes) = 0;
-    virtual bool onListTalkers(ListTalkersMessage& mes) = 0;
+    virtual bool onListAvators(AvatorsMessage& mes) = 0;
     virtual bool ready() = 0;
 
 #ifdef rtDebug
