@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "rtTalkInterface.h"
+#include "rtTalkInterfaceImpl.h"
 #include "rtAudioData.h"
 
 namespace rt {

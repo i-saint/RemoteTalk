@@ -140,19 +140,25 @@ bool AudioData::exportAsWave(const char *path) const
     return true;
 }
 
-bool AudioData::convertSamplesToFloat(float *dst)
+bool AudioData::convertSamplesToFloat(float *dst, int beg, int end)
 {
+    if (beg < 0)
+        beg = 0;
+    if (end < 0)
+        end = (int)getSampleLength();
+    int len = end - beg;
+
     auto convert = [dst](auto *src, size_t n) {
         for (size_t i = 0; i < n; ++i)
             dst[i] = src[i];
     };
 
     switch (format) {
-    case AudioFormat::U8: convert((const unorm8n*)data.data(), data.size() / sizeof(unorm8n)); break;
-    case AudioFormat::S16: convert((const snorm16*)data.data(), data.size() / sizeof(snorm16)); break;
-    case AudioFormat::S24: convert((const snorm24*)data.data(), data.size() / sizeof(snorm24)); break;
-    case AudioFormat::S32: convert((const snorm32*)data.data(), data.size() / sizeof(snorm32)); break;
-    case AudioFormat::F32: memcpy(dst, data.data(), data.size()); break;
+    case AudioFormat::U8:  convert((const unorm8n*)data.data() + beg, len); break;
+    case AudioFormat::S16: convert((const snorm16*)data.data() + beg, len); break;
+    case AudioFormat::S24: convert((const snorm24*)data.data() + beg, len); break;
+    case AudioFormat::S32: convert((const snorm32*)data.data() + beg, len); break;
+    case AudioFormat::F32: convert((const float*)data.data() + beg, len); break;
     default: return false;
     }
     return true;

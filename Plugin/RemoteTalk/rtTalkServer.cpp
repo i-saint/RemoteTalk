@@ -94,7 +94,7 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
                 }
 #define Decode(N)\
                 if (nvp.first == #N) {\
-                    mes->params.flags.fields.N = 1;\
+                    mes->params.flags.N = 1;\
                     mes->params.N = rt::from_string<decltype(mes->params.N)>(nvp.second);\
                 }
                 rtEachTalkParams(Decode)
@@ -220,6 +220,11 @@ void TalkServer::processMessages()
 
     bool processing = false;
     for (auto& mes : m_messages) {
+        //if (processing) {
+        //    if (!dynamic_cast<StopMessage*>(mes.get()))
+        //        break;
+        //}
+
         if (!mes->ready.load()) {
             bool handled = true;
             if (auto *talk = dynamic_cast<TalkMessage*>(mes.get()))
@@ -227,7 +232,7 @@ void TalkServer::processMessages()
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
                 handled = onStop(*stop);
             else if (auto *avators = dynamic_cast<AvatorsMessage*>(mes.get()))
-                handled = onListAvators(*avators);
+                handled = onAvators(*avators);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
                 onDebug();

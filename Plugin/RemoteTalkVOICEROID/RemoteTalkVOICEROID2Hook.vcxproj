@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RemoteTalkVOICEROID2Controller.h" />
+    <ClInclude Include="RemoteTalkVOICEROIDCommon.h" />
     <ClInclude Include="rtvrDSound.h" />
   </ItemGroup>
   <ItemGroup>

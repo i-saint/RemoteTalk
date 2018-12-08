@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "RemoteTalk/RemoteTalk.h"
 #include "RemoteTalk/RemoteTalkNet.h"
-#include "RemoteTalkVOICEROID2Controller.h"
+#include "RemoteTalkVOICEROIDCommon.h"
 #include "rtvrDSound.h"
 
 
@@ -21,7 +21,7 @@ public:
     void addMessage(MessagePtr mes) override;
     bool onTalk(TalkMessage& mes) override;
     bool onStop(StopMessage& mes) override;
-    bool onListAvators(AvatorsMessage& mes) override;
+    bool onAvators(AvatorsMessage& mes) override;
     bool ready() override;
 #ifdef rtDebug
     void onDebug() override;
@@ -75,10 +75,11 @@ bool rtvrTalkServer::onTalk(TalkMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
 
-    // need to wait next message if stop() succeeded.
-    if (ifs->stop())
+    if (ifs->stop()) {
+        // need to wait until next message if stop() succeeded.
+        SendTimerMessage();
         return false;
-
+    }
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next message.
         SendTimerMessage();
@@ -87,9 +88,8 @@ bool rtvrTalkServer::onTalk(TalkMessage& mes)
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
 
-    if (mes.params.flags.fields.mute) {
-        auto& dsound = rtvrDSoundHandler::getInstance();
-        dsound.mute = mes.params.mute;
+    if (mes.params.flags.mute) {
+        rtvrDSoundHandler::getInstance().mute = mes.params.mute;
     }
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
@@ -125,9 +125,12 @@ bool rtvrTalkServer::onStop(StopMessage& mes)
     return rtGetTalkInterface_()->stop();
 }
 
-bool rtvrTalkServer::onListAvators(AvatorsMessage& mes)
+bool rtvrTalkServer::onAvators(AvatorsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
+    if (!ifs->prepareUI())
+        return false;
+
     int n = ifs->getNumAvators();
     for (int i = 0; i < n; ++i) {
         rt::AvatorInfo ti;
@@ -137,7 +140,7 @@ bool rtvrTalkServer::onListAvators(AvatorsMessage& mes)
         mes.result += buf;
 
     }
-    return false;
+    return true;
 }
 
 bool rtvrTalkServer::ready()

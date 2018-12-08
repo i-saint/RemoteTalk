@@ -84,7 +84,7 @@ public:
     virtual void processMessages();
     virtual bool onTalk(TalkMessage& mes) = 0;
     virtual bool onStop(StopMessage& mes) = 0;
-    virtual bool onListAvators(AvatorsMessage& mes) = 0;
+    virtual bool onAvators(AvatorsMessage& mes) = 0;
     virtual bool ready() = 0;
 
 #ifdef rtDebug

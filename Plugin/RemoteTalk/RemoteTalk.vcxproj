@@ -33,6 +33,7 @@
     <ClInclude Include="rtSerialization.h" />
     <ClInclude Include="rtTalkClient.h" />
     <ClInclude Include="rtTalkInterface.h" />
+    <ClInclude Include="rtTalkInterfaceImpl.h" />
     <ClInclude Include="rtTalkReceiver.h" />
     <ClInclude Include="rtTalkServer.h" />
   </ItemGroup>
@@ -46,7 +47,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="rtTalkClient.cpp" />
-    <ClCompile Include="rtTalkInterface.cpp" />
+    <ClCompile Include="rtTalkInterfaceImpl.cpp" />
     <ClCompile Include="rtTalkReceiver.cpp" />
     <ClCompile Include="rtTalkServer.cpp" />
   </ItemGroup>

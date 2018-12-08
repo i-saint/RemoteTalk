@@ -19,7 +19,6 @@ TalkClient::~TalkClient()
 
 void TalkClient::clear()
 {
-    m_parmas = {};
     m_avators.clear();
 }
 
@@ -32,18 +31,6 @@ const std::vector<AvatorInfoImpl>& TalkClient::getAvatorList()
     return m_avators;
 }
 
-#define Set(V) m_parmas.flags.fields.V = 1; m_parmas.##V = v;
-void TalkClient::setMute(bool v)        { Set(mute); }
-void TalkClient::setVolume(float v)     { Set(volume); }
-void TalkClient::setSpeed(float v)      { Set(speed); }
-void TalkClient::setPitch(float v)      { Set(pitch); }
-void TalkClient::setIntonation(float v) { Set(intonation); }
-void TalkClient::setJoy(float v)        { Set(joy); }
-void TalkClient::setAnger(float v)      { Set(anger); }
-void TalkClient::setSorrow(float v)     { Set(sorrow); }
-void TalkClient::setAvator(int v)       { Set(avator); }
-#undef Set
-
 bool TalkClient::isServerAvailable()
 {
     bool ret = false;
@@ -52,7 +39,7 @@ bool TalkClient::isServerAvailable()
         uri.setPath("/ready");
 
         HTTPClientSession session{ m_settings.server, m_settings.port };
-        session.setTimeout(m_settings.timeout_ms * 1000);
+        session.setTimeout(100 * 1000);
 
         HTTPRequest request{ HTTPRequest::HTTP_GET, uri.getPathAndQuery() };
         session.sendRequest(request);
@@ -126,14 +113,14 @@ bool TalkClient::ready()
     return ret;
 }
 
-bool TalkClient::talk(const std::string& text, const std::function<void(const AudioData&)>& cb)
+bool TalkClient::talk(const TalkParams& params, const std::string& text, const std::function<void(const AudioData&)>& cb)
 {
     bool ret = false;
     try {
         URI uri;
         uri.setPath("/talk");
 
-#define AddParam(N) if(m_parmas.flags.fields.N) { uri.addQueryParameter(#N, to_string(m_parmas.##N)); }
+#define AddParam(N) if(params.flags.N) { uri.addQueryParameter(#N, to_string(params.##N)); }
         rtEachTalkParams(AddParam)
 #undef AddParam
         if (!text.empty())

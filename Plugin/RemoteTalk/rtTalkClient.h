@@ -1,5 +1,5 @@
 #pragma once
-#include "rtTalkInterface.h"
+#include "rtTalkInterfaceImpl.h"
 #include "rtTalkServer.h"
 
 namespace rt {
@@ -26,29 +26,17 @@ public:
     void clear();
     const std::vector<AvatorInfoImpl>& getAvatorList();
 
-    void setMute(bool v);
-    void setVolume(float v);
-    void setSpeed(float v);
-    void setPitch(float v);
-    void setIntonation(float v);
-    void setJoy(float v);
-    void setAnger(float v);
-    void setSorrow(float v);
-    void setAvator(int v);
-
-
     // communicate with server 
 
     bool isServerAvailable();
     bool updateAvatorList();
-    bool talk(const std::string& text, const std::function<void (const AudioData&)>& cb);
+    bool talk(const TalkParams& params, const std::string& text, const std::function<void (const AudioData&)>& cb);
     bool stop();
     bool ready();
 
 private:
     TalkClientSettings m_settings;
 
-    TalkParams m_parmas;
     std::vector<AvatorInfoImpl> m_avators;
     std::future<void> m_task_stop;
     std::future<void> m_task_avators;

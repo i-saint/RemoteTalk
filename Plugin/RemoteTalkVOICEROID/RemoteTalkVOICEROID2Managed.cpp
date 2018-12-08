@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "RemoteTalk/rtFoundation.h"
 #include "RemoteTalk/rtAudioData.h"
-#include "RemoteTalk/rtTalkInterface.h"
-#include "RemoteTalkVOICEROID2Controller.h"
+#include "RemoteTalk/rtTalkInterfaceImpl.h"
+#include "RemoteTalkVOICEROIDCommon.h"
 #include <atomic>
 
 using namespace System;
@@ -57,6 +57,8 @@ public:
     ~rtvr2TalkInterfaceImpl() override;
     void release() override;
     const char* getClientName() const override;
+    int getPluginVersion() const override;
+    int getProtocolVersion() const override;
 
     bool getParams(rt::TalkParams& params) const override;
     bool setParams(const rt::TalkParams& params) override;
@@ -177,27 +179,28 @@ std::vector<rt::AvatorInfoImpl> rtvr2InterfaceManaged::getAvatorList()
 
 bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
 {
+    // todo
     return true;
 }
 
 bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
 {
-    if (params.flags.fields.avator && m_lv_avators)
+    if (params.flags.avator && m_lv_avators)
         m_lv_avators->SelectedIndex = params.avator;
 
-    if (params.flags.fields.volume && m_sl_volume)
+    if (params.flags.volume && m_sl_volume)
         UpdateValue(m_sl_volume, params.volume);
-    if (params.flags.fields.speed && m_sl_speed)
+    if (params.flags.speed && m_sl_speed)
         UpdateValue(m_sl_speed, params.speed);
-    if (params.flags.fields.pitch && m_sl_pitch)
+    if (params.flags.pitch && m_sl_pitch)
         UpdateValue(m_sl_pitch, params.pitch);
-    if (params.flags.fields.intonation && m_sl_intonation)
+    if (params.flags.intonation && m_sl_intonation)
         UpdateValue(m_sl_intonation, params.intonation);
-    if (params.flags.fields.joy && m_sl_joy)
+    if (params.flags.joy && m_sl_joy)
         UpdateValue(m_sl_joy, params.joy);
-    if (params.flags.fields.anger && m_sl_anger)
+    if (params.flags.anger && m_sl_anger)
         UpdateValue(m_sl_anger, params.anger);
-    if (params.flags.fields.sorrow && m_sl_sorrow)
+    if (params.flags.sorrow && m_sl_sorrow)
         UpdateValue(m_sl_sorrow, params.sorrow);
 
     return true;
@@ -206,7 +209,7 @@ bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
 bool rtvr2InterfaceManaged::setText(const char *text)
 {
     if (!m_tb_text)
-        return false;
+        return true;
     m_tb_text->Text = gcnew String(text);
     return true;
 }
@@ -316,15 +319,10 @@ rtvr2TalkInterfaceImpl::~rtvr2TalkInterfaceImpl()
     }
 }
 
-void rtvr2TalkInterfaceImpl::release()
-{
-    // do nothing
-}
-
-const char* rtvr2TalkInterfaceImpl::getClientName() const
-{
-    return "VOICEROID2";
-}
+void rtvr2TalkInterfaceImpl::release() { /*do nothing*/ }
+const char* rtvr2TalkInterfaceImpl::getClientName() const { return "VOICEROID2"; }
+int rtvr2TalkInterfaceImpl::getPluginVersion() const { return rtPluginVersion; }
+int rtvr2TalkInterfaceImpl::getProtocolVersion() const { return rtProtocolVersion; }
 
 bool rtvr2TalkInterfaceImpl::getParams(rt::TalkParams& params) const
 {
