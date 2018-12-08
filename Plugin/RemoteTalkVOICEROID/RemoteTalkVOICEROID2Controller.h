@@ -5,6 +5,7 @@
 class rtvr2TalkInterface : public rt::TalkInterface
 {
 public:
+    virtual bool prepareUI() = 0;
     virtual void onPlay() = 0;
     virtual void onStop() = 0;
     virtual void onUpdateBuffer(const rt::AudioData& ad) = 0;

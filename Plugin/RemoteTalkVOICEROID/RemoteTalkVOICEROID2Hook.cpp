@@ -19,9 +19,9 @@ using super = rt::TalkServer;
 public:
     rtDefSingleton(rtvrTalkServer);
     void addMessage(MessagePtr mes) override;
-    std::future<void> onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os) override;
-    bool onStop() override;
-    bool onListTalkers(std::string& result) override;
+    bool onTalk(TalkMessage& mes) override;
+    bool onStop(StopMessage& mes) override;
+    bool onListTalkers(ListTalkersMessage& mes) override;
     bool ready() override;
 #ifdef rtDebug
     void onDebug() override;
@@ -48,7 +48,12 @@ static bool rtvr2LoadManagedModule()
     return rtGetTalkInterface_;
 }
 
-
+static void SendTimerMessage()
+{
+    rt::EnumerateTopWindows([](HWND hw) {
+        ::SendMessageA(hw, WM_TIMER, 0, 0);
+    });
+}
 
 
 void rtvrWindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
@@ -63,25 +68,31 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
     super::addMessage(mes);
 
     // force call GetMessageW()
-    rt::EnumerateTopWindows([](HWND hw) {
-        ::SendMessageA(hw, WM_TIMER, 0, 0);
-    });
+    SendTimerMessage();
 }
 
-std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std::string& text, std::ostream& os)
+bool rtvrTalkServer::onTalk(TalkMessage& mes)
 {
+    if (!rtGetTalkInterface_()->prepareUI()) {
+        // UI needs refresh. wait next message.
+        SendTimerMessage();
+        return false;
+    }
+
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.clear();
     }
 
-    auto& dsound = rtvrDSoundHandler::getInstance();
-    dsound.mute = params.mute;
+    if (mes.params.flags.fields.mute) {
+        auto& dsound = rtvrDSoundHandler::getInstance();
+        dsound.mute = mes.params.mute;
+    }
 
-    if (!rtGetTalkInterface_()->talk(params, text.c_str(), &sampleCallbackS, this))
-        return {};
+    if (!rtGetTalkInterface_()->talk(mes.params, mes.text.c_str(), &sampleCallbackS, this))
+        return true;
 
-    return std::async(std::launch::async, [this, &os]() {
+    mes.task = std::async(std::launch::async, [this, &mes]() {
         std::vector<rt::AudioDataPtr> tmp;
         for (;;) {
             {
@@ -91,7 +102,7 @@ std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std
             }
 
             for (auto& ad : tmp) {
-                ad->serialize(os);
+                ad->serialize(*mes.respond_stream);
             }
 
             if (!tmp.empty() && tmp.back()->data.empty())
@@ -100,14 +111,15 @@ std::future<void> rtvrTalkServer::onTalk(const rt::TalkParams& params, const std
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     });
+    return true;
 }
 
-bool rtvrTalkServer::onStop()
+bool rtvrTalkServer::onStop(StopMessage& mes)
 {
     return rtGetTalkInterface_()->stop();
 }
 
-bool rtvrTalkServer::onListTalkers(std::string& result)
+bool rtvrTalkServer::onListTalkers(ListTalkersMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
     int n = ifs->getNumTalkers();
@@ -116,7 +128,7 @@ bool rtvrTalkServer::onListTalkers(std::string& result)
         ifs->getTalkerInfo(i, &ti);
         char buf[256];
         sprintf(buf, "%d: %s\n", ti.id, ti.name);
-        result += buf;
+        mes.result += buf;
 
     }
     return false;
@@ -171,4 +183,12 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 rtExport rt::TalkInterface* rtGetTalkInterface()
 {
     return rtGetTalkInterface_ ? rtGetTalkInterface_() : nullptr;
+}
+
+rtExport void rtOnManagedModuleUnload()
+{
+    auto& dsound = rtvrDSoundHandler::getInstance();
+    dsound.onPlay = {};
+    dsound.onStop = {};
+    dsound.onUpdate = {};
 }

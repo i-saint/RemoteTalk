@@ -15,10 +15,8 @@ ref class rtvr2InterfaceManaged
 public:
     static rtvr2InterfaceManaged^ getInstance();
 
+    bool prepareUI();
     std::vector<rt::TalkerInfoImpl> getTalkerList();
-
-    void setVolume(float v);
-    void setTalker(int id);
 
     void getParams(rt::TalkParams& params);
     void setParams(const rt::TalkParams& params);
@@ -30,13 +28,13 @@ private:
     static rtvr2InterfaceManaged s_instance;
 
     bool setupControls();
-    bool setupControls_Style();
 
     TextBox^ m_tb_text;
     Button^ m_bu_play;
     Button^ m_bu_stop;
     Button^ m_bu_rewind;
     ListView^ m_lv_talker;
+    TextBox ^m_tb_volume, ^m_tb_speed, ^m_tb_pitch, ^m_tb_intonation, ^m_tb_joy, ^m_tb_anger, ^m_tb_sorrow;
 
     ref class TalkerInfo
     {
@@ -68,6 +66,7 @@ public:
     bool stop() override;
     bool ready() const override;
 
+    bool prepareUI() override;
     void onPlay() override;
     void onStop() override;
     void onUpdateBuffer(const rt::AudioData& ad) override;
@@ -124,6 +123,17 @@ static void EmulateClick(Button^ button)
     invoke->Invoke();
 }
 
+static void UpdateText(TextBox^ tb, String^ text)
+{
+    if (!tb)
+        return;
+    using namespace System::Windows::Automation;
+    auto peer = gcnew Peers::TextBoxAutomationPeer(tb);
+    auto value = (Provider::IValueProvider^)peer->GetPattern(Peers::PatternInterface::Value);
+    value->SetValue(text);
+
+}
+
 static std::string ToStdString(String^ str)
 {
     IntPtr ptr = Marshal::StringToHGlobalAnsi(str);
@@ -134,6 +144,22 @@ static std::string ToStdString(String^ str)
 rtvr2InterfaceManaged^ rtvr2InterfaceManaged::getInstance()
 {
     return %s_instance;
+}
+
+bool rtvr2InterfaceManaged::prepareUI()
+{
+    auto ttcs = SelectControlsByTypeName("AI.Framework.Wpf.Controls.TitledTabControl", true);
+    if (ttcs->Count < 2)
+        return true;
+
+    auto tc = dynamic_cast<TabControl^>(ttcs[1]);
+    if (tc->SelectedIndex != 1) {
+        tc->SelectedIndex = 1;
+        return false;
+    }
+
+    setupControls();
+    return true;
 }
 
 std::vector<rt::TalkerInfoImpl> rtvr2InterfaceManaged::getTalkerList()
@@ -148,20 +174,6 @@ std::vector<rt::TalkerInfoImpl> rtvr2InterfaceManaged::getTalkerList()
     return ret;
 }
 
-void rtvr2InterfaceManaged::setVolume(float v)
-{
-    // todo
-}
-
-void rtvr2InterfaceManaged::setTalker(int id)
-{
-    setupControls();
-
-    if (m_lv_talker) {
-        m_lv_talker->SelectedIndex = id;
-    }
-}
-
 void rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
 {
     // todo
@@ -174,55 +186,79 @@ void rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
 
 bool rtvr2InterfaceManaged::setupControls()
 {
-    if (m_tb_text)
-        return true;
+    if (!m_tb_text) {
+        auto tev = SelectControlsByTypeName("AI.Talk.Editor.TextEditView", true);
+        if (tev->Count == 0)
+            return false;
 
-    auto tev = SelectControlsByTypeName("AI.Talk.Editor.TextEditView", true);
-    if (tev->Count == 0)
-        return false;
+        auto tb = SelectControlsByTypeName(tev[0], "AI.Framework.Wpf.Controls.TextBoxEx", true);
+        if (tb->Count == 0)
+            return false;
 
-    auto tb = SelectControlsByTypeName(tev[0], "AI.Framework.Wpf.Controls.TextBoxEx", true);
-    if (tb->Count == 0)
-        return false;
+        m_tb_text = dynamic_cast<TextBox^>(tb[0]);
 
-    m_tb_text = (TextBox^)tb[0];
+        auto buttons = SelectControlsByTypeName(tev[0], "System.Windows.Controls.Button", false);
+        if (buttons->Count == 0)
+            return false;
 
-    auto buttons = SelectControlsByTypeName(tev[0], "System.Windows.Controls.Button", false);
-    if (buttons->Count == 0)
-        return false;
+        m_bu_play = dynamic_cast<Button^>(buttons[0]);
+        if (buttons->Count >= 1)
+            m_bu_stop = dynamic_cast<Button^>(buttons[1]);
+        if (buttons->Count >= 2)
+            m_bu_rewind = dynamic_cast<Button^>(buttons[2]);
 
-    m_bu_play = (Button^)buttons[0];
-    if (buttons->Count >= 1)
-        m_bu_stop = (Button^)buttons[1];
-    if (buttons->Count >= 2)
-        m_bu_rewind = (Button^)buttons[2];
+        auto vplv = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetListView", true);
+        if (vplv->Count >= 1) {
+            auto listview = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListView", true);
+            if (listview->Count >= 1) {
+                m_lv_talker = dynamic_cast<ListView^>(listview[0]);
 
-    auto vplv = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetListView", true);
-    if (vplv->Count >= 1) {
-        auto listview = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListView", true);
-        if (listview->Count >= 1) {
-            m_lv_talker = (ListView^)listview[0];
-
-            m_talkers = gcnew List<TalkerInfo^>();
-            int index = 0;
-            auto items = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListViewItem", false);
-            for each(ListViewItem^ item in items) {
-                auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
-                if (tbs->Count >= 2) {
-                    auto tb = (TextBlock^)tbs[1];
-                    m_talkers->Add(gcnew TalkerInfo(index++, tb->Text));
+                m_talkers = gcnew List<TalkerInfo^>();
+                int index = 0;
+                auto items = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListViewItem", false);
+                for each(ListViewItem^ item in items) {
+                    auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
+                    if (tbs->Count >= 2) {
+                        auto tb = dynamic_cast<TextBlock^>(tbs[1]);
+                        m_talkers->Add(gcnew TalkerInfo(index++, tb->Text));
+                    }
                 }
             }
         }
     }
 
+    {
+        auto vpev = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetEditView", true);
+        if (vpev->Count >= 1) {
+            auto lfs = SelectControlsByTypeName(vpev[0], "AI.Framework.Wpf.Controls.LinearFader", false);
+            for (int lfi = 0; lfi < lfs->Count; ++lfi) {
+                TextBox^ tb = nullptr;
+                auto tbs = SelectControlsByTypeName(lfs[lfi], "AI.Framework.Wpf.Controls.TextBoxEx", true);
+                if (tbs->Count >= 1)
+                    tb = dynamic_cast<TextBox^>(tbs[0]);
+
+                switch (lfi)
+                {
+                case 0: m_tb_volume = tb; break;
+                case 1: m_tb_speed = tb; break;
+                case 2: m_tb_pitch = tb; break;
+                case 3: m_tb_intonation = tb; break;
+                case 4: break;
+                case 5: break;
+                case 6: m_tb_joy = tb; break;
+                case 7: m_tb_anger = tb; break;
+                case 8: m_tb_sorrow = tb; break;
+                default: break;
+                }
+            }
+            if (lfs->Count < 6) {
+                m_tb_joy = m_tb_anger = m_tb_sorrow = nullptr;
+            }
+        }
+    }
     return true;
 }
 
-bool rtvr2InterfaceManaged::setupControls_Style()
-{
-    return false;
-}
 
 bool rtvr2InterfaceManaged::stop()
 {
@@ -234,15 +270,27 @@ bool rtvr2InterfaceManaged::stop()
 
 bool rtvr2InterfaceManaged::talk(const rt::TalkParams& params, const char *text)
 {
-    if (!m_tb_text || !m_bu_play) {
-        if (!setupControls())
-            return false;
-    }
-    if (params.flags.fields.talker)
-        setTalker(params.talker);
+    if (params.flags.fields.talker && m_lv_talker)
+        m_lv_talker->SelectedIndex = params.talker;
 
-    if (!text)
+    if (params.flags.fields.volume && m_tb_volume)
+        UpdateText(m_tb_volume, params.volume.ToString());
+    if (params.flags.fields.speed && m_tb_speed)
+        UpdateText(m_tb_speed, params.speed.ToString());
+    if (params.flags.fields.pitch && m_tb_pitch)
+        UpdateText(m_tb_pitch, params.pitch.ToString());
+    if (params.flags.fields.intonation && m_tb_intonation)
+        UpdateText(m_tb_intonation, params.intonation.ToString());
+    if (params.flags.fields.joy && m_tb_joy)
+        UpdateText(m_tb_joy, params.joy.ToString());
+    if (params.flags.fields.anger && m_tb_anger)
+        UpdateText(m_tb_anger, params.anger.ToString());
+    if (params.flags.fields.sorrow && m_tb_sorrow)
+        UpdateText(m_tb_sorrow, params.sorrow.ToString());
+
+    if (!text || !m_tb_text)
         return false;
+
     m_tb_text->Text = gcnew String(text);
     EmulateClick(m_bu_rewind);
     EmulateClick(m_bu_play);
@@ -257,6 +305,13 @@ rtvr2TalkInterfaceImpl::rtvr2TalkInterfaceImpl()
 
 rtvr2TalkInterfaceImpl::~rtvr2TalkInterfaceImpl()
 {
+    auto mod = ::GetModuleHandleA("RemoteTalkVOICEROID2Hook.dll");
+    if (mod) {
+        void(*proc)();
+        (void*&)proc = ::GetProcAddress(mod, "rtOnManagedModuleUnload");
+        if (proc)
+            proc();
+    }
 }
 
 void rtvr2TalkInterfaceImpl::release()
@@ -317,6 +372,11 @@ bool rtvr2TalkInterfaceImpl::ready() const
     return !m_is_playing;
 }
 
+
+bool rtvr2TalkInterfaceImpl::prepareUI()
+{
+    return rtvr2InterfaceManaged::getInstance()->prepareUI();
+}
 
 void rtvr2TalkInterfaceImpl::onPlay()
 {

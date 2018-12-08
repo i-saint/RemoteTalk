@@ -82,9 +82,9 @@ public:
     virtual void stop();
 
     virtual void processMessages();
-    virtual std::future<void> onTalk(const TalkParams& params, const std::string& text, std::ostream& os) = 0;
-    virtual bool onStop() = 0;
-    virtual bool onListTalkers(std::string& result) = 0;
+    virtual bool onTalk(TalkMessage& mes) = 0;
+    virtual bool onStop(StopMessage& mes) = 0;
+    virtual bool onListTalkers(ListTalkersMessage& mes) = 0;
     virtual bool ready() = 0;
 
 #ifdef rtDebug

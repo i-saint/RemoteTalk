@@ -226,16 +226,21 @@ void TalkServer::processMessages()
         }
 
         if (!mes->ready.load()) {
+            bool handled = true;
             if (auto *talk = dynamic_cast<TalkMessage*>(mes.get()))
-                talk->task = onTalk(talk->params, talk->text, *talk->respond_stream);
+                handled = onTalk(*talk);
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
-                onStop();
+                handled = onStop(*stop);
             else if (auto *talkers = dynamic_cast<ListTalkersMessage*>(mes.get()))
-                onListTalkers(talkers->result);
+                handled = onListTalkers(*talkers);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
                 onDebug();
 #endif
+
+            if (!handled)
+                break;
+
             mes->ready = true;
         }
 
