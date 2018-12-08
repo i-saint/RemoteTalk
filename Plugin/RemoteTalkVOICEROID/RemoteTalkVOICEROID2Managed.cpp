@@ -18,11 +18,12 @@ public:
     bool prepareUI();
     std::vector<rt::AvatorInfoImpl> getAvatorList();
 
-    void getParams(rt::TalkParams& params);
-    void setParams(const rt::TalkParams& params);
+    bool getParams(rt::TalkParams& params);
+    bool setParams(const rt::TalkParams& params);
+    bool setText(const char *text);
 
     bool stop();
-    bool talk(const rt::TalkParams& params, const char *text);
+    bool talk();
 
 private:
     static rtvr2InterfaceManaged s_instance;
@@ -57,12 +58,13 @@ public:
     void release() override;
     const char* getClientName() const override;
 
-    void getParams(rt::TalkParams& params) const override;
-
+    bool getParams(rt::TalkParams& params) const override;
+    bool setParams(const rt::TalkParams& params) override;
     int getNumAvators() const override;
     bool getAvatorInfo(int i, rt::AvatorInfo *dst) const override;
+    bool setText(const char *text) override;
 
-    bool talk(const rt::TalkParams& params, const char *text, rt::TalkSampleCallback cb, void *userdata) override;
+    bool talk(rt::TalkSampleCallback cb, void *userdata) override;
     bool stop() override;
     bool ready() const override;
 
@@ -113,14 +115,17 @@ static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String
     return ret;
 }
 
-static void EmulateClick(Button^ button)
+static bool EmulateClick(Button^ button)
 {
     if (!button)
-        return;
+        return true;
+    if (!button->IsEnabled)
+        return false;
     using namespace System::Windows::Automation;
     auto peer = gcnew Peers::ButtonAutomationPeer(button);
     auto invoke = (Provider::IInvokeProvider^)peer->GetPattern(Peers::PatternInterface::Invoke);
     invoke->Invoke();
+    return true;
 }
 
 static void UpdateValue(Slider^ slider, double v)
@@ -170,14 +175,40 @@ std::vector<rt::AvatorInfoImpl> rtvr2InterfaceManaged::getAvatorList()
     return ret;
 }
 
-void rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
+bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
 {
-    // todo
+    return true;
 }
 
-void rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
+bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
 {
-    // todo
+    if (params.flags.fields.avator && m_lv_avators)
+        m_lv_avators->SelectedIndex = params.avator;
+
+    if (params.flags.fields.volume && m_sl_volume)
+        UpdateValue(m_sl_volume, params.volume);
+    if (params.flags.fields.speed && m_sl_speed)
+        UpdateValue(m_sl_speed, params.speed);
+    if (params.flags.fields.pitch && m_sl_pitch)
+        UpdateValue(m_sl_pitch, params.pitch);
+    if (params.flags.fields.intonation && m_sl_intonation)
+        UpdateValue(m_sl_intonation, params.intonation);
+    if (params.flags.fields.joy && m_sl_joy)
+        UpdateValue(m_sl_joy, params.joy);
+    if (params.flags.fields.anger && m_sl_anger)
+        UpdateValue(m_sl_anger, params.anger);
+    if (params.flags.fields.sorrow && m_sl_sorrow)
+        UpdateValue(m_sl_sorrow, params.sorrow);
+
+    return true;
+}
+
+bool rtvr2InterfaceManaged::setText(const char *text)
+{
+    if (!m_tb_text)
+        return false;
+    m_tb_text->Text = gcnew String(text);
+    return true;
 }
 
 bool rtvr2InterfaceManaged::setupControls()
@@ -259,38 +290,13 @@ bool rtvr2InterfaceManaged::setupControls()
 bool rtvr2InterfaceManaged::stop()
 {
     if (!setupControls())
-        return false;
-    EmulateClick(m_bu_stop);
-    return true;
+        return true;
+    return EmulateClick(m_bu_stop);
 }
 
-bool rtvr2InterfaceManaged::talk(const rt::TalkParams& params, const char *text)
+bool rtvr2InterfaceManaged::talk()
 {
-    if (params.flags.fields.avator && m_lv_avators)
-        m_lv_avators->SelectedIndex = params.avator;
-
-    if (params.flags.fields.volume && m_sl_volume)
-        UpdateValue(m_sl_volume, params.volume);
-    if (params.flags.fields.speed && m_sl_speed)
-        UpdateValue(m_sl_speed, params.speed);
-    if (params.flags.fields.pitch && m_sl_pitch)
-        UpdateValue(m_sl_pitch, params.pitch);
-    if (params.flags.fields.intonation && m_sl_intonation)
-        UpdateValue(m_sl_intonation, params.intonation);
-    if (params.flags.fields.joy && m_sl_joy)
-        UpdateValue(m_sl_joy, params.joy);
-    if (params.flags.fields.anger && m_sl_anger)
-        UpdateValue(m_sl_anger, params.anger);
-    if (params.flags.fields.sorrow && m_sl_sorrow)
-        UpdateValue(m_sl_sorrow, params.sorrow);
-
-    if (!text || !m_tb_text)
-        return false;
-
-    m_tb_text->Text = gcnew String(text);
-    EmulateClick(m_bu_rewind);
-    EmulateClick(m_bu_play);
-    return true;
+    return EmulateClick(m_bu_rewind) && EmulateClick(m_bu_play);
 }
 
 
@@ -320,9 +326,14 @@ const char* rtvr2TalkInterfaceImpl::getClientName() const
     return "VOICEROID2";
 }
 
-void rtvr2TalkInterfaceImpl::getParams(rt::TalkParams& params) const
+bool rtvr2TalkInterfaceImpl::getParams(rt::TalkParams& params) const
 {
-    rtvr2InterfaceManaged::getInstance()->getParams(params);
+    return rtvr2InterfaceManaged::getInstance()->getParams(params);
+}
+
+bool rtvr2TalkInterfaceImpl::setParams(const rt::TalkParams& params)
+{
+    return rtvr2InterfaceManaged::getInstance()->setParams(params);
 }
 
 int rtvr2TalkInterfaceImpl::getNumAvators() const
@@ -342,14 +353,19 @@ bool rtvr2TalkInterfaceImpl::getAvatorInfo(int i, rt::AvatorInfo *dst) const
     return false;
 }
 
-bool rtvr2TalkInterfaceImpl::talk(const rt::TalkParams& params, const char *text, rt::TalkSampleCallback cb, void *userdata)
+bool rtvr2TalkInterfaceImpl::setText(const char *text)
+{
+    return rtvr2InterfaceManaged::getInstance()->setText(text);
+}
+
+bool rtvr2TalkInterfaceImpl::talk(rt::TalkSampleCallback cb, void *userdata)
 {
     if (m_is_playing)
         return false;
 
     m_sample_cb = cb;
     m_sample_cb_userdata = userdata;
-    if (rtvr2InterfaceManaged::getInstance()->talk(params, text)) {
+    if (rtvr2InterfaceManaged::getInstance()->talk()) {
         m_is_playing = true;
         return true;
     }
@@ -360,6 +376,8 @@ bool rtvr2TalkInterfaceImpl::talk(const rt::TalkParams& params, const char *text
 
 bool rtvr2TalkInterfaceImpl::stop()
 {
+    if (!m_is_playing)
+        return false;
     return rtvr2InterfaceManaged::getInstance()->stop();
 }
 

@@ -73,11 +73,13 @@ public:
     virtual int getPluginVersion() const { return rtPluginVersion; }
     virtual int getProtocolVersion() const { return rtProtocolVersion; }
 
-    virtual void getParams(TalkParams& params) const = 0;
+    virtual bool getParams(TalkParams& params) const = 0;
+    virtual bool setParams(const TalkParams& params) = 0;
     virtual int getNumAvators() const { return 0; }
     virtual bool getAvatorInfo(int i, AvatorInfo *dst) const { return false; }
+    virtual bool setText(const char *text) = 0;
 
-    virtual bool talk(const TalkParams& params, const char *text, TalkSampleCallback cb, void *userdata) = 0;
+    virtual bool talk(TalkSampleCallback cb, void *userdata) = 0;
     virtual bool stop() = 0;
     virtual bool ready() const = 0;
 };

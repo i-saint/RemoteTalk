@@ -128,34 +128,65 @@ namespace IST.RemoteTalk
     }
 
 
+    public struct rtTalkParamFlags
+    {
+        public BitFlags bits;
+        public bool mute { get { return bits[0]; } }
+        public bool volume { get { return bits[1]; } }
+        public bool speed { get { return bits[2]; } }
+        public bool pitch { get { return bits[3]; } }
+        public bool intonation { get { return bits[4]; } }
+        public bool joy { get { return bits[5]; } }
+        public bool anger { get { return bits[6]; } }
+        public bool sorrow { get { return bits[7]; } }
+        public bool avator { get { return bits[8]; } }
+    }
+
+    public struct rtTalkParams
+    {
+        public rtTalkParamFlags flags;
+        public bool mute;
+        public float volume;
+        public float speed;
+        public float pitch;
+        public float intonation;
+        public float joy;
+        public float anger;
+        public float sorrow;
+        public int avator;
+    };
+
+
     public delegate void rtAudioDataCallback(rtAudioData curve);
 
     public struct rtHTTPClient
     {
         #region internal
         public IntPtr self;
-        [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate();
+        [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate(string server, int port);
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientRelease(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern void rtHTTPClientSetText(IntPtr self, string v);
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientSend(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientTalk(IntPtr self, ref rtTalkParams p, string t);
+        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientStop(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientReady(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsFinished(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtHTTPClientConsumeAudioData(IntPtr self, rtAudioDataCallback cb);
         #endregion
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
 
-        public string text
+        public bool ready
         {
-            set { rtHTTPClientSetText(self, value); }
+            get { return rtHTTPClientReady(self) != 0; }
         }
         public bool isFinished
         {
             get { return rtHTTPClientIsFinished(self) != 0; }
         }
 
-        public static rtHTTPClient Create() { return rtHTTPClientCreate(); }
+        public static rtHTTPClient Create(string server, int port) { return rtHTTPClientCreate(server, port); }
         public void Release() { rtHTTPClientRelease(self); }
-        public bool Send() { return rtHTTPClientSend(self) != 0; }
+        public bool Talk(ref rtTalkParams para, string text) { return rtHTTPClientTalk(self, ref para, text) != 0; }
+        public bool Stop() { return rtHTTPClientStop(self) != 0; }
         public int Consume(rtAudioDataCallback cb) { return rtHTTPClientConsumeAudioData(self, cb); }
     }
 

@@ -73,23 +73,29 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
 
 bool rtvrTalkServer::onTalk(TalkMessage& mes)
 {
-    if (!rtGetTalkInterface_()->prepareUI()) {
+    auto *ifs = rtGetTalkInterface_();
+
+    // need to wait next message if stop() succeeded.
+    if (ifs->stop())
+        return false;
+
+    if (!ifs->prepareUI()) {
         // UI needs refresh. wait next message.
         SendTimerMessage();
         return false;
     }
-
-    {
-        std::unique_lock<std::mutex> lock(m_data_mutex);
-        m_data_queue.clear();
-    }
+    ifs->setParams(mes.params);
+    ifs->setText(mes.text.c_str());
 
     if (mes.params.flags.fields.mute) {
         auto& dsound = rtvrDSoundHandler::getInstance();
         dsound.mute = mes.params.mute;
     }
-
-    if (!rtGetTalkInterface_()->talk(mes.params, mes.text.c_str(), &sampleCallbackS, this))
+    {
+        std::unique_lock<std::mutex> lock(m_data_mutex);
+        m_data_queue.clear();
+    }
+    if (!ifs->talk(&sampleCallbackS, this))
         return true;
 
     mes.task = std::async(std::launch::async, [this, &mes]() {

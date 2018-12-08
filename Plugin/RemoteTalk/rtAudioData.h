@@ -39,6 +39,7 @@ public:
     void deserialize(std::istream& is);
     uint64_t hash() const;
 
+    void clear();
     void* allocateByte(size_t num);
     // allocate num_samples * channels * size_of_format bytes
     void* allocateSample(size_t num_samples);

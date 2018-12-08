@@ -220,11 +220,6 @@ void TalkServer::processMessages()
 
     bool processing = false;
     for (auto& mes : m_messages) {
-        if (processing) {
-            if (!dynamic_cast<StopMessage*>(mes.get()))
-                break;
-        }
-
         if (!mes->ready.load()) {
             bool handled = true;
             if (auto *talk = dynamic_cast<TalkMessage*>(mes.get()))

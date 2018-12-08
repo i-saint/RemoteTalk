@@ -63,6 +63,14 @@ uint64_t AudioData::hash() const
     return gen_hash(data);
 }
 
+void AudioData::clear()
+{
+    format = AudioFormat::Unknown;
+    frequency = 0;
+    channels = 0;
+    data.clear();
+}
+
 void* AudioData::allocateByte(size_t num)
 {
     data.resize(num);
