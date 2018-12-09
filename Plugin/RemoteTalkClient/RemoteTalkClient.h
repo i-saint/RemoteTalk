@@ -5,17 +5,19 @@
 class rtHTTPClient
 {
 public:
+    using async = std::future<void>;
+
     rtHTTPClient(const char *server, uint16_t port);
     ~rtHTTPClient();
     void release();
 
-    void updateParams();
+    async& updateServerStatus();
     const rt::TalkParams& getServerParams();
     const rt::AvatorList& getAvatorList();
 
     bool isReady();
-    bool talk(const rt::TalkParams& params, const std::string& text);
-    bool stop();
+    async& talk(const rt::TalkParams& params, const std::string& text);
+    async& stop();
 
     void wait();
     bool isFinished();
@@ -31,8 +33,9 @@ private:
     rt::AudioData m_buf_receiving;
     rt::AudioData m_buf_public;
     std::mutex m_mutex;
-    std::future<void> m_task_status;
-    std::future<void> m_task_talk;
+    async m_task_status;
+    async m_task_talk;
+    async m_task_stop;
     bool m_processing = false;
 };
 

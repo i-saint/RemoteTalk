@@ -16,9 +16,13 @@ namespace IST.RemoteTalk
         [SerializeField] string m_text;
         [SerializeField] string m_avatorName = "";
 
+        [SerializeField] rtTalkParams m_serverParams;
+        [SerializeField] AvatorInfo[] m_avators = new AvatorInfo[0] { };
+
         rtHTTPClient m_client;
-        rtTalkParams m_serverParams;
-        AvatorInfo[] m_avators = new AvatorInfo[0] { };
+        rtAsync m_asyncStat;
+        rtAsync m_asyncTalk;
+        rtAsync m_asyncStop;
         #endregion
 
 
@@ -26,12 +30,12 @@ namespace IST.RemoteTalk
         public string server
         {
             get { return m_server; }
-            set { m_server = value; m_client.Release(); }
+            set { m_server = value; ReleaseClient(); }
         }
         public int port
         {
             get { return m_port; }
-            set { m_port = value; m_client.Release(); }
+            set { m_port = value; ReleaseClient(); }
         }
         public rtTalkParams talkParams
         {
@@ -42,7 +46,6 @@ namespace IST.RemoteTalk
         public AvatorInfo[] avators { get { return m_avators; } }
 
         public int sampleLength { get { return m_client.buffer.sampleLength; } }
-        public bool isFinished { get { return m_client.isFinished; } }
         #endregion
 
 
@@ -57,33 +60,76 @@ namespace IST.RemoteTalk
         }
 #endif
 
-        public void Talk()
+        void MakeClient()
         {
             if (!m_client)
+            {
                 m_client = rtHTTPClient.Create(m_server, m_port);
-            m_client.Talk(ref m_params, m_text);
+                m_asyncStat = m_client.UpdateServerStatus();
+            }
+        }
+
+        void ReleaseClient()
+        {
+            m_asyncStat.Release();
+            m_asyncTalk.Release();
+            m_asyncStop.Release();
+            m_client.Release();
+        }
+
+
+        public void Talk()
+        {
+            MakeClient();
+            m_asyncTalk = m_client.Talk(ref m_params, m_text);
+        }
+
+        public void Stop()
+        {
+            MakeClient();
+            m_asyncStop = m_client.Talk(ref m_params, m_text);
         }
 
         public void UpdateSamples()
         {
-            m_client.SyncBuffers();
+            if (m_asyncStat && m_asyncStat.isFinished)
+            {
+                m_serverParams = m_client.serverParams;
+                m_avators = m_client.avatorList;
+                m_asyncStat.Release();
+#if UNITY_EDITOR
+                Misc.ForceRepaint();
+#endif
+            }
+
+            if (m_asyncTalk)
+            {
+                m_client.SyncBuffers();
+                if (m_asyncTalk.isFinished)
+                    m_asyncTalk.Release();
+            }
         }
 
 
 
         void OnValidate()
         {
-            m_client.Release();
+            ReleaseClient();
         }
 
         void Awake()
         {
-
+#if UNITY_EDITOR
+            EditorApplication.update += UpdateSamples;
+#endif
         }
 
         void OnDestroy()
         {
-            m_client.Release();
+#if UNITY_EDITOR
+            EditorApplication.update -= UpdateSamples;
+#endif
+            ReleaseClient();
         }
 
         void Update()

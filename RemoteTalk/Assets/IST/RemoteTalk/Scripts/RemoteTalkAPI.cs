@@ -47,6 +47,14 @@ namespace IST.RemoteTalk
                 ret = go.AddComponent<T>();
             return ret;
         }
+
+        public static void ForceRepaint()
+        {
+#if UNITY_EDITOR
+            SceneView.RepaintAll();
+            UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
+#endif
+        }
     }
 
 
@@ -244,8 +252,25 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern IntPtr rtAvatorInfoGetName(IntPtr self);
         #endregion
 
+        public static implicit operator bool(rtAvatorInfo v) { return v.self != IntPtr.Zero; }
+
         public int id { get { return rtAvatorInfoGetID(self); } }
         public string name { get { return Misc.S(rtAvatorInfoGetName(self)); } }
+    }
+
+    public struct rtAsync
+    {
+        #region internal
+        public IntPtr self;
+        [DllImport("RemoteTalkClient")] static extern byte rtAsyncIsFinished(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern void rtAsyncWait(IntPtr self);
+        #endregion
+
+        public static implicit operator bool(rtAsync v) { return v.self != IntPtr.Zero; }
+        public void Release() { self = IntPtr.Zero; }
+
+        public bool isFinished { get { return rtAsyncIsFinished(self) != 0; } }
+        public void Wait() { rtAsyncWait(self); }
     }
 
 
@@ -258,20 +283,21 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate(string server, int port);
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientRelease(IntPtr self);
 
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsServerAvailable(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientGetParams(IntPtr self, ref rtTalkParams st);
+        [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientUpdateServerStatus(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern void rtHTTPClientGetParams(IntPtr self, ref rtTalkParams st);
+        [DllImport("RemoteTalkClient")] static extern int rtHTTPClientGetNumAvators(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern rtAvatorInfo rtHTTPClientGetAvator(IntPtr self, int i);
 
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsReady(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientTalk(IntPtr self, ref rtTalkParams p, string t);
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientStop(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsFinished(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientTalk(IntPtr self, ref rtTalkParams p, string t);
+        [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientStop(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientSyncBuffers(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientGetBuffer(IntPtr self);
         #endregion
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
 
-        rtTalkParams talkParams
+        public rtTalkParams serverParams
         {
             get
             {
@@ -281,13 +307,23 @@ namespace IST.RemoteTalk
             }
         }
 
+        public AvatorInfo[] avatorList
+        {
+            get
+            {
+                var ret = new AvatorInfo[rtHTTPClientGetNumAvators(self)];
+                for (int i = 0; i < ret.Length; ++i)
+                {
+                    var ai = rtHTTPClientGetAvator(self, i);
+                    ret[i] = new AvatorInfo { id = ai.id, name = ai.name };
+                }
+                return ret;
+            }
+        }
+
         public bool isReady
         {
             get { return rtHTTPClientIsReady(self) != 0; }
-        }
-        public bool isFinished
-        {
-            get { return rtHTTPClientIsFinished(self) != 0; }
         }
         public rtAudioData buffer
         {
@@ -296,8 +332,10 @@ namespace IST.RemoteTalk
 
         public static rtHTTPClient Create(string server, int port) { return rtHTTPClientCreate(server, port); }
         public void Release() { rtHTTPClientRelease(self); self = IntPtr.Zero; }
-        public bool Talk(ref rtTalkParams para, string text) { return rtHTTPClientTalk(self, ref para, text) != 0; }
-        public bool Stop() { return rtHTTPClientStop(self) != 0; }
+
+        public rtAsync UpdateServerStatus() { return rtHTTPClientUpdateServerStatus(self); }
+        public rtAsync Talk(ref rtTalkParams para, string text) { return rtHTTPClientTalk(self, ref para, text); }
+        public rtAsync Stop() { return rtHTTPClientStop(self); }
         public rtAudioData SyncBuffers() { return rtHTTPClientSyncBuffers(self); }
     }
 

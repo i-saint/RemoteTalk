@@ -18,11 +18,12 @@ void rtHTTPClient::release()
     delete this;
 }
 
-void rtHTTPClient::updateParams()
+rtHTTPClient::async& rtHTTPClient::updateServerStatus()
 {
     m_task_status = std::async(std::launch::async, [this]() {
         m_client.getParams(m_server_params, m_avator_list);
     });
+    return m_task_status;
 }
 
 const rt::TalkParams& rtHTTPClient::getServerParams()
@@ -40,7 +41,7 @@ bool rtHTTPClient::isReady()
     return m_client.ready();
 }
 
-bool rtHTTPClient::talk(const rt::TalkParams& params, const std::string& text)
+rtHTTPClient::async& rtHTTPClient::talk(const rt::TalkParams& params, const std::string& text)
 {
     m_buf_public.clear();
     m_buf_receiving.clear();
@@ -53,18 +54,25 @@ bool rtHTTPClient::talk(const rt::TalkParams& params, const std::string& text)
             }
         });
     });
-    return true;
+    return m_task_talk;
 }
 
-bool rtHTTPClient::stop()
+rtHTTPClient::async& rtHTTPClient::stop()
 {
-    return m_client.stop();
+    m_task_stop = std::async(std::launch::async, [this]() {
+        m_client.stop();
+    });
+    return m_task_stop;
 }
 
 void rtHTTPClient::wait()
 {
+    if (m_task_status.valid())
+        m_task_status.wait();
     if (m_task_talk.valid())
         m_task_talk.wait();
+    if (m_task_stop.valid())
+        m_task_stop.wait();
 }
 
 bool rtHTTPClient::isFinished()
@@ -88,7 +96,26 @@ rt::AudioData* rtHTTPClient::getBuffer()
 
 
 #pragma region rtAudioData
+using rtAsync = std::future<void>;
 
+rtExport bool rtAsyncIsFinished(rtAsync *self)
+{
+    if (!self)
+        return true;
+    return self->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
+}
+
+rtExport void rtAsyncWait(rtAsync *self)
+{
+    if (!self)
+        return;
+    self->wait();
+}
+#pragma endregion
+
+
+
+#pragma region rtAudioData
 using rtAudioData = rt::AudioData;
 using rtAudioFormat = rt::AudioFormat;
 
@@ -153,7 +180,28 @@ rtExport bool rtAudioDataExportAsWave(rtAudioData *self, const char *path)
 #pragma endregion
 
 
+#pragma region rtAvatorInfo
+using rtAvatorInfo = rt::AvatorInfoImpl;
+
+rtExport int rtAvatorInfoGetID(rtAvatorInfo *self)
+{
+    if (!self)
+        return 0;
+    return self->id;
+}
+rtExport const char* rtAvatorInfoGetName(rtAvatorInfo *self)
+{
+    if (!self)
+        return nullptr;
+    return self->name.c_str();
+}
+
+#pragma endregion
+
+
 #pragma region rtHTTPClient
+using rtTalkParams = rt::TalkParams;
+
 rtExport rtHTTPClient* rtHTTPClientCreate(const char *server, int port)
 {
     return new rtHTTPClient(server, port);
@@ -165,18 +213,46 @@ rtExport void rtHTTPClientRelease(rtHTTPClient *self)
         self->release();
 }
 
-rtExport bool rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)
+rtExport rtAsync* rtHTTPClientUpdateServerStatus(rtHTTPClient *self)
 {
     if (!self)
-        return false;
-    return self->talk(*p, text);
+        return nullptr;
+    return &self->updateServerStatus();
 }
 
-rtExport bool rtHTTPClientStop(rtHTTPClient *self)
+rtExport void rtHTTPClientGetParams(rtHTTPClient *self, rtTalkParams *st)
 {
     if (!self)
-        return false;
-    return self->stop();
+        return;
+    *st = self->getServerParams();
+}
+
+rtExport int rtHTTPClientGetNumAvators(rtHTTPClient *self)
+{
+    if (!self)
+        return 0;
+    return (int)self->getAvatorList().size();
+}
+
+rtExport const rtAvatorInfo* rtHTTPClientGetAvator(rtHTTPClient *self, int i)
+{
+    if (!self)
+        return nullptr;
+    return &self->getAvatorList()[i];
+}
+
+rtExport rtAsync* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)
+{
+    if (!self)
+        return nullptr;
+    return &self->talk(*p, text);
+}
+
+rtExport rtAsync* rtHTTPClientStop(rtHTTPClient *self)
+{
+    if (!self)
+        return nullptr;
+    return &self->stop();
 }
 
 rtExport bool rtHTTPClientIsReady(rtHTTPClient *self)
