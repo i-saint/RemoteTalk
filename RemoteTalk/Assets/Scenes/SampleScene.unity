@@ -179,6 +179,239 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &531982279
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 531982281}
+  - component: {fileID: 531982280}
+  m_Layer: 0
+  m_Name: Demo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &531982280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 531982279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eaaa05bf2cdfe684c8157ef4126c10f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_remoteTalk: {fileID: 1476112017}
+  m_reverb: {fileID: 534669906}
+  m_echo: {fileID: 534669909}
+  m_scripts:
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 0
+    text: "\u3053\u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u306F\u3001\u30DC\u30A4\u30B9\u30ED\u30A4\u30C9\u3092\u9060\u9694\u64CD\u4F5C\u3057\u3066\u30E6\u30CB\u30C6\u30A3\u30FC\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u3068\u3057\u3066\u4F7F\u3048\u308B\u3088\u3046\u306B\u3057\u307E\u3059\u3002"
+    delay: 0
+    reverb: 0
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 0
+    text: "\u30C6\u30AD\u30B9\u30C8\u306E\u5165\u529B\u3084\u5404\u7A2E\u30D1\u30E9\u30E1\u30FC\u30BF\u306E\u8A2D\u5B9A\u3082\u3001\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u304B\u3089\u884C\u3046\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
+    delay: 0
+    reverb: 0
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 2
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 0
+    text: "\u4F8B\u3048\u3070\u901F\u5EA6\u306E\u5909\u66F4\u3002"
+    delay: 0
+    reverb: 0
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1.5
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 0
+    text: "\u3053\u308C\u306F\u9AD8\u3055\u306E\u5909\u66F4\u3067\u3059\u3002"
+    delay: 40
+    reverb: 0
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 1
+    text: "\u3082\u3061\u308D\u3093\u3001\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u306E\u5909\u66F4\u3082\u53EF\u80FD\u3067\u3059\u3002"
+    delay: 0
+    reverb: 0
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 1
+    text: "\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u3067\u306F\u672C\u5F53\u306B\u305F\u3060\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u306A\u306E\u3067\u3001\u97F3\u306B\u5BFE\u3057\u3066\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u306B\u52A0\u5DE5\u3084\u89E3\u6790\u3092\u65BD\u3059\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002"
+    delay: 0
+    reverb: 0
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 1
+    text: "\u4F8B\u3048\u3070\u3001\u3053\u308C\u306F\u30AA\u30FC\u30C7\u30A3\u30AA\u30D5\u30A3\u30EB\u30BF\u3001\u30EA\u30D0\u30FC\u30D6\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
+    delay: 0
+    reverb: 1
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 1
+    text: "\u3053\u308C\u306F\u30A8\u30B3\u30FC\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
+    delay: 100
+    reverb: 0
+    echo: 1
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 0
+    text: "3D\u97F3\u97FF\u52B9\u679C\u3082\u3082\u3061\u308D\u3093\u304B\u304B\u308A\u307E\u3059\u3002\u5148\u7A0B\u304B\u3089\u97F3\u6E90\u304C\u56DE\u3063\u3066\u3044\u308B\u306E\u306F\u305D\u306E\u78BA\u8A8D\u7528\u3067\u3059\u3002"
+    delay: 0
+    reverb: 1
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 0
+    text: "CeVIO\u306B\u3082\u5BFE\u5FDC\u3057\u305F\u3089\u30EA\u30EA\u30FC\u30B9\u3059\u308B\u4E88\u5B9A\u3067\u3059\u3002\u4ECA\u6708\u4E2D\u306B\u3067\u304D\u305F\u3089\u3044\u3044\u306A\u3042\u3002"
+    delay: 0
+    reverb: 0
+    echo: 0
+  - talkParams:
+      flags:
+        bits:
+          bits: 0
+      m_mute: 0
+      m_volume: 1
+      m_speed: 1.3
+      m_pitch: 1
+      m_intonation: 1
+      m_joy: 0
+      m_anger: 0
+      m_sorrow: 0
+      m_avator: 1
+    text: "\u4ECA\u56DE\u306F\u4EE5\u4E0A\u306B\u306A\u308A\u307E\u3059\u3002\u3054\u8996\u8074\u3042\u308A\u304C\u3068\u3046\u3054\u3056\u3044\u307E\u3057\u305F\u3002"
+    delay: 0
+    reverb: 0
+    echo: 0
+  m_scriptPos: 0
+  m_delay: 0
+--- !u!4 &531982281
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 531982279}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.7587886, y: -3.444623, z: 5.057255}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -189,6 +422,12 @@ GameObject:
   - component: {fileID: 534669905}
   - component: {fileID: 534669904}
   - component: {fileID: 534669903}
+  - component: {fileID: 534669906}
+  - component: {fileID: 534669911}
+  - component: {fileID: 534669910}
+  - component: {fileID: 534669909}
+  - component: {fileID: 534669908}
+  - component: {fileID: 534669907}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: Untagged
@@ -250,12 +489,100 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 1, z: -0.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!164 &534669906
+AudioReverbFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 1
+  m_DryLevel: 0
+  m_Room: 0
+  m_RoomHF: 0
+  m_DecayTime: 1
+  m_DecayHFRatio: 0.5
+  m_ReflectionsLevel: -10000
+  m_ReverbLevel: 0
+  m_ReverbDelay: 0.04
+  m_Diffusion: 100
+  m_Density: 100
+  m_HFReference: 5000
+  m_RoomLF: 0
+  m_LFReference: 250
+  m_ReflectionsDelay: 0
+  m_ReverbPreset: 27
+--- !u!169 &534669907
+AudioLowPassFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 0
+  serializedVersion: 3
+  m_LowpassResonanceQ: 1
+  lowpassLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.22727273
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!165 &534669908
+AudioHighPassFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 0
+  m_CutoffFrequency: 5000
+  m_HighpassResonanceQ: 1
+--- !u!168 &534669909
+AudioEchoFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 0
+  m_Delay: 500
+  m_DecayRatio: 0.5
+  m_WetMix: 1
+  m_DryMix: 1
+--- !u!170 &534669910
+AudioDistortionFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 0
+  m_DistortionLevel: 0.5
+--- !u!166 &534669911
+AudioChorusFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 0
+  m_DryMix: 0.5
+  m_WetMix1: 0.5
+  m_WetMix2: 0.5
+  m_WetMix3: 0.5
+  m_Delay: 52.42
+  m_Rate: 20
+  m_Depth: 0.4
 --- !u!1 &1476112016
 GameObject:
   m_ObjectHideFlags: 0
@@ -266,6 +593,7 @@ GameObject:
   - component: {fileID: 1476112018}
   - component: {fileID: 1476112019}
   - component: {fileID: 1476112017}
+  - component: {fileID: 1476112020}
   m_Layer: 0
   m_Name: RemoteTalkClient
   m_TagString: Untagged
@@ -289,7 +617,7 @@ MonoBehaviour:
   m_params:
     flags:
       bits:
-        bits: -1
+        bits: 511
     m_mute: 0
     m_volume: 1
     m_speed: 1
@@ -299,26 +627,10 @@ MonoBehaviour:
     m_anger: 0
     m_sorrow: 0
     m_avator: 1
-  m_text: "\u3053\u3053\u306B\u9069\u5F53\u306A\u9577\u3044\u6587\u7AE0\u3092\u5165\u529B"
+  m_text: "\u3053\u3053\u306B\u9069\u5F53\u306A\u9577\u3044\u9577\u3044\u9577\u30FC\u3044\u6587\u7AE0\u3092\u5165\u529B"
   m_avatorName: "\u7D32\u661F\u3042\u304B\u308A"
-  m_serverParams:
-    flags:
-      bits:
-        bits: 510
-    m_mute: 0
-    m_volume: 1
-    m_speed: 1
-    m_pitch: 1
-    m_intonation: 1
-    m_joy: 0
-    m_anger: 0
-    m_sorrow: 0
-    m_avator: 1
-  m_avators:
-  - id: 0
-    name: "\u7D50\u6708\u3086\u304B\u308A"
-  - id: 1
-    name: "\u7D32\u661F\u3042\u304B\u308A"
+  m_exportAudio: 0
+  m_assetDir: RemoteTalkAssets
 --- !u!4 &1476112018
 Transform:
   m_ObjectHideFlags: 0
@@ -326,7 +638,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1476112016}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 3.21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -341,7 +653,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
+  m_audioClip: {fileID: 1572276859}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -352,7 +664,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 5
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -387,7 +699,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -427,3 +739,48 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!95 &1476112020
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1476112016}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c2e9424fc4d88864fb45524f33a2b704, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!83 &1572276859
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: RemoteTalkAudio
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 44100
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0

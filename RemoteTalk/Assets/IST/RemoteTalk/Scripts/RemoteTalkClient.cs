@@ -31,6 +31,7 @@ namespace IST.RemoteTalk
         int m_samplePos;
         bool m_readySamples = false;
         bool m_logging = true;
+        bool m_ready = false;
         #endregion
 
 
@@ -50,6 +51,30 @@ namespace IST.RemoteTalk
             get { return m_params; }
             set { m_params = value; }
         }
+        public string talkText
+        {
+            get { return m_text; }
+            set { m_text = value; }
+        }
+
+        public bool isReady
+        {
+            get { return m_ready; }
+        }
+        public bool isTalking
+        {
+            get { return m_asyncTalk; }
+        }
+        public bool isPlaying
+        {
+            get
+            {
+                var source = GetComponent<AudioSource>();
+                return source != null && source.isPlaying;
+            }
+        }
+
+
         public rtTalkParams serverParams { get { return m_serverParams; } }
         public AvatorInfo[] avators { get { return m_avators; } }
 
@@ -137,6 +162,7 @@ namespace IST.RemoteTalk
                 m_serverParams = m_client.serverParams;
                 m_avators = m_client.avatorList;
                 m_asyncStat.Release();
+                m_ready = true;
 #if UNITY_EDITOR
                 Misc.ForceRepaint();
 #endif
@@ -248,6 +274,7 @@ namespace IST.RemoteTalk
 
         void Update()
         {
+            MakeClient();
             UpdateSamples();
         }
     }
