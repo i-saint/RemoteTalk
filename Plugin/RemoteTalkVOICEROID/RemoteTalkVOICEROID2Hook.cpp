@@ -74,15 +74,12 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
 bool rtvrTalkServer::onTalk(TalkMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
-
-    if (ifs->stop()) {
-        // need to wait until next message if stop() succeeded.
-        SendTimerMessage();
-        return false;
-    }
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next message.
-        SendTimerMessage();
+        return false;
+    }
+    if (ifs->stop()) {
+        // need to wait until next message if stop() succeeded.
         return false;
     }
     ifs->setParams(mes.params);
@@ -122,7 +119,13 @@ bool rtvrTalkServer::onTalk(TalkMessage& mes)
 
 bool rtvrTalkServer::onStop(StopMessage& mes)
 {
-    return rtGetTalkInterface_()->stop();
+    auto *ifs = rtGetTalkInterface_();
+    if (!ifs->prepareUI()) {
+        // UI needs refresh. wait next message.
+        SendTimerMessage();
+        return false;
+    }
+    return ifs->stop();
 }
 
 bool rtvrTalkServer::onGetParams(GetParamsMessage& mes)

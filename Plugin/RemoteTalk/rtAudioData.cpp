@@ -141,28 +141,31 @@ bool AudioData::exportAsWave(const char *path) const
     return true;
 }
 
-bool AudioData::convertSamplesToFloat(float *dst, int beg, int end)
+int AudioData::convertSamplesToFloat(float *dst, int pos, int len_orig)
 {
-    beg = std::max(beg, 0);
-    end = end < 0 ? (int)getSampleLength() : std::min(end, (int)getSampleLength());
-    if (beg >= end)
-        return false;
-    int len = end - beg;
+    int sample_length = (int)getSampleLength();
+    pos = std::min(pos, sample_length);
+    int len = len_orig;
+    if (len < 0)
+        len = sample_length;
+    len = std::min(len, sample_length - pos);
 
-    auto convert = [dst](auto *src, size_t n) {
-        for (size_t i = 0; i < n; ++i)
+    auto convert = [dst](auto *src, int n, int z) {
+        for (int i = 0; i < n; ++i)
             dst[i] = src[i];
+        for (int i = n; i < z; ++i)
+            dst[i] = 0.0f;
     };
 
     switch (format) {
-    case AudioFormat::U8:  convert((const unorm8n*)data.data() + beg, len); break;
-    case AudioFormat::S16: convert((const snorm16*)data.data() + beg, len); break;
-    case AudioFormat::S24: convert((const snorm24*)data.data() + beg, len); break;
-    case AudioFormat::S32: convert((const snorm32*)data.data() + beg, len); break;
-    case AudioFormat::F32: convert((const float*)data.data() + beg, len); break;
+    case AudioFormat::U8:  convert((const unorm8n*)data.data() + pos, len, len_orig); break;
+    case AudioFormat::S16: convert((const snorm16*)data.data() + pos, len, len_orig); break;
+    case AudioFormat::S24: convert((const snorm24*)data.data() + pos, len, len_orig); break;
+    case AudioFormat::S32: convert((const snorm32*)data.data() + pos, len, len_orig); break;
+    case AudioFormat::F32: convert((const float*)data.data() + pos, len, len_orig); break;
     default: return false;
     }
-    return true;
+    return len;
 }
 
 AudioData& AudioData::operator+=(const AudioData& v)

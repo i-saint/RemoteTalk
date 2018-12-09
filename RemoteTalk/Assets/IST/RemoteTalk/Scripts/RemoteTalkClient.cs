@@ -17,9 +17,6 @@ namespace IST.RemoteTalk
         [SerializeField] string m_text;
         [SerializeField] string m_avatorName = "";
 
-        [SerializeField] rtTalkParams m_serverParams;
-        [SerializeField] AvatorInfo[] m_avators = new AvatorInfo[0] { };
-
         [SerializeField] bool m_exportAudio = false;
         [SerializeField] string m_assetDir = "RemoteTalkAssets";
 
@@ -27,9 +24,12 @@ namespace IST.RemoteTalk
         rtAsync m_asyncStat;
         rtAsync m_asyncTalk;
         rtAsync m_asyncStop;
-        AudioClip m_clip;
+        rtTalkParams m_serverParams;
+        AvatorInfo[] m_avators = new AvatorInfo[0] { };
+
         int m_progress;
         int m_samplePos;
+        bool m_readySamples = false;
         bool m_logging = true;
         #endregion
 
@@ -101,6 +101,7 @@ namespace IST.RemoteTalk
             m_params.mute = true;
             m_progress = 0;
             m_samplePos = 0;
+            m_readySamples = false;
             m_asyncTalk = m_client.Talk(ref m_params, m_text);
         }
 
@@ -112,14 +113,21 @@ namespace IST.RemoteTalk
 
         void OnAudioRead(float[] samples)
         {
+            if (!m_readySamples)
+                return;
+
+            for (int i = 0; i < 20; ++i)
+            {
+                if (m_samplePos + samples.Length > m_client.SyncBuffers().sampleLength && !m_asyncTalk.isFinished)
+                    System.Threading.Thread.Sleep(16);
+            }
+
             Debug.Log("read pos: " + m_samplePos + " [" + samples.Length + "]");
-            m_client.SyncBuffers().ReadSamples(samples, m_samplePos, m_samplePos + samples.Length);
-            m_samplePos += samples.Length;
+            m_samplePos += m_client.SyncBuffers().ReadSamples(samples, m_samplePos, samples.Length);
         }
 
         void OnAudioSetPosition(int pos)
         {
-            Debug.Log("new pos: " + pos);
         }
 
         public void UpdateSamples()
@@ -137,22 +145,18 @@ namespace IST.RemoteTalk
             if (m_asyncTalk)
             {
                 var buf = m_client.SyncBuffers();
-
-                if(buf.sampleLength > 0)
+                if (buf.sampleLength > 0)
                 {
-                    if (m_clip == null)
-                    {
-                        m_clip = AudioClip.Create("RemoteTalkAudio",
-                            buf.frequency * buf.channels, buf.channels, buf.frequency, true,
-                            OnAudioRead, OnAudioSetPosition);
-                    }
-                    if (m_progress == 100)
+                    if (m_progress == 0)
                     {
                         var source = GetComponent<AudioSource>();
                         if (source != null)
                         {
-                            source.clip = m_clip;
+                            source.clip = AudioClip.Create("RemoteTalkAudio",
+                                buf.frequency * buf.channels, buf.channels, buf.frequency, true,
+                                OnAudioRead, OnAudioSetPosition);
                             source.loop = true;
+                            m_readySamples = true;
                             source.Play();
                         }
                     }

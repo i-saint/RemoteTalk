@@ -296,8 +296,6 @@ bool rtvr2InterfaceManaged::setupControls()
 
 bool rtvr2InterfaceManaged::stop()
 {
-    if (!setupControls())
-        return true;
     return EmulateClick(m_bu_stop);
 }
 

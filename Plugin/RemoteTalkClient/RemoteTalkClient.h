@@ -20,7 +20,6 @@ public:
     async& stop();
 
     void wait();
-    bool isFinished();
     rt::AudioData* syncBuffers();
     rt::AudioData* getBuffer();
 

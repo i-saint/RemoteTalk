@@ -248,14 +248,7 @@ void TalkServer::stop()
 void TalkServer::processMessages()
 {
     lock_t lock(m_mutex);
-
-    bool processing = false;
     for (auto& mes : m_messages) {
-        //if (processing) {
-        //    if (!dynamic_cast<StopMessage*>(mes.get()))
-        //        break;
-        //}
-
         if (!mes->handled.load()) {
             bool handled = true;
             if (auto *talk = dynamic_cast<TalkMessage*>(mes.get()))
@@ -272,12 +265,8 @@ void TalkServer::processMessages()
             if (!handled)
                 break;
             mes->handled = true;
-        }
-
-        if (!mes->isProcessing())
             mes.reset();
-        else
-            processing = true;
+        }
     }
     m_messages.erase(
         std::remove_if(m_messages.begin(), m_messages.end(), [](MessagePtr &p) { return !p; }),

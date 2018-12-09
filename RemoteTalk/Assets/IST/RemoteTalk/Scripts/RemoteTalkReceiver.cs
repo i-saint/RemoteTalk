@@ -18,7 +18,8 @@ namespace IST.RemoteTalk
         {
             var go = new GameObject();
             go.name = "RemoteTalkReceiver";
-            var mss = go.AddComponent<RemoteTalkReceiver>();
+            go.AddComponent<AudioSource>();
+            go.AddComponent<RemoteTalkReceiver>();
             Undo.RegisterCreatedObjectUndo(go, "RemoteTalk");
         }
 #endif

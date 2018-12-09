@@ -47,7 +47,7 @@ public:
     double getDuration() const;
 
     bool exportAsWave(const char *path) const;
-    bool convertSamplesToFloat(float *dst, int beg = 0, int end = -1);
+    int convertSamplesToFloat(float *dst, int pos = 0, int len = -1);
 
     AudioData& operator+=(const AudioData& v);
 };

@@ -75,11 +75,6 @@ void rtHTTPClient::wait()
         m_task_stop.wait();
 }
 
-bool rtHTTPClient::isFinished()
-{
-    return !m_task_talk.valid() || m_task_talk.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
-}
-
 rt::AudioData* rtHTTPClient::syncBuffers()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
@@ -164,11 +159,11 @@ rtExport int rtAudioDataGetSampleLength(rtAudioData *self)
     return (int)self->getSampleLength();
 }
 
-rtExport bool rtAudioDataReadSamplesFloat(rtAudioData *self, float *dst, int beg, int end)
+rtExport int rtAudioDataReadSamplesFloat(rtAudioData *self, float *dst, int pos, int len)
 {
     if (!self)
-        return false;
-    return self->convertSamplesToFloat(dst, beg, end);
+        return 0;
+    return self->convertSamplesToFloat(dst, pos, len);
 }
 
 rtExport bool rtAudioDataExportAsWave(rtAudioData *self, const char *path)
@@ -260,13 +255,6 @@ rtExport bool rtHTTPClientIsReady(rtHTTPClient *self)
     if (!self)
         return false;
     return self->isReady();
-}
-
-rtExport bool rtHTTPClientIsFinished(rtHTTPClient *self)
-{
-    if (!self)
-        return true;
-    return self->isFinished();
 }
 
 rtExport rtAudioData* rtHTTPClientSyncBuffers(rtHTTPClient *self)
