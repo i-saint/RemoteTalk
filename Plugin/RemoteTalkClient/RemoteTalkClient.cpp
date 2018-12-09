@@ -166,6 +166,12 @@ rtExport int rtAudioDataReadSamplesFloat(rtAudioData *self, float *dst, int pos,
     return self->convertSamplesToFloat(dst, pos, len);
 }
 
+rtExport void rtAudioDataClearSample(float *dst, int len)
+{
+    for (int i = 0; i < len; ++i)
+        dst[i] = 0.0f;
+}
+
 rtExport bool rtAudioDataExportAsWave(rtAudioData *self, const char *path)
 {
     if (!self)

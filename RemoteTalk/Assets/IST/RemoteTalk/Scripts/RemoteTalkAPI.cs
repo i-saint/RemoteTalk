@@ -91,6 +91,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetFrequency(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetSampleLength(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataReadSamplesFloat(IntPtr self, float[] dst, int pos, int len);
+        [DllImport("RemoteTalkClient")] static extern void rtAudioDataClearSample(float[] dst, int len);
         [DllImport("RemoteTalkClient")] static extern byte rtAudioDataExportAsWave(IntPtr self, string path);
         #endregion
 
@@ -114,6 +115,7 @@ namespace IST.RemoteTalk
         }
 
         public int ReadSamples(float[] dst, int pos, int len) { return rtAudioDataReadSamplesFloat(self, dst, pos, len); }
+        static public void ClearSamples(float[] dst) { rtAudioDataClearSample(dst, dst.Length); }
         public bool ExportAsWave(string path) { return rtAudioDataExportAsWave(self, path) != 0; }
     }
 

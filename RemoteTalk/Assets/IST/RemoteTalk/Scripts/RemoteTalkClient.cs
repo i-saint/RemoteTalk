@@ -27,11 +27,12 @@ namespace IST.RemoteTalk
         rtTalkParams m_serverParams;
         AvatorInfo[] m_avators = new AvatorInfo[0] { };
 
-        int m_progress;
         int m_samplePos;
         bool m_readySamples = false;
         bool m_logging = true;
         bool m_ready = false;
+        bool m_talking = false;
+        int m_bufferDepleted = 0;
         #endregion
 
 
@@ -63,7 +64,7 @@ namespace IST.RemoteTalk
         }
         public bool isTalking
         {
-            get { return m_asyncTalk; }
+            get { return m_talking; }
         }
         public bool isPlaying
         {
@@ -124,9 +125,8 @@ namespace IST.RemoteTalk
             }
             m_params.flags = m_serverParams.flags;
             m_params.mute = true;
-            m_progress = 0;
-            m_samplePos = 0;
             m_readySamples = false;
+            m_talking = true;
             m_asyncTalk = m_client.Talk(ref m_params, m_text);
         }
 
@@ -139,20 +139,26 @@ namespace IST.RemoteTalk
         void OnAudioRead(float[] samples)
         {
             if (!m_readySamples)
+            {
+                rtAudioData.ClearSamples(samples);
                 return;
+            }
 
             for (int i = 0; i < 20; ++i)
             {
-                if (m_samplePos + samples.Length > m_client.SyncBuffers().sampleLength && !m_asyncTalk.isFinished)
-                    System.Threading.Thread.Sleep(16);
+                if (m_samplePos + samples.Length <= m_client.SyncBuffers().sampleLength || m_asyncTalk.isFinished)
+                    break;
+                System.Threading.Thread.Sleep(16);
             }
 
-            Debug.Log("read pos: " + m_samplePos + " [" + samples.Length + "]");
+            //Debug.Log("read pos: " + m_samplePos + " [" + samples.Length + "]");
             m_samplePos += m_client.SyncBuffers().ReadSamples(samples, m_samplePos, samples.Length);
         }
 
         void OnAudioSetPosition(int pos)
         {
+            if (!m_talking && m_samplePos >= m_client.buffer.sampleLength)
+                ++m_bufferDepleted;
         }
 
         public void UpdateSamples()
@@ -173,26 +179,28 @@ namespace IST.RemoteTalk
                 var buf = m_client.SyncBuffers();
                 if (buf.sampleLength > 0)
                 {
-                    if (m_progress == 0)
+                    var source = GetComponent<AudioSource>();
+                    if (source != null && !source.isPlaying)
                     {
-                        var source = GetComponent<AudioSource>();
-                        if (source != null)
-                        {
-                            source.clip = AudioClip.Create("RemoteTalkAudio",
-                                buf.frequency * buf.channels, buf.channels, buf.frequency, true,
-                                OnAudioRead, OnAudioSetPosition);
-                            source.loop = true;
-                            m_readySamples = true;
-                            source.Play();
-                        }
+                        source.clip = AudioClip.Create("RemoteTalkAudio",
+                            buf.frequency * buf.channels / 5, // 200ms
+                            buf.channels, buf.frequency, true,
+                            OnAudioRead, OnAudioSetPosition);
+                        source.loop = true;
+                        source.Play();
+
+                        // must be after Play()
+                        m_samplePos = 0;
+                        m_bufferDepleted = 0;
+                        m_readySamples = true;
                     }
-                    ++m_progress;
                 }
 
 
                 if (m_asyncTalk.isFinished)
                 {
                     m_asyncTalk.Release();
+                    m_talking = false;
 
 #if UNITY_EDITOR
                     if (m_exportAudio)
@@ -216,11 +224,15 @@ namespace IST.RemoteTalk
                 }
 #endif
             }
-            else if(m_samplePos >= m_client.buffer.sampleLength)
+
+            if (!m_talking)
             {
                 var source = GetComponent<AudioSource>();
-                if (source != null)
-                    source.loop = false;
+                if (source != null && source.isPlaying)
+                {
+                    if (m_bufferDepleted > 2 && source.loop)
+                        source.loop = false;
+                }
             }
         }
 
