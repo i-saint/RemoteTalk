@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -19,10 +20,17 @@ namespace IST.RemoteTalk
         [SerializeField] rtTalkParams m_serverParams;
         [SerializeField] AvatorInfo[] m_avators = new AvatorInfo[0] { };
 
+        [SerializeField] bool m_exportAudio = false;
+        [SerializeField] string m_assetDir = "RemoteTalkAssets";
+
         rtHTTPClient m_client;
         rtAsync m_asyncStat;
         rtAsync m_asyncTalk;
         rtAsync m_asyncStop;
+        AudioClip m_clip;
+        int m_progress;
+        int m_samplePos;
+        bool m_logging = true;
         #endregion
 
 
@@ -46,6 +54,7 @@ namespace IST.RemoteTalk
         public AvatorInfo[] avators { get { return m_avators; } }
 
         public int sampleLength { get { return m_client.buffer.sampleLength; } }
+        public string assetPath { get { return "Assets/" + m_assetDir; } }
         #endregion
 
 
@@ -55,7 +64,8 @@ namespace IST.RemoteTalk
         {
             var go = new GameObject();
             go.name = "RemoteTalkClient";
-            var mss = go.AddComponent<RemoteTalkClient>();
+            go.AddComponent<AudioSource>();
+            go.AddComponent<RemoteTalkClient>();
             Undo.RegisterCreatedObjectUndo(go, "RemoteTalk");
         }
 #endif
@@ -81,6 +91,16 @@ namespace IST.RemoteTalk
         public void Talk()
         {
             MakeClient();
+
+            if (m_avators.Length > 0)
+            {
+                m_params.avator = Mathf.Clamp(m_params.avator, 0, m_avators.Length - 1);
+                m_avatorName = m_avators[m_params.avator].name;
+            }
+            m_params.flags = m_serverParams.flags;
+            m_params.mute = true;
+            m_progress = 0;
+            m_samplePos = 0;
             m_asyncTalk = m_client.Talk(ref m_params, m_text);
         }
 
@@ -88,6 +108,18 @@ namespace IST.RemoteTalk
         {
             MakeClient();
             m_asyncStop = m_client.Talk(ref m_params, m_text);
+        }
+
+        void OnAudioRead(float[] samples)
+        {
+            Debug.Log("read pos: " + m_samplePos + " [" + samples.Length + "]");
+            m_client.SyncBuffers().ReadSamples(samples, m_samplePos, m_samplePos + samples.Length);
+            m_samplePos += samples.Length;
+        }
+
+        void OnAudioSetPosition(int pos)
+        {
+            Debug.Log("new pos: " + pos);
         }
 
         public void UpdateSamples()
@@ -104,11 +136,89 @@ namespace IST.RemoteTalk
 
             if (m_asyncTalk)
             {
-                m_client.SyncBuffers();
+                var buf = m_client.SyncBuffers();
+
+                if(buf.sampleLength > 0)
+                {
+                    if (m_clip == null)
+                    {
+                        m_clip = AudioClip.Create("RemoteTalkAudio",
+                            buf.frequency * buf.channels, buf.channels, buf.frequency, true,
+                            OnAudioRead, OnAudioSetPosition);
+                    }
+                    if (m_progress == 100)
+                    {
+                        var source = GetComponent<AudioSource>();
+                        if (source != null)
+                        {
+                            source.clip = m_clip;
+                            source.loop = true;
+                            source.Play();
+                        }
+                    }
+                    ++m_progress;
+                }
+
+
                 if (m_asyncTalk.isFinished)
+                {
                     m_asyncTalk.Release();
+
+#if UNITY_EDITOR
+                    if (m_exportAudio)
+                    {
+                        MakeSureAssetDirectoryExists();
+                        var dstPath = assetPath + "/" + "test.wav";
+                        if (m_client.buffer.ExportAsWave(dstPath))
+                        {
+                            AssetDatabase.ImportAsset(dstPath);
+                            AudioClip ac = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
+                            if (ac != null)
+                            {
+                                var importer = (AudioImporter)AssetImporter.GetAtPath(dstPath);
+                                if (importer != null)
+                                {
+                                    // nothing todo for now
+                                }
+                            }
+                        }
+                    }
+                }
+#endif
+            }
+            else if(m_samplePos >= m_client.buffer.sampleLength)
+            {
+                var source = GetComponent<AudioSource>();
+                if (source != null)
+                    source.loop = false;
             }
         }
+
+#if UNITY_EDITOR
+        bool Try(Action act)
+        {
+            try
+            {
+                act.Invoke();
+                return true;
+            }
+            catch (Exception e)
+            {
+                if (m_logging)
+                    Debug.LogError(e);
+                return false;
+            }
+        }
+
+        public void MakeSureAssetDirectoryExists()
+        {
+            Try(() =>
+            {
+                if (!AssetDatabase.IsValidFolder(assetPath))
+                    AssetDatabase.CreateFolder("Assets", m_assetDir);
+            });
+        }
+#endif
 
 
 
@@ -117,14 +227,14 @@ namespace IST.RemoteTalk
             ReleaseClient();
         }
 
-        void Awake()
+        void OnEnable()
         {
 #if UNITY_EDITOR
             EditorApplication.update += UpdateSamples;
 #endif
         }
 
-        void OnDestroy()
+        void OnDisable()
         {
 #if UNITY_EDITOR
             EditorApplication.update -= UpdateSamples;

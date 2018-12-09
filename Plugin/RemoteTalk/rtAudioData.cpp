@@ -145,6 +145,8 @@ bool AudioData::convertSamplesToFloat(float *dst, int beg, int end)
 {
     beg = std::max(beg, 0);
     end = end < 0 ? (int)getSampleLength() : std::min(end, (int)getSampleLength());
+    if (beg >= end)
+        return false;
     int len = end - beg;
 
     auto convert = [dst](auto *src, size_t n) {
