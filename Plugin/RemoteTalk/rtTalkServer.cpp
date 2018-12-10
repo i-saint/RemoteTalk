@@ -226,6 +226,8 @@ bool TalkServer::StatsMessage::from_json(const std::string& str)
     return stats.from_json(str);
 }
 
+
+#ifdef rtDebug
 std::string TalkServer::DebugMessage::to_json()
 {
     using namespace picojson;
@@ -240,6 +242,7 @@ bool TalkServer::DebugMessage::from_json(const std::string& str)
     parse(val, str);
     return rt::from_json(params, val);
 }
+#endif
 
 
 TalkServer::TalkServer()

@@ -149,25 +149,35 @@ namespace IST.RemoteTalk
             get { return bits[4]; }
             set { bits[4] = value; }
         }
-        public bool joy
+        public bool alpha
         {
             get { return bits[5]; }
             set { bits[5] = value; }
         }
-        public bool anger
+        public bool normal
         {
             get { return bits[6]; }
             set { bits[6] = value; }
         }
-        public bool sorrow
+        public bool joy
         {
             get { return bits[7]; }
             set { bits[7] = value; }
         }
-        public bool cast
+        public bool anger
         {
             get { return bits[8]; }
             set { bits[8] = value; }
+        }
+        public bool sorrow
+        {
+            get { return bits[9]; }
+            set { bits[9] = value; }
+        }
+        public bool cast
+        {
+            get { return bits[10]; }
+            set { bits[10] = value; }
         }
     }
 
@@ -180,6 +190,8 @@ namespace IST.RemoteTalk
         [SerializeField] float m_speed;
         [SerializeField] float m_pitch;
         [SerializeField] float m_intonation;
+        [SerializeField] float m_alpha;
+        [SerializeField] float m_normal;
         [SerializeField] float m_joy;
         [SerializeField] float m_anger;
         [SerializeField] float m_sorrow;
@@ -223,6 +235,16 @@ namespace IST.RemoteTalk
         {
             get { return m_intonation; }
             set { m_intonation = value; flags.intonation = true; }
+        }
+        public float alpha
+        {
+            get { return m_alpha; }
+            set { m_alpha = value; flags.alpha = true; }
+        }
+        public float normal
+        {
+            get { return m_normal; }
+            set { m_normal = value; flags.normal = true; }
         }
         public float joy
         {

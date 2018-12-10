@@ -4,10 +4,42 @@
 #include "RemoteTalkCeVIOCSCommon.h"
 
 
+class rtcvWindowMessageHandler : public rt::WindowMessageHandlerBase
+{
+public:
+    rtDefSingleton(rtcvWindowMessageHandler);
+    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+};
+
 class rtcvWaveOutHandler : public rt::WaveOutHandlerBase
 {
 public:
     rtDefSingleton(rtcvWaveOutHandler);
+
+    bool mute = false;
+    std::function<void()> onPlay, onStop;
+    std::function<void(const rt::AudioData&)> onUpdate;
+
+    void clearCallbacks();
+
+protected:
+    virtual void afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret) override;
+    virtual void beforeWaveOutClose(HWAVEOUT& hwo) override;
+    //virtual void afterWaveOutPrepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) {}
+    //virtual void beforeWaveOutUnprepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh) {}
+    void beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh) override;
+    //virtual void afterWaveOutPause(HWAVEOUT& hwo, MMRESULT& ret) {}
+    //virtual void beforeWaveOutRestart(HWAVEOUT& hwo) {}
+    //virtual void beforeWaveOutReset(HWAVEOUT& hwo) {}
+
+private:
+    struct Record
+    {
+        WAVEFORMATEX wave_format;
+        rt::AudioData data;
+        bool is_playing = false;
+    };
+    std::map<HWAVEOUT, Record> m_records;
 };
 
 
@@ -16,6 +48,7 @@ class rtcvTalkServer : public rt::TalkServer
 using super = rt::TalkServer;
 public:
     rtDefSingleton(rtcvTalkServer);
+    rtcvTalkServer();
     void addMessage(MessagePtr mes) override;
 
     bool ready() override;
@@ -49,6 +82,39 @@ static bool rtcvLoadManagedModule()
 }
 
 
+
+void rtcvWindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+{
+    auto& server = rtcvTalkServer::getInstance();
+    server.start();
+}
+
+
+void rtcvWaveOutHandler::clearCallbacks()
+{
+    onPlay = {};
+    onStop = {};
+    onUpdate = {};
+}
+
+void rtcvWaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret)
+{
+}
+
+void rtcvWaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
+{
+}
+
+void rtcvWaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh)
+{
+}
+
+
+
+rtcvTalkServer::rtcvTalkServer()
+{
+    m_settings.port = 8082;
+}
 
 void rtcvTalkServer::addMessage(MessagePtr mes)
 {
@@ -145,10 +211,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
         if (rtcvLoadManagedModule()) {
-            rt::AddWaveOutHandler(&rtcvWaveOutHandler::getInstance());
+            rt::AddWindowMessageHandler(&rtcvWindowMessageHandler::getInstance());
+
+            auto& wo = rtcvWaveOutHandler::getInstance();
+            rt::AddWaveOutHandler(&wo);
+            wo.onPlay = []() { rtGetTalkInterface_()->onPlay(); };
+            wo.onStop = []() { rtGetTalkInterface_()->onStop(); };
+            wo.onUpdate = [](const rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
         }
-    }
-    else if (fdwReason == DLL_PROCESS_DETACH) {
     }
     return TRUE;
 }
@@ -160,5 +230,5 @@ rtExport rt::TalkInterface* rtGetTalkInterface()
 
 rtExport void rtOnManagedModuleUnload()
 {
-    auto& waveout = rtcvWaveOutHandler::getInstance();
+    rtcvWaveOutHandler::getInstance().clearCallbacks();
 }

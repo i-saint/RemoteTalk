@@ -122,7 +122,7 @@ public:
 
     virtual void addMessage(MessagePtr mes);
 
-private:
+protected:
     using HTTPServerPtr = std::shared_ptr<Poco::Net::HTTPServer>;
     using lock_t = std::unique_lock<std::mutex>;
 

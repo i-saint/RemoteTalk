@@ -6,7 +6,7 @@
 namespace rt {
 
 #define rtEachTalkParams(Body)\
-    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow) Body(cast)
+    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(alpha) Body(normal) Body(joy) Body(anger) Body(sorrow) Body(cast)
 
 struct TalkParams
 {
@@ -17,6 +17,8 @@ struct TalkParams
         uint32_t speed : 1;
         uint32_t pitch : 1;
         uint32_t intonation : 1;
+        uint32_t alpha : 1;
+        uint32_t normal : 1;
         uint32_t joy : 1;
         uint32_t anger : 1;
         uint32_t sorrow : 1;
@@ -29,6 +31,8 @@ struct TalkParams
     float speed = 1.0f;
     float pitch = 1.0f;
     float intonation = 1.0f;
+    float alpha = 1.0f;
+    float normal = 0.0f;
     float joy = 0.0f;
     float anger = 0.0f;
     float sorrow = 0.0f;
@@ -40,6 +44,8 @@ struct TalkParams
     void setSpeed(float v) { Set(speed); }
     void setPitch(float v) { Set(pitch); }
     void setIntonation(float v) { Set(intonation); }
+    void setAlpha(float v) { Set(alpha); }
+    void setNormal(float v) { Set(normal); }
     void setJoy(float v) { Set(joy); }
     void setAnger(float v) { Set(anger); }
     void setSorrow(float v) { Set(sorrow); }

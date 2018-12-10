@@ -170,6 +170,8 @@ template<> picojson::value to_json(const TalkParams& v)
     if (v.flags.speed) t["speed"] = value(v.speed);
     if (v.flags.pitch) t["pitch"] = value(v.pitch);
     if (v.flags.intonation) t["intonation"] = value(v.intonation);
+    if (v.flags.alpha) t["alpha"] = value(v.alpha);
+    if (v.flags.normal) t["normal"] = value(v.joy);
     if (v.flags.joy) t["joy"] = value(v.joy);
     if (v.flags.anger) t["anger"] = value(v.anger);
     if (v.flags.sorrow) t["sorrow"] = value(v.sorrow);
@@ -187,6 +189,8 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
         else if (kvp.first == "speed") { dst.setSpeed(kvp.second.get<float>()); }
         else if (kvp.first == "pitch") { dst.setPitch(kvp.second.get<float>()); }
         else if (kvp.first == "intonation") { dst.setIntonation(kvp.second.get<float>()); }
+        else if (kvp.first == "alpha") { dst.setAlpha(kvp.second.get<float>()); }
+        else if (kvp.first == "normal") { dst.setNormal(kvp.second.get<float>()); }
         else if (kvp.first == "joy") { dst.setJoy(kvp.second.get<float>()); }
         else if (kvp.first == "anger") { dst.setAnger(kvp.second.get<float>()); }
         else if (kvp.first == "sorrow") { dst.setSorrow(kvp.second.get<float>()); }

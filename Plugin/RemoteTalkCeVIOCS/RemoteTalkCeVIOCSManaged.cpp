@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "RemoteTalk/rtFoundation.h"
+#include "RemoteTalk/rtNorm.h"
 #include "RemoteTalk/rtAudioData.h"
 #include "RemoteTalk/rtTalkInterfaceImpl.h"
 #include "RemoteTalk/rtSerialization.h"
@@ -9,7 +10,6 @@
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
-using namespace System::Windows::Controls;
 using namespace CeVIO::Talk::RemoteService;
 
 
@@ -19,6 +19,9 @@ public:
     static rtcvInterfaceManaged^ getInstance();
 
     rtcvInterfaceManaged();
+    void updateStats();
+    void updateCast();
+
     rt::CastList getCastList();
     bool getParams(rt::TalkParams& params);
     bool setParams(const rt::TalkParams& params);
@@ -29,7 +32,6 @@ public:
 
 private:
     static rtcvInterfaceManaged s_instance;
-
 
     ref class CastInfo
     {
@@ -104,15 +106,36 @@ rtcvInterfaceManaged^ rtcvInterfaceManaged::getInstance()
 
 rtcvInterfaceManaged::rtcvInterfaceManaged()
 {
-    auto list = TalkerAgent::AvailableCasts;
+}
 
-    m_casts = gcnew List<CastInfo^>();
-    for (int i = 0; i < list->Length; ++i)
-        m_casts->Add(gcnew CastInfo(i, list[i]));
+void rtcvInterfaceManaged::updateStats()
+{
+    if (!m_casts) {
+        m_casts = gcnew List<CastInfo^>();
+        auto list = TalkerAgent::AvailableCasts;
+        for (int i = 0; i < list->Length; ++i)
+            m_casts->Add(gcnew CastInfo(i, list[i]));
+    }
+}
+
+void rtcvInterfaceManaged::updateCast()
+{
+    updateStats();
+    if (!m_casts || m_casts->Count == 0)
+        return;
+    m_cast = rt::clamp(m_cast, 0, m_casts->Count);
+    if (m_cast >= m_casts->Count)
+        return;
+
+    if (!m_talker || m_talker->Cast != m_casts[m_cast]->name)
+        m_talker = gcnew Talker(m_casts[m_cast]->name);
 }
 
 rt::CastList rtcvInterfaceManaged::getCastList()
 {
+    if (!m_casts)
+        updateStats();
+
     rt::CastList ret;
     if (m_casts) {
         for each(auto ti in m_casts)
@@ -123,6 +146,30 @@ rt::CastList rtcvInterfaceManaged::getCastList()
 
 bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
 {
+    updateCast();
+    params.setCast(m_cast);
+    if (m_talker) {
+        params.setVolume((float)m_talker->Volume / 100.0f);
+        params.setSpeed((float)m_talker->Speed / 100.0f);
+        params.setPitch((float)m_talker->Tone / 100.0f);
+        params.setIntonation((float)m_talker->ToneScale / 100.0f);
+        params.setAlpha((float)m_talker->Alpha / 100.0f);
+
+        int n = m_talker->Components->Count;
+        for (int i = 0; i < n; ++i) {
+            auto c = m_talker->Components->At(i);
+            auto name = c->Name;
+            auto val = (float)c->Value / 100.0f;
+            if (name == L"å≥ãC")
+                params.setJoy(val);
+            else if (name == L"ïÅí ")
+                params.setNormal(val);
+            else if (name == L"ì{ÇË")
+                params.setAnger(val);
+            else if (name == L"à£ÇµÇ›")
+                params.setSorrow(val);
+        }
+    }
     return true;
 }
 
@@ -151,13 +198,13 @@ bool rtcvInterfaceManaged::stop()
 bool rtcvInterfaceManaged::talk()
 {
     stop();
-    if (m_cast < 0 || m_cast >= m_casts->Count)
+    updateCast();
+
+    if (!m_talker)
         return false;
 
-    m_talker = gcnew Talker(m_casts[m_cast]->name);
     //m_talker->Volume = m_volume;
     //m_talker->Speed = m_speed;
-    auto components = m_talker->Components;
 
     m_state = m_talker->Speak(m_text);
     return true;
