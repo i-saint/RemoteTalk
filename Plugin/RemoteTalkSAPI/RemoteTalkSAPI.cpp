@@ -35,7 +35,7 @@ private:
     std::mutex m_data_mutex;
     std::vector<rt::AudioDataPtr> m_data_queue;
 
-    rt::AvatorList m_avators;
+    rt::CastList m_casts;
     std::vector<CComPtr<ISpObjectToken>> m_voice_tokens;
     CComPtr<ISpVoice> m_voice;
 
@@ -68,7 +68,7 @@ rtspTalkServer::rtspTalkServer()
             SpGetDescription(cpVoiceToken, &str);
             auto desc = rt::ToMBS(str);
             m_voice_tokens.push_back(cpVoiceToken);
-            m_avators.push_back({ id_seed++, desc });
+            m_casts.push_back({ id_seed++, desc });
         }
     }
 }
@@ -89,17 +89,17 @@ bool rtspTalkServer::onStats(StatsMessage& mes)
     if (!m_voice)
         return true;
 
-    mes.stats.params.setAvator(0);
+    mes.stats.params.setCast(0);
 
     USHORT volume;
     m_voice->GetVolume(&volume);
     mes.stats.params.setVolume((float)volume/ 100.0f);
     //mes.stats.params.setVolume();
 
-    mes.stats.host_app = "Windows SAPI";
+    mes.stats.host = "Windows SAPI";
     mes.stats.protocol_version = rtProtocolVersion;
     mes.stats.plugin_version = rtPluginVersion;
-    mes.stats.avators = m_avators;
+    mes.stats.casts = m_casts;
     return true;
 }
 
@@ -112,8 +112,8 @@ bool rtspTalkServer::onTalk(TalkMessage& mes)
 
     if (mes.params.flags.volume)
         m_voice->SetVolume((USHORT)(mes.params.volume * 100.0f));
-    if (mes.params.flags.avator && mes.params.avator < (int)m_voice_tokens.size())
-        m_voice->SetVoice(m_voice_tokens[mes.params.avator]);
+    if (mes.params.flags.cast && mes.params.cast < (int)m_voice_tokens.size())
+        m_voice->SetVoice(m_voice_tokens[mes.params.cast]);
 
     auto text = rt::ToWCS(mes.text);
     m_task_talk = std::async(std::launch::async, [this, text]() {

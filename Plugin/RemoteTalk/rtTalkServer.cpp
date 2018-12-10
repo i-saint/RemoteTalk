@@ -36,11 +36,11 @@ std::string TalkServerStats::to_json()
 {
     using namespace picojson;
     object ret;
-    ret["host_app"] = rt::to_json(host_app);
+    ret["host"] = rt::to_json(host);
     ret["plugin_version"] = rt::to_json(plugin_version);
     ret["protocol_version"] = rt::to_json(protocol_version);
     ret["params"] = rt::to_json(params);
-    ret["avators"] = rt::to_json(avators);
+    ret["casts"] = rt::to_json(casts);
     return value(std::move(ret)).serialize(true);
 }
 
@@ -51,7 +51,7 @@ bool TalkServerStats::from_json(const std::string& str)
     parse(val, str);
 
     bool ret = false;
-    if (rt::from_json(host_app, val.get("host_app")))
+    if (rt::from_json(host, val.get("host")))
         ret = true;
     if (rt::from_json(plugin_version, val.get("plugin_version")))
         ret = true;
@@ -59,7 +59,7 @@ bool TalkServerStats::from_json(const std::string& str)
         ret = true;
     if (rt::from_json(params, val.get("params")))
         ret = true;
-    if (rt::from_json(avators, val.get("avators")))
+    if (rt::from_json(casts, val.get("casts")))
         ret = true;
     return ret;
 }

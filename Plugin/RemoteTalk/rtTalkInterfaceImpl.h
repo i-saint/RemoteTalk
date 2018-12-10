@@ -7,11 +7,11 @@ class AudioData;
 TalkSample ToTalkSample(const AudioData& ad);
 void ToAudioData(AudioData& dst, const TalkSample& ts);
 
-struct AvatorInfoImpl
+struct CastInfoImpl
 {
     int id = 0;
     std::string name;
 };
-using AvatorList = std::vector<AvatorInfoImpl>;
+using CastList = std::vector<CastInfoImpl>;
 
 } // namespace rt

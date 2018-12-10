@@ -16,7 +16,7 @@ namespace IST.RemoteTalk
         [Space(10)]
         [SerializeField] rtTalkParams m_params = rtTalkParams.defaultValue;
         [SerializeField] string m_text;
-        [SerializeField] string m_avatorName = "";
+        [SerializeField] string m_castName = "";
 
         [SerializeField] bool m_exportAudio = false;
         [SerializeField] string m_assetDir = "RemoteTalkAssets";
@@ -29,7 +29,7 @@ namespace IST.RemoteTalk
         rtAsync m_asyncTalk;
         rtAsync m_asyncStop;
         rtTalkParams m_serverParams;
-        AvatorInfo[] m_avators = new AvatorInfo[0] { };
+        CastInfo[] m_casts = new CastInfo[0] { };
 
         int m_samplePos;
         bool m_readySamples = false;
@@ -80,7 +80,7 @@ namespace IST.RemoteTalk
 
 
         public rtTalkParams serverParams { get { return m_serverParams; } }
-        public AvatorInfo[] avators { get { return m_avators; } }
+        public CastInfo[] casts { get { return m_casts; } }
 
         public int sampleLength { get { return m_client.buffer.sampleLength; } }
         public string assetPath { get { return "Assets/" + m_assetDir; } }
@@ -123,10 +123,10 @@ namespace IST.RemoteTalk
         {
             MakeClient();
 
-            if (m_avators.Length > 0)
+            if (m_casts.Length > 0)
             {
-                m_params.avator = Mathf.Clamp(m_params.avator, 0, m_avators.Length - 1);
-                m_avatorName = m_avators[m_params.avator].name;
+                m_params.cast = Mathf.Clamp(m_params.cast, 0, m_casts.Length - 1);
+                m_castName = m_casts[m_params.cast].name;
             }
             m_params.flags = m_serverParams.flags;
             m_params.mute = true;
@@ -175,9 +175,9 @@ namespace IST.RemoteTalk
         {
             if (m_asyncStats && m_asyncStats.isFinished)
             {
-                m_host = m_client.hostApp;
+                m_host = m_client.host;
                 m_serverParams = m_client.serverParams;
-                m_avators = m_client.avatorList;
+                m_casts = m_client.casts;
                 m_asyncStats.Release();
                 m_ready = true;
 #if UNITY_EDITOR

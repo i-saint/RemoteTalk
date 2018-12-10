@@ -15,6 +15,11 @@ namespace IST.RemoteTalk
             var t = target as RemoteTalkClient;
             if (GUILayout.Button("Talk"))
                 t.Talk();
+
+            if (GUILayout.Button("Start SAPI Server"))
+            {
+                rtspTalkServer.StartServer();
+            }
         }
     }
 }

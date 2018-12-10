@@ -84,14 +84,14 @@ bool rtvrTalkServer::onStats(StatsMessage& mes)
         return false;
     }
     {
-        int n = ifs->getNumAvators();
+        int n = ifs->getNumCasts();
         for (int i = 0; i < n; ++i) {
-            rt::AvatorInfo ti;
-            ifs->getAvatorInfo(i, &ti);
-            stats.avators.push_back({ ti.id, ti.name });
+            rt::CastInfo ti;
+            ifs->getCastInfo(i, &ti);
+            stats.casts.push_back({ ti.id, ti.name });
         }
     }
-    stats.host_app = ifs->getClientName();
+    stats.host = ifs->getClientName();
     stats.plugin_version = ifs->getPluginVersion();
     stats.protocol_version = ifs->getProtocolVersion();
     return true;

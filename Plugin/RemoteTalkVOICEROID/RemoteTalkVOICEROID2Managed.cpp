@@ -17,7 +17,7 @@ public:
     static rtvr2InterfaceManaged^ getInstance();
 
     bool prepareUI();
-    rt::AvatorList getAvatorList();
+    rt::CastList getCastList();
 
     bool getParams(rt::TalkParams& params);
     bool setParams(const rt::TalkParams& params);
@@ -35,18 +35,18 @@ private:
     Button^ m_bu_play;
     Button^ m_bu_stop;
     Button^ m_bu_rewind;
-    ListView^ m_lv_avators;
+    ListView^ m_lv_casts;
     Slider ^m_sl_volume, ^m_sl_speed, ^m_sl_pitch, ^m_sl_intonation, ^m_sl_joy, ^m_sl_anger, ^m_sl_sorrow;
 
-    ref class AvatorInfo
+    ref class CastInfo
     {
     public:
         int id;
         String^ name;
 
-        AvatorInfo(int i,  String^ n) : id(i), name(n) {}
+        CastInfo(int i,  String^ n) : id(i), name(n) {}
     };
-    List<AvatorInfo^>^ m_avators;
+    List<CastInfo^>^ m_casts;
 };
 
 class rtvr2TalkInterfaceImpl : public rtvr2TalkInterface
@@ -63,8 +63,8 @@ public:
 
     bool getParams(rt::TalkParams& params) const override;
     bool setParams(const rt::TalkParams& params) override;
-    int getNumAvators() const override;
-    bool getAvatorInfo(int i, rt::AvatorInfo *dst) const override;
+    int getNumCasts() const override;
+    bool getCastInfo(int i, rt::CastInfo *dst) const override;
     bool setText(const char *text) override;
 
     bool ready() const override;
@@ -81,7 +81,7 @@ public:
 #endif
 
 private:
-    mutable rt::AvatorList m_avators;
+    mutable rt::CastList m_casts;
     std::atomic_bool m_is_playing{ false };
     rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
@@ -167,13 +167,13 @@ bool rtvr2InterfaceManaged::prepareUI()
     return true;
 }
 
-rt::AvatorList rtvr2InterfaceManaged::getAvatorList()
+rt::CastList rtvr2InterfaceManaged::getCastList()
 {
     setupControls();
 
-    rt::AvatorList ret;
-    if (m_avators) {
-        for each(auto ti in m_avators)
+    rt::CastList ret;
+    if (m_casts) {
+        for each(auto ti in m_casts)
             ret.push_back({ ti->id, ToStdString(ti->name) });
     }
     return ret;
@@ -188,14 +188,14 @@ bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
     if (m_sl_joy)       params.setJoy((float)m_sl_joy->Value);
     if (m_sl_anger)     params.setAnger((float)m_sl_anger->Value);
     if (m_sl_sorrow)    params.setSorrow((float)m_sl_sorrow->Value);
-    if (m_lv_avators)   params.setAvator(m_lv_avators->SelectedIndex);
+    if (m_lv_casts)   params.setCast(m_lv_casts->SelectedIndex);
     return true;
 }
 
 bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
 {
-    if (params.flags.avator && m_lv_avators)
-        m_lv_avators->SelectedIndex = params.avator;
+    if (params.flags.cast && m_lv_casts)
+        m_lv_casts->SelectedIndex = params.cast;
 
 #define DoSetParam(N) if (params.flags.N && m_sl_##N) UpdateValue(m_sl_##N, params.N);
     DoSetParam(volume);
@@ -245,16 +245,16 @@ bool rtvr2InterfaceManaged::setupControls()
         if (vplv->Count >= 1) {
             auto listview = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListView", true);
             if (listview->Count >= 1) {
-                m_lv_avators = dynamic_cast<ListView^>(listview[0]);
+                m_lv_casts = dynamic_cast<ListView^>(listview[0]);
 
-                m_avators = gcnew List<AvatorInfo^>();
+                m_casts = gcnew List<CastInfo^>();
                 int index = 0;
                 auto items = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListViewItem", false);
                 for each(ListViewItem^ item in items) {
                     auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
                     if (tbs->Count >= 2) {
                         auto tb = dynamic_cast<TextBlock^>(tbs[1]);
-                        m_avators->Add(gcnew AvatorInfo(index++, tb->Text));
+                        m_casts->Add(gcnew CastInfo(index++, tb->Text));
                     }
                 }
             }
@@ -336,18 +336,18 @@ bool rtvr2TalkInterfaceImpl::setParams(const rt::TalkParams& params)
     return rtvr2InterfaceManaged::getInstance()->setParams(params);
 }
 
-int rtvr2TalkInterfaceImpl::getNumAvators() const
+int rtvr2TalkInterfaceImpl::getNumCasts() const
 {
-    if (m_avators.empty())
-        m_avators = rtvr2InterfaceManaged::getInstance()->getAvatorList();
-    return (int)m_avators.size();
+    if (m_casts.empty())
+        m_casts = rtvr2InterfaceManaged::getInstance()->getCastList();
+    return (int)m_casts.size();
 }
 
-bool rtvr2TalkInterfaceImpl::getAvatorInfo(int i, rt::AvatorInfo *dst) const
+bool rtvr2TalkInterfaceImpl::getCastInfo(int i, rt::CastInfo *dst) const
 {
-    if (i < (int)m_avators.size()) {
-        dst->id = m_avators[i].id;
-        dst->name = m_avators[i].name.c_str();
+    if (i < (int)m_casts.size()) {
+        dst->id = m_casts[i].id;
+        dst->name = m_casts[i].name.c_str();
         return true;
     }
     return false;

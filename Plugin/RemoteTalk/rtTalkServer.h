@@ -30,11 +30,11 @@ struct TalkServerSettings
 
 struct TalkServerStats
 {
-    std::string host_app;
+    std::string host;
     int plugin_version = 0;
     int protocol_version = 0;
     TalkParams params;
-    AvatorList avators;
+    CastList casts;
 
     std::string to_json();
     bool from_json(const std::string& str);

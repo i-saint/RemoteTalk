@@ -176,16 +176,16 @@ rtExport bool rtAudioDataExportAsWave(rtAudioData *self, const char *path)
 #pragma endregion
 
 
-#pragma region rtAvatorInfo
-using rtAvatorInfo = rt::AvatorInfoImpl;
+#pragma region rtCastInfo
+using rtCastInfo = rt::CastInfoImpl;
 
-rtExport int rtAvatorInfoGetID(rtAvatorInfo *self)
+rtExport int rtCastInfoGetID(rtCastInfo *self)
 {
     if (!self)
         return 0;
     return self->id;
 }
-rtExport const char* rtAvatorInfoGetName(rtAvatorInfo *self)
+rtExport const char* rtCastInfoGetName(rtCastInfo *self)
 {
     if (!self)
         return nullptr;
@@ -220,7 +220,7 @@ rtExport const char* rtHTTPClientGetServerHostApp(rtHTTPClient *self)
 {
     if (!self)
         return "";
-    return self->getServerStats().host_app.c_str();
+    return self->getServerStats().host.c_str();
 }
 
 rtExport void rtHTTPClientGetServerParams(rtHTTPClient *self, rtTalkParams *st)
@@ -230,18 +230,18 @@ rtExport void rtHTTPClientGetServerParams(rtHTTPClient *self, rtTalkParams *st)
     *st = self->getServerStats().params;
 }
 
-rtExport int rtHTTPClientGetNumAvators(rtHTTPClient *self)
+rtExport int rtHTTPClientGetNumCasts(rtHTTPClient *self)
 {
     if (!self)
         return 0;
-    return (int)self->getServerStats().avators.size();
+    return (int)self->getServerStats().casts.size();
 }
 
-rtExport const rtAvatorInfo* rtHTTPClientGetAvator(rtHTTPClient *self, int i)
+rtExport const rtCastInfo* rtHTTPClientGetCast(rtHTTPClient *self, int i)
 {
     if (!self)
         return nullptr;
-    return &self->getServerStats().avators[i];
+    return &self->getServerStats().casts[i];
 }
 
 rtExport rtAsync* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)

@@ -6,7 +6,7 @@
 namespace rt {
 
 #define rtEachTalkParams(Body)\
-    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow) Body(avator)
+    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(joy) Body(anger) Body(sorrow) Body(cast)
 
 struct TalkParams
 {
@@ -20,7 +20,7 @@ struct TalkParams
         uint32_t joy : 1;
         uint32_t anger : 1;
         uint32_t sorrow : 1;
-        uint32_t avator : 1;
+        uint32_t cast : 1;
     };
     
     Flags flags = {};
@@ -32,7 +32,7 @@ struct TalkParams
     float joy = 0.0f;
     float anger = 0.0f;
     float sorrow = 0.0f;
-    int avator = 0;
+    int cast = 0;
 
 #define Set(V) flags.V = 1; ##V = v;
     void setMute(bool v) { Set(mute); }
@@ -43,11 +43,11 @@ struct TalkParams
     void setJoy(float v) { Set(joy); }
     void setAnger(float v) { Set(anger); }
     void setSorrow(float v) { Set(sorrow); }
-    void setAvator(int v) { Set(avator); }
+    void setCast(int v) { Set(cast); }
 #undef Set
 };
 
-struct AvatorInfo
+struct CastInfo
 {
     int id = 0;
     const char *name = nullptr;
@@ -76,8 +76,8 @@ public:
 
     virtual bool getParams(TalkParams& params) const = 0;
     virtual bool setParams(const TalkParams& params) = 0;
-    virtual int getNumAvators() const = 0;
-    virtual bool getAvatorInfo(int i, AvatorInfo *dst) const = 0;
+    virtual int getNumCasts() const = 0;
+    virtual bool getCastInfo(int i, CastInfo *dst) const = 0;
     virtual bool setText(const char *text) = 0;
 
     virtual bool ready() const = 0;

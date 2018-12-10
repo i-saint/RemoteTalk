@@ -173,7 +173,7 @@ template<> picojson::value to_json(const TalkParams& v)
     if (v.flags.joy) t["joy"] = value(v.joy);
     if (v.flags.anger) t["anger"] = value(v.anger);
     if (v.flags.sorrow) t["sorrow"] = value(v.sorrow);
-    if (v.flags.avator) t["avator"] = value((float)v.avator);
+    if (v.flags.cast) t["cast"] = value((float)v.cast);
     return value(std::move(t));
 }
 template<> bool from_json(TalkParams& dst, const picojson::value& v)
@@ -190,12 +190,12 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
         else if (kvp.first == "joy") { dst.setJoy(kvp.second.get<float>()); }
         else if (kvp.first == "anger") { dst.setAnger(kvp.second.get<float>()); }
         else if (kvp.first == "sorrow") { dst.setSorrow(kvp.second.get<float>()); }
-        else if (kvp.first == "avator") { dst.setAvator((int)kvp.second.get<float>()); }
+        else if (kvp.first == "cast") { dst.setCast((int)kvp.second.get<float>()); }
     }
     return true;
 }
 
-template<> picojson::value to_json(const AvatorInfoImpl& v)
+template<> picojson::value to_json(const CastInfoImpl& v)
 {
     using namespace picojson;
     object o;
@@ -203,7 +203,7 @@ template<> picojson::value to_json(const AvatorInfoImpl& v)
     o["name"] = value(v.name);
     return value(std::move(o));
 }
-template<> bool from_json(AvatorInfoImpl& dst, const picojson::value& v)
+template<> bool from_json(CastInfoImpl& dst, const picojson::value& v)
 {
     using namespace picojson;
     if (!v.is<object>())
@@ -223,7 +223,7 @@ template<> bool from_json(AvatorInfoImpl& dst, const picojson::value& v)
     return true;
 }
 
-template<> picojson::value to_json(const AvatorList& v)
+template<> picojson::value to_json(const CastList& v)
 {
     using namespace picojson;
     array t(v.size());
@@ -231,14 +231,14 @@ template<> picojson::value to_json(const AvatorList& v)
         t[i] = to_json(v[i]);
     return value(std::move(t));
 }
-template<> bool from_json(AvatorList& dst, const picojson::value& v)
+template<> bool from_json(CastList& dst, const picojson::value& v)
 {
     using namespace picojson;
     if (!v.is<array>())
         return false;
 
     for (auto& e : v.get<array>()) {
-        AvatorInfoImpl ai;
+        CastInfoImpl ai;
         if(from_json(ai, e))
             dst.push_back(ai);
     }

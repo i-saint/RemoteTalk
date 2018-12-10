@@ -164,7 +164,7 @@ namespace IST.RemoteTalk
             get { return bits[7]; }
             set { bits[7] = value; }
         }
-        public bool avator
+        public bool cast
         {
             get { return bits[8]; }
             set { bits[8] = value; }
@@ -183,7 +183,7 @@ namespace IST.RemoteTalk
         [SerializeField] float m_joy;
         [SerializeField] float m_anger;
         [SerializeField] float m_sorrow;
-        [SerializeField] int m_avator;
+        [SerializeField] int m_cast;
 
         public static rtTalkParams defaultValue
         {
@@ -239,25 +239,25 @@ namespace IST.RemoteTalk
             get { return m_sorrow; }
             set { m_sorrow = value; flags.sorrow = true; }
         }
-        public int avator
+        public int cast
         {
-            get { return m_avator; }
-            set { m_avator = value; flags.avator = true; }
+            get { return m_cast; }
+            set { m_cast = value; flags.cast = true; }
         }
     };
 
-    public struct rtAvatorInfo
+    public struct rtCastInfo
     {
         #region internal
         public IntPtr self;
-        [DllImport("RemoteTalkClient")] static extern int rtAvatorInfoGetID(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern IntPtr rtAvatorInfoGetName(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetID(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetName(IntPtr self);
         #endregion
 
-        public static implicit operator bool(rtAvatorInfo v) { return v.self != IntPtr.Zero; }
+        public static implicit operator bool(rtCastInfo v) { return v.self != IntPtr.Zero; }
 
-        public int id { get { return rtAvatorInfoGetID(self); } }
-        public string name { get { return Misc.S(rtAvatorInfoGetName(self)); } }
+        public int id { get { return rtCastInfoGetID(self); } }
+        public string name { get { return Misc.S(rtCastInfoGetName(self)); } }
     }
 
     public struct rtAsync
@@ -288,8 +288,8 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientUpdateServerStatus(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern IntPtr rtHTTPClientGetServerHostApp(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientGetServerParams(IntPtr self, ref rtTalkParams st);
-        [DllImport("RemoteTalkClient")] static extern int rtHTTPClientGetNumAvators(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern rtAvatorInfo rtHTTPClientGetAvator(IntPtr self, int i);
+        [DllImport("RemoteTalkClient")] static extern int rtHTTPClientGetNumCasts(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern rtCastInfo rtHTTPClientGetCast(IntPtr self, int i);
 
         [DllImport("RemoteTalkClient")] static extern byte rtHTTPClientIsReady(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientTalk(IntPtr self, ref rtTalkParams p, string t);
@@ -300,7 +300,7 @@ namespace IST.RemoteTalk
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
 
-        public string hostApp
+        public string host
         {
             get
             {
@@ -317,15 +317,15 @@ namespace IST.RemoteTalk
             }
         }
 
-        public AvatorInfo[] avatorList
+        public CastInfo[] casts
         {
             get
             {
-                var ret = new AvatorInfo[rtHTTPClientGetNumAvators(self)];
+                var ret = new CastInfo[rtHTTPClientGetNumCasts(self)];
                 for (int i = 0; i < ret.Length; ++i)
                 {
-                    var ai = rtHTTPClientGetAvator(self, i);
-                    ret[i] = new AvatorInfo { id = ai.id, name = ai.name };
+                    var ai = rtHTTPClientGetCast(self, i);
+                    ret[i] = new CastInfo { id = ai.id, name = ai.name };
                 }
                 return ret;
             }
@@ -378,7 +378,7 @@ namespace IST.RemoteTalk
 
 
     [Serializable]
-    public class AvatorInfo
+    public class CastInfo
     {
         public int id;
         public string name;
