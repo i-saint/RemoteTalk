@@ -19,12 +19,12 @@ using super = rt::TalkServer;
 public:
     rtDefSingleton(rtvrTalkServer);
     void addMessage(MessagePtr mes) override;
-    bool onStat(StatsMessage& mes) override;
+    bool onStats(StatsMessage& mes) override;
     bool onTalk(TalkMessage& mes) override;
     bool onStop(StopMessage& mes) override;
     bool ready() override;
 #ifdef rtDebug
-    bool onDebug() override;
+    bool onDebug(DebugMessage& mes) override;
 #endif
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
@@ -37,7 +37,7 @@ private:
 
 
 rtvr2TalkInterface* (*rtGetTalkInterface_)();
-static bool rtvr2LoadManagedModule()
+static bool rtcvLoadManagedModule()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\RemoteTalkVOICEROID2Managed.dll";
     auto mod = ::LoadLibraryA(path.c_str());
@@ -48,9 +48,9 @@ static bool rtvr2LoadManagedModule()
     return rtGetTalkInterface_;
 }
 
-static void SendTimerMessage()
+static void RequestUpdate()
 {
-    //::SendMessageA((HWND)0xffff, WM_TIMER, 0, 0);
+    ::PostMessageW((HWND)0xffff, WM_TIMER, 0, 0);
 }
 
 
@@ -66,18 +66,23 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
     super::addMessage(mes);
 
     // force call GetMessageW()
-    SendTimerMessage();
+    RequestUpdate();
 }
 
-bool rtvrTalkServer::onStat(StatsMessage& mes)
+bool rtvrTalkServer::onStats(StatsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
-    if (!ifs->prepareUI())
+    if (!ifs->prepareUI()) {
+        // UI needs refresh. wait next message.
+        RequestUpdate();
         return false;
+    }
 
     auto& stats = mes.stats;
-    if (!ifs->getParams(stats.params))
+    if (!ifs->getParams(stats.params)) {
+        RequestUpdate();
         return false;
+    }
     {
         int n = ifs->getNumAvators();
         for (int i = 0; i < n; ++i) {
@@ -96,11 +101,12 @@ bool rtvrTalkServer::onTalk(TalkMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
-        // UI needs refresh. wait next message.
+        RequestUpdate();
         return false;
     }
     if (ifs->stop()) {
         // need to wait until next message if stop() succeeded.
+        RequestUpdate();
         return false;
     }
     ifs->setParams(mes.params);
@@ -143,7 +149,7 @@ bool rtvrTalkServer::onStop(StopMessage& mes)
     auto *ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next message.
-        SendTimerMessage();
+        RequestUpdate();
         return false;
     }
     return ifs->stop();
@@ -155,7 +161,7 @@ bool rtvrTalkServer::ready()
 }
 
 #ifdef rtDebug
-bool rtvrTalkServer::onDebug()
+bool rtvrTalkServer::onDebug(DebugMessage& mes)
 {
     return rtGetTalkInterface_()->onDebug();
 }
@@ -182,7 +188,7 @@ void rtvrTalkServer::sampleCallback(const rt::TalkSample *data)
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
-        if (rtvr2LoadManagedModule()) {
+        if (rtcvLoadManagedModule()) {
             rt::AddWindowMessageHandler(&rtvrWindowMessageHandler::getInstance());
 
             auto& dsound = rtvrDSoundHandler::getInstance();

@@ -85,6 +85,10 @@ public:
     class DebugMessage : public Message
     {
     public:
+        std::map<std::string, std::string> params;
+
+        std::string to_json();
+        bool from_json(const std::string& str);
     };
 #endif
 
@@ -97,15 +101,16 @@ public:
     virtual void setSettings(const TalkServerSettings& v);
     virtual bool start();
     virtual void stop();
+    virtual bool isRunning() const;
 
     virtual void processMessages();
-    virtual bool onStat(StatsMessage& mes) = 0;
+    virtual bool onStats(StatsMessage& mes) = 0;
     virtual bool onTalk(TalkMessage& mes) = 0;
     virtual bool onStop(StopMessage& mes) = 0;
     virtual bool ready() = 0;
 
 #ifdef rtDebug
-    virtual bool onDebug() { return true; }
+    virtual bool onDebug(DebugMessage& mes) { return true; }
 #endif
 
     virtual void addMessage(MessagePtr mes);

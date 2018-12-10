@@ -148,6 +148,10 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
 #ifdef rtDebug
     else if (uri.getPath() == "/debug") {
         auto mes = std::make_shared<TalkServer::DebugMessage>();
+        auto qparams = uri.getQueryParameters();
+        for (auto& pair : qparams)
+            mes->params[pair.first] = pair.second;
+
         m_server->addMessage(mes);
         if (mes->wait())
             handled = true;
@@ -222,6 +226,21 @@ bool TalkServer::StatsMessage::from_json(const std::string& str)
     return stats.from_json(str);
 }
 
+std::string TalkServer::DebugMessage::to_json()
+{
+    using namespace picojson;
+    auto val = rt::to_json(params);
+    return val.to_str();
+}
+
+bool TalkServer::DebugMessage::from_json(const std::string& str)
+{
+    using namespace picojson;
+    value val;
+    parse(val, str);
+    return rt::from_json(params, val);
+}
+
 
 TalkServer::TalkServer()
 {
@@ -265,6 +284,11 @@ void TalkServer::stop()
     m_server.reset();
 }
 
+bool TalkServer::isRunning() const
+{
+    return m_server != nullptr;
+}
+
 void TalkServer::processMessages()
 {
     lock_t lock(m_mutex);
@@ -275,11 +299,11 @@ void TalkServer::processMessages()
                 handled = onTalk(*talk);
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
                 handled = onStop(*stop);
-            else if (auto *get_params = dynamic_cast<StatsMessage*>(mes.get()))
-                handled = onStat(*get_params);
+            else if (auto *stats = dynamic_cast<StatsMessage*>(mes.get()))
+                handled = onStats(*stats);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
-                handled = onDebug();
+                handled = onDebug(*dbg);
 #endif
 
             if (!handled)

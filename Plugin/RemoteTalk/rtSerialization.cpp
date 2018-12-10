@@ -53,6 +53,26 @@ std::string ToANSI(const std::string& src)
     return ToANSI(src.c_str());
 }
 
+std::string ToMBS(const wchar_t * src)
+{
+    using converter_t = std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>;
+    return converter_t().to_bytes(src);
+}
+std::string ToMBS(const std::wstring& src)
+{
+    return ToMBS(src.c_str());
+}
+
+std::wstring ToWCS(const char * src)
+{
+    using converter_t = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>;
+    return converter_t().from_bytes(src);
+}
+std::wstring ToWCS(const std::string & src)
+{
+    return ToWCS(src.c_str());
+}
+
 
 template<> std::string to_string(const int& v)
 {
@@ -221,6 +241,29 @@ template<> bool from_json(AvatorList& dst, const picojson::value& v)
         AvatorInfoImpl ai;
         if(from_json(ai, e))
             dst.push_back(ai);
+    }
+    return true;
+}
+
+
+template<> picojson::value to_json(const std::map<std::string, std::string>& v)
+{
+    using namespace picojson;
+    object t;
+    for (auto& kvp : v)
+        t[kvp.first] = value(kvp.second);
+    return value(std::move(t));
+}
+template<> bool from_json(std::map<std::string, std::string>& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<object>())
+        return false;
+
+    auto& o = v.get<object>();
+    for (auto& kvp : o) {
+        if (kvp.second.is<std::string>())
+            dst[kvp.first] = kvp.second.get<std::string>();
     }
     return true;
 }

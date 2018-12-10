@@ -366,6 +366,16 @@ namespace IST.RemoteTalk
         public int Consume(rtAudioDataCallback cb) { return rtHTTPReceiverConsumeAudioData(self, cb); }
     }
 
+    public struct rtspTalkServer
+    {
+        #region internal
+        public IntPtr self;
+        [DllImport("RemoteTalkSAPI")] static extern rtspTalkServer rtspStartServer(int port);
+        #endregion
+
+        public static rtspTalkServer StartServer(int port = 8082) { return rtspStartServer(port); }
+    }
+
 
     [Serializable]
     public class AvatorInfo

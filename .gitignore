@@ -38,11 +38,9 @@ Temp/
 obj/
 TestLocal/
 TestLocal.meta
-RemoteTalk/RemoteTalk.sln
-MeshSyncAssets.meta
 
-MeshSync/*.csproj
-MeshSync/*.sln
+RemoteTalk/*.csproj
+RemoteTalk/*.sln
 
 Plugin/dist/
 Plugin/MeshSyncClientBlender2.*/
