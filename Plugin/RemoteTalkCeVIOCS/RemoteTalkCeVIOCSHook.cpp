@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "RemoteTalk/RemoteTalk.h"
 #include "RemoteTalk/RemoteTalkNet.h"
+#include "RemoteTalkCeVIOCSCommon.h"
 
 
 class rtcvWaveOutHandler : public rt::WaveOutHandlerBase
@@ -9,12 +10,6 @@ public:
     rtDefSingleton(rtcvWaveOutHandler);
 };
 
-class rtcvWindowMessageHandler : public rt::WindowMessageHandlerBase
-{
-public:
-    rtDefSingleton(rtcvWindowMessageHandler);
-    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
-};
 
 class rtcvTalkServer : public rt::TalkServer
 {
@@ -22,12 +17,13 @@ using super = rt::TalkServer;
 public:
     rtDefSingleton(rtcvTalkServer);
     void addMessage(MessagePtr mes) override;
-    bool onStats(StatsMessage& mes) override;
-    bool onTalk(TalkMessage& mes) override;
-    bool onStop(StopMessage& mes) override;
+
     bool ready() override;
+    Status onStats(StatsMessage& mes) override;
+    Status onTalk(TalkMessage& mes) override;
+    Status onStop(StopMessage& mes) override;
 #ifdef rtDebug
-    bool onDebug(DebugMessage& mes) override;
+    Status onDebug(DebugMessage& mes) override;
 #endif
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
@@ -40,7 +36,7 @@ private:
 
 
 
-rt::TalkInterface* (*rtGetTalkInterface_)();
+rtcvITalkInterface* (*rtGetTalkInterface_)();
 static bool rtcvLoadManagedModule()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\RemoteTalkCeVIOCSManaged.dll";
@@ -48,44 +44,16 @@ static bool rtcvLoadManagedModule()
     if (!mod)
         return false;
 
-    (void*&)rtGetTalkInterface_ = ::GetProcAddress(mod, "rtGetTalkInterface");
+    (void*&)rtGetTalkInterface_ = ::GetProcAddress(mod, rtInterfaceFuncName);
     return rtGetTalkInterface_;
 }
 
-static void RequestUpdate()
-{
-    ::PostMessageW((HWND)0xffff, WM_TIMER, 0, 0);
-}
-
-void rtcvWindowMessageHandler::afterGetMessageW(LPMSG & lpMsg, HWND & hWnd, UINT & wMsgFilterMin, UINT & wMsgFilterMax, BOOL & ret)
-{
-    auto& server = rtcvTalkServer::getInstance();
-    server.start();
-    server.processMessages();
-}
 
 
 void rtcvTalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);
-
-    // force call GetMessageW()
-    RequestUpdate();
-}
-
-bool rtcvTalkServer::onStats(StatsMessage & mes)
-{
-    return false;
-}
-
-bool rtcvTalkServer::onTalk(TalkMessage & mes)
-{
-    return false;
-}
-
-bool rtcvTalkServer::onStop(StopMessage & mes)
-{
-    return false;
+    processMessages();
 }
 
 bool rtcvTalkServer::ready()
@@ -93,20 +61,90 @@ bool rtcvTalkServer::ready()
     return false;
 }
 
-#ifdef rtDebug
-bool rtcvTalkServer::onDebug(DebugMessage& mes)
+rtcvTalkServer::Status rtcvTalkServer::onStats(StatsMessage& mes)
 {
-    return false;
+    auto ifs = rtGetTalkInterface_();
+
+    auto& stats = mes.stats;
+    ifs->getParams(stats.params);
+    {
+        int n = ifs->getNumCasts();
+        for (int i = 0; i < n; ++i) {
+            rt::CastInfo ti;
+            ifs->getCastInfo(i, &ti);
+            stats.casts.push_back({ ti.id, ti.name });
+        }
+    }
+    stats.host = ifs->getClientName();
+    stats.plugin_version = ifs->getPluginVersion();
+    stats.protocol_version = ifs->getProtocolVersion();
+    return Status::Succeeded;
+}
+
+rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
+{
+    auto ifs = rtGetTalkInterface_();
+    ifs->setParams(mes.params);
+    ifs->setText(mes.text.c_str());
+    if (!ifs->talk(&sampleCallbackS, this))
+        Status::Failed;
+
+    mes.task = std::async(std::launch::async, [this, &mes]() {
+        std::vector<rt::AudioDataPtr> tmp;
+        for (;;) {
+            {
+                std::unique_lock<std::mutex> lock(m_data_mutex);
+                tmp = m_data_queue;
+                m_data_queue.clear();
+            }
+
+            for (auto& ad : tmp) {
+                ad->serialize(*mes.respond_stream);
+            }
+
+            if (!tmp.empty() && tmp.back()->data.empty())
+                break;
+            else
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    });
+    return Status::Succeeded;
+}
+
+rtcvTalkServer::Status rtcvTalkServer::onStop(StopMessage& mes)
+{
+    auto ifs = rtGetTalkInterface_();
+    return ifs->stop() ? Status::Succeeded : Status::Failed;
+}
+
+#ifdef rtDebug
+rtcvTalkServer::Status rtcvTalkServer::onDebug(DebugMessage& mes)
+{
+    return rtGetTalkInterface_()->onDebug() ? Status::Succeeded : Status::Failed;
 }
 #endif
 
+void rtcvTalkServer::sampleCallbackS(const rt::TalkSample *data, void *userdata)
+{
+    auto _this = (rtcvTalkServer*)userdata;
+    _this->sampleCallback(data);
+}
+
+void rtcvTalkServer::sampleCallback(const rt::TalkSample *data)
+{
+    auto tmp = std::make_shared<rt::AudioData>();
+    rt::ToAudioData(*tmp, *data);
+    {
+        std::unique_lock<std::mutex> lock(m_data_mutex);
+        m_data_queue.push_back(tmp);
+    }
+}
 
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
         if (rtcvLoadManagedModule()) {
-            rt::AddWindowMessageHandler(&rtcvWindowMessageHandler::getInstance());
             rt::AddWaveOutHandler(&rtcvWaveOutHandler::getInstance());
         }
     }

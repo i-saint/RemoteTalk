@@ -49,13 +49,13 @@ private:
     List<CastInfo^>^ m_casts;
 };
 
-class rtvr2TalkInterfaceImpl : public rtvr2TalkInterface
+class rtvr2TalkInterface : public rtvr2ITalkInterface
 {
 public:
-    rtDefSingleton(rtvr2TalkInterfaceImpl);
+    rtDefSingleton(rtvr2TalkInterface);
 
-    rtvr2TalkInterfaceImpl();
-    ~rtvr2TalkInterfaceImpl() override;
+    rtvr2TalkInterface();
+    ~rtvr2TalkInterface() override;
     void release() override;
     const char* getClientName() const override;
     int getPluginVersion() const override;
@@ -306,11 +306,11 @@ bool rtvr2InterfaceManaged::talk()
 
 
 
-rtvr2TalkInterfaceImpl::rtvr2TalkInterfaceImpl()
+rtvr2TalkInterface::rtvr2TalkInterface()
 {
 }
 
-rtvr2TalkInterfaceImpl::~rtvr2TalkInterfaceImpl()
+rtvr2TalkInterface::~rtvr2TalkInterface()
 {
     auto mod = ::GetModuleHandleA("RemoteTalkVOICEROID2Hook.dll");
     if (mod) {
@@ -321,29 +321,29 @@ rtvr2TalkInterfaceImpl::~rtvr2TalkInterfaceImpl()
     }
 }
 
-void rtvr2TalkInterfaceImpl::release() { /*do nothing*/ }
-const char* rtvr2TalkInterfaceImpl::getClientName() const { return "VOICEROID2"; }
-int rtvr2TalkInterfaceImpl::getPluginVersion() const { return rtPluginVersion; }
-int rtvr2TalkInterfaceImpl::getProtocolVersion() const { return rtProtocolVersion; }
+void rtvr2TalkInterface::release() { /*do nothing*/ }
+const char* rtvr2TalkInterface::getClientName() const { return "VOICEROID2"; }
+int rtvr2TalkInterface::getPluginVersion() const { return rtPluginVersion; }
+int rtvr2TalkInterface::getProtocolVersion() const { return rtProtocolVersion; }
 
-bool rtvr2TalkInterfaceImpl::getParams(rt::TalkParams& params) const
+bool rtvr2TalkInterface::getParams(rt::TalkParams& params) const
 {
     return rtvr2InterfaceManaged::getInstance()->getParams(params);
 }
 
-bool rtvr2TalkInterfaceImpl::setParams(const rt::TalkParams& params)
+bool rtvr2TalkInterface::setParams(const rt::TalkParams& params)
 {
     return rtvr2InterfaceManaged::getInstance()->setParams(params);
 }
 
-int rtvr2TalkInterfaceImpl::getNumCasts() const
+int rtvr2TalkInterface::getNumCasts() const
 {
     if (m_casts.empty())
         m_casts = rtvr2InterfaceManaged::getInstance()->getCastList();
     return (int)m_casts.size();
 }
 
-bool rtvr2TalkInterfaceImpl::getCastInfo(int i, rt::CastInfo *dst) const
+bool rtvr2TalkInterface::getCastInfo(int i, rt::CastInfo *dst) const
 {
     if (i < (int)m_casts.size()) {
         dst->id = m_casts[i].id;
@@ -353,17 +353,17 @@ bool rtvr2TalkInterfaceImpl::getCastInfo(int i, rt::CastInfo *dst) const
     return false;
 }
 
-bool rtvr2TalkInterfaceImpl::setText(const char *text)
+bool rtvr2TalkInterface::setText(const char *text)
 {
     return rtvr2InterfaceManaged::getInstance()->setText(text);
 }
 
-bool rtvr2TalkInterfaceImpl::ready() const
+bool rtvr2TalkInterface::ready() const
 {
     return !m_is_playing;
 }
 
-bool rtvr2TalkInterfaceImpl::talk(rt::TalkSampleCallback cb, void *userdata)
+bool rtvr2TalkInterface::talk(rt::TalkSampleCallback cb, void *userdata)
 {
     if (m_is_playing)
         return false;
@@ -379,7 +379,7 @@ bool rtvr2TalkInterfaceImpl::talk(rt::TalkSampleCallback cb, void *userdata)
     }
 }
 
-bool rtvr2TalkInterfaceImpl::stop()
+bool rtvr2TalkInterface::stop()
 {
     if (!m_is_playing)
         return false;
@@ -387,17 +387,17 @@ bool rtvr2TalkInterfaceImpl::stop()
 }
 
 
-bool rtvr2TalkInterfaceImpl::prepareUI()
+bool rtvr2TalkInterface::prepareUI()
 {
     return rtvr2InterfaceManaged::getInstance()->prepareUI();
 }
 
-void rtvr2TalkInterfaceImpl::onPlay()
+void rtvr2TalkInterface::onPlay()
 {
     m_is_playing = true;
 }
 
-void rtvr2TalkInterfaceImpl::onStop()
+void rtvr2TalkInterface::onStop()
 {
     if (m_sample_cb && m_is_playing) {
         rt::AudioData dummy;
@@ -407,7 +407,7 @@ void rtvr2TalkInterfaceImpl::onStop()
     m_is_playing = false;
 }
 
-void rtvr2TalkInterfaceImpl::onUpdateBuffer(const rt::AudioData& ad)
+void rtvr2TalkInterface::onUpdateBuffer(const rt::AudioData& ad)
 {
     if (m_sample_cb && m_is_playing) {
         auto sd = rt::ToTalkSample(ad);
@@ -431,7 +431,7 @@ static void PrintControlInfo(System::Windows::DependencyObject^ obj, int depth =
         PrintControlInfo(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), depth + 1);
 }
 
-bool rtvr2TalkInterfaceImpl::onDebug()
+bool rtvr2TalkInterface::onDebug()
 {
     if (System::Windows::Application::Current != nullptr) {
         for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows) {
@@ -445,5 +445,5 @@ bool rtvr2TalkInterfaceImpl::onDebug()
 
 rtExport rt::TalkInterface* rtGetTalkInterface()
 {
-    return &rtvr2TalkInterfaceImpl::getInstance();
+    return &rtvr2TalkInterface::getInstance();
 }

@@ -43,6 +43,13 @@ struct TalkServerStats
 class TalkServer
 {
 public:
+    enum class Status
+    {
+        Failed,
+        Succeeded,
+        Pending,
+    };
+
     class Message
     {
     public:
@@ -50,6 +57,7 @@ public:
         bool wait();
         bool isProcessing();
 
+        Status status;
         std::atomic_bool handled = { false };
         std::ostream *respond_stream = nullptr;
         std::future<void> task;
@@ -104,13 +112,12 @@ public:
     virtual bool isRunning() const;
 
     virtual void processMessages();
-    virtual bool onStats(StatsMessage& mes) = 0;
-    virtual bool onTalk(TalkMessage& mes) = 0;
-    virtual bool onStop(StopMessage& mes) = 0;
     virtual bool ready() = 0;
-
+    virtual Status onStats(StatsMessage& mes) = 0;
+    virtual Status onTalk(TalkMessage& mes) = 0;
+    virtual Status onStop(StopMessage& mes) = 0;
 #ifdef rtDebug
-    virtual bool onDebug(DebugMessage& mes) { return true; }
+    virtual Status onDebug(DebugMessage& mes) { return Status::Succeeded; }
 #endif
 
     virtual void addMessage(MessagePtr mes);

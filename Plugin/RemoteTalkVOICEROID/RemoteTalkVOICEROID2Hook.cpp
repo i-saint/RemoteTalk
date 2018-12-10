@@ -19,12 +19,13 @@ using super = rt::TalkServer;
 public:
     rtDefSingleton(rtvrTalkServer);
     void addMessage(MessagePtr mes) override;
-    bool onStats(StatsMessage& mes) override;
-    bool onTalk(TalkMessage& mes) override;
-    bool onStop(StopMessage& mes) override;
+
     bool ready() override;
+    Status onStats(StatsMessage& mes) override;
+    Status onTalk(TalkMessage& mes) override;
+    Status onStop(StopMessage& mes) override;
 #ifdef rtDebug
-    bool onDebug(DebugMessage& mes) override;
+    Status onDebug(DebugMessage& mes) override;
 #endif
 
     static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
@@ -36,7 +37,7 @@ private:
 };
 
 
-rtvr2TalkInterface* (*rtGetTalkInterface_)();
+rtvr2ITalkInterface* (*rtGetTalkInterface_)();
 static bool rtcvLoadManagedModule()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\RemoteTalkVOICEROID2Managed.dll";
@@ -44,7 +45,7 @@ static bool rtcvLoadManagedModule()
     if (!mod)
         return false;
 
-    (void*&)rtGetTalkInterface_ = ::GetProcAddress(mod, "rtGetTalkInterface");
+    (void*&)rtGetTalkInterface_ = ::GetProcAddress(mod, rtInterfaceFuncName);
     return rtGetTalkInterface_;
 }
 
@@ -69,19 +70,24 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
     RequestUpdate();
 }
 
-bool rtvrTalkServer::onStats(StatsMessage& mes)
+bool rtvrTalkServer::ready()
+{
+    return rtGetTalkInterface_()->ready();
+}
+
+rtvrTalkServer::Status rtvrTalkServer::onStats(StatsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next message.
         RequestUpdate();
-        return false;
+        return Status::Pending;
     }
 
     auto& stats = mes.stats;
     if (!ifs->getParams(stats.params)) {
         RequestUpdate();
-        return false;
+        return Status::Pending;
     }
     {
         int n = ifs->getNumCasts();
@@ -94,20 +100,20 @@ bool rtvrTalkServer::onStats(StatsMessage& mes)
     stats.host = ifs->getClientName();
     stats.plugin_version = ifs->getPluginVersion();
     stats.protocol_version = ifs->getProtocolVersion();
-    return true;
+    return Status::Succeeded;
 }
 
-bool rtvrTalkServer::onTalk(TalkMessage& mes)
+rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
         RequestUpdate();
-        return false;
+        return Status::Pending;
     }
     if (ifs->stop()) {
         // need to wait until next message if stop() succeeded.
         RequestUpdate();
-        return false;
+        return Status::Pending;
     }
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
@@ -120,7 +126,7 @@ bool rtvrTalkServer::onTalk(TalkMessage& mes)
         m_data_queue.clear();
     }
     if (!ifs->talk(&sampleCallbackS, this))
-        return true;
+        return Status::Failed;
 
     mes.task = std::async(std::launch::async, [this, &mes]() {
         std::vector<rt::AudioDataPtr> tmp;
@@ -141,29 +147,24 @@ bool rtvrTalkServer::onTalk(TalkMessage& mes)
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     });
-    return true;
+    return Status::Succeeded;
 }
 
-bool rtvrTalkServer::onStop(StopMessage& mes)
+rtvrTalkServer::Status rtvrTalkServer::onStop(StopMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next message.
         RequestUpdate();
-        return false;
+        return Status::Pending;
     }
-    return ifs->stop();
-}
-
-bool rtvrTalkServer::ready()
-{
-    return rtGetTalkInterface_()->ready();
+    return ifs->stop() ? Status::Succeeded : Status::Failed;
 }
 
 #ifdef rtDebug
-bool rtvrTalkServer::onDebug(DebugMessage& mes)
+rtvrTalkServer::Status rtvrTalkServer::onDebug(DebugMessage& mes)
 {
-    return rtGetTalkInterface_()->onDebug();
+    return rtGetTalkInterface_()->onDebug() ? Status::Succeeded : Status::Failed;
 }
 #endif
 

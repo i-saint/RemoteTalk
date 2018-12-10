@@ -19,12 +19,13 @@ public:
     rtspTalkServer();
     ~rtspTalkServer();
     void addMessage(MessagePtr mes) override;
-    bool onStats(StatsMessage& mes) override;
-    bool onTalk(TalkMessage& mes) override;
-    bool onStop(StopMessage& mes) override;
+
     bool ready() override;
+    Status onStats(StatsMessage& mes) override;
+    Status onTalk(TalkMessage& mes) override;
+    Status onStop(StopMessage& mes) override;
 #ifdef rtDebug
-    bool onDebug(DebugMessage& mes) override;
+    Status onDebug(DebugMessage& mes) override;
 #endif
 
     void wait();
@@ -84,10 +85,18 @@ void rtspTalkServer::addMessage(MessagePtr mes)
     processMessages();
 }
 
-bool rtspTalkServer::onStats(StatsMessage& mes)
+
+bool rtspTalkServer::ready()
 {
     if (!m_voice)
-        return true;
+        return false;
+    return true;
+}
+
+rtspTalkServer::Status rtspTalkServer::onStats(StatsMessage& mes)
+{
+    if (!m_voice)
+        return Status::Failed;
 
     mes.stats.params.setCast(0);
 
@@ -100,13 +109,13 @@ bool rtspTalkServer::onStats(StatsMessage& mes)
     mes.stats.protocol_version = rtProtocolVersion;
     mes.stats.plugin_version = rtPluginVersion;
     mes.stats.casts = m_casts;
-    return true;
+    return Status::Succeeded;
 }
 
-bool rtspTalkServer::onTalk(TalkMessage& mes)
+rtspTalkServer::Status rtspTalkServer::onTalk(TalkMessage& mes)
 {
     if (!m_voice)
-        return true;
+        return Status::Failed;
 
     wait();
 
@@ -120,35 +129,30 @@ bool rtspTalkServer::onTalk(TalkMessage& mes)
         m_voice->Speak(text.c_str(), 0, nullptr);
     });
 
-    return true;
+    return Status::Succeeded;
 }
 
-bool rtspTalkServer::onStop(StopMessage& mes)
+rtspTalkServer::Status rtspTalkServer::onStop(StopMessage& mes)
 {
     if (!m_voice)
-        return true;
+        return Status::Failed;
+
     m_voice->Pause();
-    return true;
-}
-
-bool rtspTalkServer::ready()
-{
-    if (!m_voice)
-        return false;
-    return true;
+    return Status::Succeeded;
 }
 
 #ifdef rtDebug
-bool rtspTalkServer::onDebug(DebugMessage& mes)
+rtspTalkServer::Status rtspTalkServer::onDebug(DebugMessage& mes)
 {
-    return true;
+    return Status::Succeeded;
 }
+#endif
+
 void rtspTalkServer::wait()
 {
     if (m_task_talk.valid())
         m_task_talk.wait();
 }
-#endif
 
 
 

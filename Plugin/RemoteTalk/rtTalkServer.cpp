@@ -294,20 +294,21 @@ void TalkServer::processMessages()
     lock_t lock(m_mutex);
     for (auto& mes : m_messages) {
         if (!mes->handled.load()) {
-            bool handled = true;
+            auto s = Status::Failed;
             if (auto *talk = dynamic_cast<TalkMessage*>(mes.get()))
-                handled = onTalk(*talk);
+                s = onTalk(*talk);
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
-                handled = onStop(*stop);
+                s = onStop(*stop);
             else if (auto *stats = dynamic_cast<StatsMessage*>(mes.get()))
-                handled = onStats(*stats);
+                s = onStats(*stats);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
-                handled = onDebug(*dbg);
+                s = onDebug(*dbg);
 #endif
 
-            if (!handled)
+            if (s == Status::Pending)
                 break;
+            mes->status = s;
             mes->handled = true;
             mes.reset();
         }

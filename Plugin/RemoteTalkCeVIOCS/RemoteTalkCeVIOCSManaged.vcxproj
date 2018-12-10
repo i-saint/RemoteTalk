@@ -26,15 +26,27 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RemoteTalkCeVIOCSHook.cpp" />
+    <ClCompile Include="RemoteTalkCeVIOCSManaged.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)RemoteTalk\RemoteTalk.vcxproj">
       <Project>{fd3fe1ff-abe5-40db-b867-144e9dd9b23c}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="CeVIO.Talk.RemoteService">
+      <HintPath>..\..\..\..\..\Program Files (x86)\CeVIO\CeVIO Creative Studio\CeVIO.Talk.RemoteService.DLL</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{62680C45-269B-4751-9FBD-774481C13873}</ProjectGuid>
+    <ProjectGuid>{F30C82A3-63D0-4021-960F-73B528EDD036}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -50,6 +62,18 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
+    <CLRSupport>true</CLRSupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -95,7 +119,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WarningLevel>Level3</WarningLevel>
       <StringPooling>true</StringPooling>
-      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <ControlFlowGuard>false</ControlFlowGuard>
       <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>

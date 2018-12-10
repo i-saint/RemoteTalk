@@ -373,7 +373,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkSAPI")] static extern rtspTalkServer rtspStartServer(int port);
         #endregion
 
-        public static rtspTalkServer StartServer(int port = 8082) { return rtspStartServer(port); }
+        public static rtspTalkServer StartServer(int port = 8083) { return rtspStartServer(port); }
     }
 
 
