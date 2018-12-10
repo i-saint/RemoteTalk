@@ -32,6 +32,39 @@ void ServeBinary(Poco::Net::HTTPServerResponse& response, RawVector<char>& data,
 }
 
 
+std::string TalkServerStats::to_json()
+{
+    using namespace picojson;
+    object ret;
+    ret["host_app"] = rt::to_json(host_app);
+    ret["plugin_version"] = rt::to_json(plugin_version);
+    ret["protocol_version"] = rt::to_json(protocol_version);
+    ret["params"] = rt::to_json(params);
+    ret["avators"] = rt::to_json(avators);
+    return value(std::move(ret)).serialize(true);
+}
+
+bool TalkServerStats::from_json(const std::string& str)
+{
+    using namespace picojson;
+    value val;
+    parse(val, str);
+
+    bool ret = false;
+    if (rt::from_json(host_app, val.get("host_app")))
+        ret = true;
+    if (rt::from_json(plugin_version, val.get("plugin_version")))
+        ret = true;
+    if (rt::from_json(protocol_version, val.get("protocol_version")))
+        ret = true;
+    if (rt::from_json(params, val.get("params")))
+        ret = true;
+    if (rt::from_json(avators, val.get("avators")))
+        ret = true;
+    return ret;
+}
+
+
 
 class TalkServerRequestHandler : public HTTPRequestHandler
 {
@@ -105,8 +138,8 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
             handled = true;
         ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
     }
-    else if (uri.getPath() == "/params") {
-        auto mes = std::make_shared<TalkServer::GetParamsMessage>();
+    else if (uri.getPath() == "/stats") {
+        auto mes = std::make_shared<TalkServer::StatsMessage>();
         m_server->addMessage(mes);
         if (mes->wait())
             handled = true;
@@ -179,27 +212,14 @@ bool TalkServer::TalkMessage::from_json(const std::string & str)
     return ret;
 }
 
-std::string TalkServer::GetParamsMessage::to_json()
+std::string TalkServer::StatsMessage::to_json()
 {
-    using namespace picojson;
-    object ret;
-    ret["params"] = rt::to_json(params);
-    ret["avators"] = rt::to_json(avators);
-    return value(std::move(ret)).serialize(true);
+    return stats.to_json();
 }
 
-bool TalkServer::GetParamsMessage::from_json(const std::string& str)
+bool TalkServer::StatsMessage::from_json(const std::string& str)
 {
-    using namespace picojson;
-    value val;
-    parse(val, str);
-
-    bool ret = false;
-    if (rt::from_json(params, val.get("params")))
-        ret = true;
-    if (rt::from_json(avators, val.get("avators")))
-        ret = true;
-    return ret;
+    return stats.from_json(str);
 }
 
 
@@ -255,8 +275,8 @@ void TalkServer::processMessages()
                 handled = onTalk(*talk);
             else if (auto *stop = dynamic_cast<StopMessage*>(mes.get()))
                 handled = onStop(*stop);
-            else if (auto *get_params = dynamic_cast<GetParamsMessage*>(mes.get()))
-                handled = onGetParams(*get_params);
+            else if (auto *get_params = dynamic_cast<StatsMessage*>(mes.get()))
+                handled = onStat(*get_params);
 #ifdef rtDebug
             else if (auto *dbg = dynamic_cast<DebugMessage*>(mes.get()))
                 handled = onDebug();

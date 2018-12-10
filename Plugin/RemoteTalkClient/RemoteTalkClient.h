@@ -11,9 +11,8 @@ public:
     ~rtHTTPClient();
     void release();
 
-    async& updateServerStatus();
-    const rt::TalkParams& getServerParams();
-    const rt::AvatorList& getAvatorList();
+    async& updateServerStats();
+    const rt::TalkServerStats& getServerStats() const;
 
     bool isReady();
     async& talk(const rt::TalkParams& params, const std::string& text);
@@ -27,8 +26,7 @@ private:
     rt::TalkClientSettings m_settings;
     rt::TalkClient m_client;
 
-    rt::TalkParams m_server_params;
-    rt::AvatorList m_avator_list;
+    rt::TalkServerStats m_server_stats;
     rt::AudioData m_buf_receiving;
     rt::AudioData m_buf_public;
     std::mutex m_mutex;

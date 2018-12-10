@@ -17,11 +17,13 @@ static rt::TalkClientSettings GetClientSettings()
 TestCase(RemoteTalkClient)
 {
     rt::TalkClient client(GetClientSettings());
-    rt::TalkParams params;
-    rt::AvatorList avators;
-    client.getParams(params, avators);
 
-    params.setMute(true);
+    rt::TalkServerStats stats;
+    if (!client.stats(stats))
+        return;
+
+    rt::TalkParams params = stats.params;
+    params.setVolume(0.8f);
     std::string text = "hello voiceroid! this is a test of remote talk client.";
 
     rt::AudioData sequence;

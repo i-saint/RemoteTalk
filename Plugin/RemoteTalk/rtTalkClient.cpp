@@ -39,12 +39,12 @@ bool TalkClient::isServerAvailable()
     return ret;
 }
 
-bool TalkClient::getParams(TalkParams& params, AvatorList& avators)
+bool TalkClient::stats(TalkServerStats& stats)
 {
     bool ret = false;
     try {
         URI uri;
-        uri.setPath("/params");
+        uri.setPath("/stats");
 
         HTTPClientSession session{ m_settings.server, m_settings.port };
         session.setTimeout(m_settings.timeout_ms * 1000);
@@ -56,10 +56,9 @@ bool TalkClient::getParams(TalkParams& params, AvatorList& avators)
         auto& rs = session.receiveResponse(response);
         if (response.getStatus() == HTTPResponse::HTTP_OK) {
             std::string s(std::istreambuf_iterator<char>(rs), {});
-            TalkServer::GetParamsMessage mes;
+            TalkServer::StatsMessage mes;
             if (mes.from_json(s)) {
-                params = std::move(mes.params);
-                avators = std::move(mes.avators);
+                stats = std::move(mes.stats);
                 ret = true;
             }
         }

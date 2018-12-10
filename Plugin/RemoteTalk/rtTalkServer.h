@@ -28,6 +28,18 @@ struct TalkServerSettings
     uint16_t port = 8081;
 };
 
+struct TalkServerStats
+{
+    std::string host_app;
+    int plugin_version = 0;
+    int protocol_version = 0;
+    TalkParams params;
+    AvatorList avators;
+
+    std::string to_json();
+    bool from_json(const std::string& str);
+};
+
 class TalkServer
 {
 public:
@@ -60,11 +72,10 @@ public:
     public:
     };
 
-    class GetParamsMessage : public Message
+    class StatsMessage : public Message
     {
     public:
-        TalkParams params;
-        AvatorList avators;
+        TalkServerStats stats;
 
         std::string to_json();
         bool from_json(const std::string& str);
@@ -88,9 +99,9 @@ public:
     virtual void stop();
 
     virtual void processMessages();
+    virtual bool onStat(StatsMessage& mes) = 0;
     virtual bool onTalk(TalkMessage& mes) = 0;
     virtual bool onStop(StopMessage& mes) = 0;
-    virtual bool onGetParams(GetParamsMessage& mes) = 0;
     virtual bool ready() = 0;
 
 #ifdef rtDebug

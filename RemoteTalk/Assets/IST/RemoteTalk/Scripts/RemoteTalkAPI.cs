@@ -286,7 +286,8 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientRelease(IntPtr self);
 
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientUpdateServerStatus(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern void rtHTTPClientGetParams(IntPtr self, ref rtTalkParams st);
+        [DllImport("RemoteTalkClient")] static extern IntPtr rtHTTPClientGetServerHostApp(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern void rtHTTPClientGetServerParams(IntPtr self, ref rtTalkParams st);
         [DllImport("RemoteTalkClient")] static extern int rtHTTPClientGetNumAvators(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAvatorInfo rtHTTPClientGetAvator(IntPtr self, int i);
 
@@ -299,12 +300,19 @@ namespace IST.RemoteTalk
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
 
+        public string hostApp
+        {
+            get
+            {
+                return Misc.S(rtHTTPClientGetServerHostApp(self));
+            }
+        }
         public rtTalkParams serverParams
         {
             get
             {
                 var ret = default(rtTalkParams);
-                rtHTTPClientGetParams(self, ref ret);
+                rtHTTPClientGetServerParams(self, ref ret);
                 return ret;
             }
         }

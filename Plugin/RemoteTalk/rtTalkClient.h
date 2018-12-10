@@ -24,7 +24,7 @@ public:
     // communicate with server 
 
     bool isServerAvailable();
-    bool getParams(TalkParams& params, AvatorList& avators);
+    bool stats(TalkServerStats& stats);
     bool talk(const TalkParams& params, const std::string& text, const std::function<void (const AudioData&)>& cb);
     bool stop();
     bool ready();

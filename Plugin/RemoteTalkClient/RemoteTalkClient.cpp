@@ -18,22 +18,17 @@ void rtHTTPClient::release()
     delete this;
 }
 
-rtHTTPClient::async& rtHTTPClient::updateServerStatus()
+rtHTTPClient::async& rtHTTPClient::updateServerStats()
 {
     m_task_status = std::async(std::launch::async, [this]() {
-        m_client.getParams(m_server_params, m_avator_list);
+        m_client.stats(m_server_stats);
     });
     return m_task_status;
 }
 
-const rt::TalkParams& rtHTTPClient::getServerParams()
+const rt::TalkServerStats& rtHTTPClient::getServerStats() const
 {
-    return m_server_params;
-}
-
-const rt::AvatorList& rtHTTPClient::getAvatorList()
-{
-    return m_avator_list;
+    return m_server_stats;
 }
 
 bool rtHTTPClient::isReady()
@@ -218,28 +213,35 @@ rtExport rtAsync* rtHTTPClientUpdateServerStatus(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
-    return &self->updateServerStatus();
+    return &self->updateServerStats();
 }
 
-rtExport void rtHTTPClientGetParams(rtHTTPClient *self, rtTalkParams *st)
+rtExport const char* rtHTTPClientGetServerHostApp(rtHTTPClient *self)
+{
+    if (!self)
+        return "";
+    return self->getServerStats().host_app.c_str();
+}
+
+rtExport void rtHTTPClientGetServerParams(rtHTTPClient *self, rtTalkParams *st)
 {
     if (!self)
         return;
-    *st = self->getServerParams();
+    *st = self->getServerStats().params;
 }
 
 rtExport int rtHTTPClientGetNumAvators(rtHTTPClient *self)
 {
     if (!self)
         return 0;
-    return (int)self->getAvatorList().size();
+    return (int)self->getServerStats().avators.size();
 }
 
 rtExport const rtAvatorInfo* rtHTTPClientGetAvator(rtHTTPClient *self, int i)
 {
     if (!self)
         return nullptr;
-    return &self->getAvatorList()[i];
+    return &self->getServerStats().avators[i];
 }
 
 rtExport rtAsync* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)

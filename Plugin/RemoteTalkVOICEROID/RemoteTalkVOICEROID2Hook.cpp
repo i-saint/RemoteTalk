@@ -19,9 +19,9 @@ using super = rt::TalkServer;
 public:
     rtDefSingleton(rtvrTalkServer);
     void addMessage(MessagePtr mes) override;
+    bool onStat(StatsMessage& mes) override;
     bool onTalk(TalkMessage& mes) override;
     bool onStop(StopMessage& mes) override;
-    bool onGetParams(GetParamsMessage& mes) override;
     bool ready() override;
 #ifdef rtDebug
     bool onDebug() override;
@@ -50,9 +50,7 @@ static bool rtvr2LoadManagedModule()
 
 static void SendTimerMessage()
 {
-    rt::EnumerateTopWindows([](HWND hw) {
-        ::SendMessageA(hw, WM_TIMER, 0, 0);
-    });
+    //::SendMessageA((HWND)0xffff, WM_TIMER, 0, 0);
 }
 
 
@@ -69,6 +67,29 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
 
     // force call GetMessageW()
     SendTimerMessage();
+}
+
+bool rtvrTalkServer::onStat(StatsMessage& mes)
+{
+    auto ifs = rtGetTalkInterface_();
+    if (!ifs->prepareUI())
+        return false;
+
+    auto& stats = mes.stats;
+    if (!ifs->getParams(stats.params))
+        return false;
+    {
+        int n = ifs->getNumAvators();
+        for (int i = 0; i < n; ++i) {
+            rt::AvatorInfo ti;
+            ifs->getAvatorInfo(i, &ti);
+            stats.avators.push_back({ ti.id, ti.name });
+        }
+    }
+    stats.host_app = ifs->getClientName();
+    stats.plugin_version = ifs->getPluginVersion();
+    stats.protocol_version = ifs->getProtocolVersion();
+    return true;
 }
 
 bool rtvrTalkServer::onTalk(TalkMessage& mes)
@@ -126,24 +147,6 @@ bool rtvrTalkServer::onStop(StopMessage& mes)
         return false;
     }
     return ifs->stop();
-}
-
-bool rtvrTalkServer::onGetParams(GetParamsMessage& mes)
-{
-    auto ifs = rtGetTalkInterface_();
-    if (!ifs->prepareUI())
-        return false;
-    if (!ifs->getParams(mes.params))
-        return false;
-    {
-        int n = ifs->getNumAvators();
-        for (int i = 0; i < n; ++i) {
-            rt::AvatorInfo ti;
-            ifs->getAvatorInfo(i, &ti);
-            mes.avators.push_back({ ti.id, ti.name });
-        }
-    }
-    return true;
 }
 
 bool rtvrTalkServer::ready()

@@ -85,6 +85,34 @@ template<> float from_string(const std::string& v)
 }
 
 
+template<> picojson::value to_json(const bool& v)
+{
+    using namespace picojson;
+    return value(v);
+}
+template<> bool from_json(bool& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<bool>())
+        return false;
+    dst = v.get<bool>();
+    return true;
+}
+
+template<> picojson::value to_json(const int& v)
+{
+    using namespace picojson;
+    return value((float)v);
+}
+template<> bool from_json(int& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<float>())
+        return false;
+    dst = (int)v.get<float>();
+    return true;
+}
+
 template<> picojson::value to_json(const float& v)
 {
     using namespace picojson;
