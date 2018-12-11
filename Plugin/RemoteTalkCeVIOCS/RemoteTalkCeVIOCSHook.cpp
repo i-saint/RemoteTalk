@@ -18,7 +18,7 @@ public:
 
     bool mute = false;
     std::function<void()> onPlay, onStop;
-    std::function<void(const rt::AudioData&)> onUpdate;
+    std::function<void(rt::AudioData&)> onUpdate;
 
     void clearCallbacks();
 
@@ -270,7 +270,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             rt::AddWaveOutHandler(&wo);
             wo.onPlay = []() { rtGetTalkInterface_()->onPlay(); };
             wo.onStop = []() { rtGetTalkInterface_()->onStop(); };
-            wo.onUpdate = [](const rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
+            wo.onUpdate = [](rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
         }
     }
     return TRUE;

@@ -117,7 +117,7 @@ public:
     virtual Status onTalk(TalkMessage& mes) = 0;
     virtual Status onStop(StopMessage& mes) = 0;
 #ifdef rtDebug
-    virtual Status onDebug(DebugMessage& mes) { return Status::Succeeded; }
+    virtual Status onDebug(DebugMessage& /*mes*/) { return Status::Succeeded; }
 #endif
 
     virtual void addMessage(MessagePtr mes);

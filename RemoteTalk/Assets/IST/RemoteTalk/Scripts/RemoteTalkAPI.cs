@@ -129,55 +129,60 @@ namespace IST.RemoteTalk
             get { return bits[0]; }
             set { bits[0] = value; }
         }
-        public bool volume
+        public bool forceMono
         {
             get { return bits[1]; }
             set { bits[1] = value; }
         }
-        public bool speed
+        public bool volume
         {
             get { return bits[2]; }
             set { bits[2] = value; }
         }
-        public bool pitch
+        public bool speed
         {
             get { return bits[3]; }
             set { bits[3] = value; }
         }
-        public bool intonation
+        public bool pitch
         {
             get { return bits[4]; }
             set { bits[4] = value; }
         }
-        public bool alpha
+        public bool intonation
         {
             get { return bits[5]; }
             set { bits[5] = value; }
         }
-        public bool normal
+        public bool alpha
         {
             get { return bits[6]; }
             set { bits[6] = value; }
         }
-        public bool joy
+        public bool normal
         {
             get { return bits[7]; }
             set { bits[7] = value; }
         }
-        public bool anger
+        public bool joy
         {
             get { return bits[8]; }
             set { bits[8] = value; }
         }
-        public bool sorrow
+        public bool anger
         {
             get { return bits[9]; }
             set { bits[9] = value; }
         }
-        public bool cast
+        public bool sorrow
         {
             get { return bits[10]; }
             set { bits[10] = value; }
+        }
+        public bool cast
+        {
+            get { return bits[11]; }
+            set { bits[11] = value; }
         }
     }
 
@@ -186,6 +191,7 @@ namespace IST.RemoteTalk
     {
         [SerializeField] public rtTalkParamFlags flags;
         [SerializeField] int m_mute;
+        [SerializeField] int m_forceMono;
         [SerializeField] float m_volume;
         [SerializeField] float m_speed;
         [SerializeField] float m_pitch;
@@ -215,6 +221,11 @@ namespace IST.RemoteTalk
         {
             get { return m_mute != 0; }
             set { m_mute = value ? 1 : 0; flags.mute = true; }
+        }
+        public bool forceMono
+        {
+            get { return m_forceMono != 0; }
+            set { m_forceMono = value ? 1 : 0; flags.forceMono = true; }
         }
         public float volume
         {

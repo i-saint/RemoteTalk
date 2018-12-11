@@ -11,8 +11,8 @@ namespace IST.RemoteTalk
     public class RemoteTalkClient : MonoBehaviour
     {
         #region Fields
-        [SerializeField] string m_server = "localhost";
-        [SerializeField] int m_port = 8081;
+        [SerializeField] string m_serverAddress = "localhost";
+        [SerializeField] int m_serverPort = 8081;
         [Space(10)]
         [SerializeField] rtTalkParams m_params = rtTalkParams.defaultValue;
         [SerializeField] string m_text;
@@ -43,13 +43,13 @@ namespace IST.RemoteTalk
         #region Properties
         public string server
         {
-            get { return m_server; }
-            set { m_server = value; ReleaseClient(); }
+            get { return m_serverAddress; }
+            set { m_serverAddress = value; ReleaseClient(); }
         }
         public int port
         {
-            get { return m_port; }
-            set { m_port = value; ReleaseClient(); }
+            get { return m_serverPort; }
+            set { m_serverPort = value; ReleaseClient(); }
         }
         public rtTalkParams talkParams
         {
@@ -103,7 +103,7 @@ namespace IST.RemoteTalk
         {
             if (!m_client)
             {
-                m_client = rtHTTPClient.Create(m_server, m_port);
+                m_client = rtHTTPClient.Create(m_serverAddress, m_serverPort);
                 m_asyncStats = m_client.UpdateServerStatus();
             }
         }

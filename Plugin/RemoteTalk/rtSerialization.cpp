@@ -5,6 +5,35 @@
 
 namespace rt {
 
+void Print(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+#ifdef _WIN32
+    char buf[1024];
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    ::OutputDebugStringA(buf);
+#else
+    vprintf(fmt, args);
+#endif
+    va_end(args);
+}
+
+void Print(const wchar_t *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+#ifdef _WIN32
+    wchar_t buf[1024];
+    _vsnwprintf(buf, sizeof(buf), fmt, args);
+    ::OutputDebugStringW(buf);
+#else
+    vwprintf(fmt, args);
+#endif
+    va_end(args);
+}
+
+
 std::string ToUTF8(const char *src)
 {
 #ifdef _WIN32
@@ -166,6 +195,7 @@ template<> picojson::value to_json(const TalkParams& v)
     using namespace picojson;
     object t;
     if (v.flags.mute) t["mute"] = value((float)v.mute);
+    if (v.flags.force_mono) t["force_mono"] = value((float)v.force_mono);
     if (v.flags.volume) t["volume"] = value(v.volume);
     if (v.flags.speed) t["speed"] = value(v.speed);
     if (v.flags.pitch) t["pitch"] = value(v.pitch);
@@ -184,7 +214,8 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
     if (!v.is<object>())
         return false;
     for (auto& kvp : v.get<object>()) {
-        if (kvp.first == "mute") { dst.setMute((int)kvp.second.get<float>() != 0); }
+        if      (kvp.first == "mute") { dst.setMute((int)kvp.second.get<float>() != 0); }
+        else if (kvp.first == "force_mono") { dst.setForceMono((int)kvp.second.get<float>() != 0); }
         else if (kvp.first == "volume") { dst.setVolume(kvp.second.get<float>()); }
         else if (kvp.first == "speed") { dst.setSpeed(kvp.second.get<float>()); }
         else if (kvp.first == "pitch") { dst.setPitch(kvp.second.get<float>()); }

@@ -46,6 +46,9 @@ public:
     size_t getSampleLength() const;
     double getDuration() const;
 
+    void convertToMono();
+    void increaseChannels(int n); // must be mono before call
+
     bool exportAsWave(const char *path) const;
     int convertSamplesToFloat(float *dst, int pos = 0, int len = -1);
 

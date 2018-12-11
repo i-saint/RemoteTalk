@@ -27,8 +27,10 @@ public:
     bool setParams(const rt::TalkParams& params);
     bool setText(const char *text);
 
-    bool stop();
     bool talk();
+    bool stop();
+    bool wait();
+    bool isPlaying();
 
 private:
     static rtcvInterfaceManaged s_instance;
@@ -42,9 +44,6 @@ private:
         CastInfo(int i,  String^ n) : id(i), name(n) {}
     };
     List<CastInfo^>^ m_casts;
-    float m_volume = 1.0f;
-    float m_speed = 1.0f;
-    float m_tone = 1.0f;
     int m_cast = 0;
     String^ m_text = "";
 
@@ -73,18 +72,19 @@ public:
     bool ready() const override;
     bool talk(rt::TalkSampleCallback cb, void *userdata) override;
     bool stop() override;
+    bool wait() override;
 
     void onPlay() override;
     void onStop() override;
-    void onUpdateBuffer(const rt::AudioData& ad) override;
+    void onUpdateBuffer(rt::AudioData& ad) override;
 #ifdef rtDebug
     bool onDebug() override;
 #endif
 
 private:
     mutable rt::CastList m_casts;
+    rt::TalkParams m_params;
 
-    std::atomic_bool m_is_playing{ false };
     rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
 };
@@ -218,6 +218,18 @@ bool rtcvInterfaceManaged::setText(const char *text)
 }
 
 
+bool rtcvInterfaceManaged::talk()
+{
+    stop();
+    updateCast();
+
+    if (!m_talker || !m_text || m_text->Length == 0)
+        return false;
+
+    m_state = m_talker->Speak(m_text);
+    return m_state != nullptr;
+}
+
 bool rtcvInterfaceManaged::stop()
 {
     if (m_state && !m_state->IsCompleted) {
@@ -226,18 +238,18 @@ bool rtcvInterfaceManaged::stop()
     return true;
 }
 
-bool rtcvInterfaceManaged::talk()
+bool rtcvInterfaceManaged::wait()
 {
-    stop();
-    updateCast();
-
-    if (!m_talker || !m_text)
-        return false;
-    if (m_text->Length == 0)
+    if (m_state) {
+        m_state->Wait();
         return true;
+    }
+    return false;
+}
 
-    m_state = m_talker->Speak(m_text);
-    return true;
+bool rtcvInterfaceManaged::isPlaying()
+{
+    return m_state && !m_state->IsCompleted;
 }
 
 
@@ -269,6 +281,7 @@ bool rtcvTalkInterface::getParams(rt::TalkParams& params) const
 
 bool rtcvTalkInterface::setParams(const rt::TalkParams& params)
 {
+    m_params = params;
     return rtcvInterfaceManaged::getInstance()->setParams(params);
 }
 
@@ -296,18 +309,14 @@ bool rtcvTalkInterface::setText(const char *text)
 
 bool rtcvTalkInterface::ready() const
 {
-    return !m_is_playing;
+    return !rtcvInterfaceManaged::getInstance()->isPlaying();
 }
 
 bool rtcvTalkInterface::talk(rt::TalkSampleCallback cb, void *userdata)
 {
-    if (m_is_playing)
-        return false;
-
     m_sample_cb = cb;
     m_sample_cb_userdata = userdata;
     if (rtcvInterfaceManaged::getInstance()->talk()) {
-        m_is_playing = true;
         return true;
     }
     else {
@@ -317,30 +326,34 @@ bool rtcvTalkInterface::talk(rt::TalkSampleCallback cb, void *userdata)
 
 bool rtcvTalkInterface::stop()
 {
-    if (!m_is_playing)
-        return false;
     return rtcvInterfaceManaged::getInstance()->stop();
+}
+
+bool rtcvTalkInterface::wait()
+{
+    return rtcvInterfaceManaged::getInstance()->wait();
 }
 
 
 void rtcvTalkInterface::onPlay()
 {
-    m_is_playing = true;
 }
 
 void rtcvTalkInterface::onStop()
 {
-    if (m_sample_cb && m_is_playing) {
+    if (m_sample_cb) {
         rt::AudioData dummy;
         auto sd = rt::ToTalkSample(dummy);
         m_sample_cb(&sd, m_sample_cb_userdata);
     }
-    m_is_playing = false;
 }
 
-void rtcvTalkInterface::onUpdateBuffer(const rt::AudioData& ad)
+void rtcvTalkInterface::onUpdateBuffer(rt::AudioData& ad)
 {
-    if (m_sample_cb && m_is_playing) {
+    if (m_sample_cb && rtcvInterfaceManaged::getInstance()->isPlaying()) {
+        if (m_params.flags.force_mono && m_params.force_mono)
+            ad.convertToMono();
+
         auto sd = rt::ToTalkSample(ad);
         m_sample_cb(&sd, m_sample_cb_userdata);
     }

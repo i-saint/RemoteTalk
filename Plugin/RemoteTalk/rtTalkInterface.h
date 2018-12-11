@@ -6,27 +6,31 @@
 namespace rt {
 
 #define rtEachTalkParams(Body)\
-    Body(mute) Body(volume) Body(speed) Body(pitch) Body(intonation) Body(alpha) Body(normal) Body(joy) Body(anger) Body(sorrow) Body(cast)
+    Body(mute) Body(force_mono)\
+    Body(volume) Body(speed) Body(pitch) Body(intonation) Body(alpha)\
+    Body(normal) Body(joy) Body(anger) Body(sorrow) Body(cast)
 
 struct TalkParams
 {
     struct Flags
     {
         uint32_t mute : 1;
+        uint32_t force_mono : 1;
         uint32_t volume : 1;
         uint32_t speed : 1;
-        uint32_t pitch : 1;
+        uint32_t pitch : 1;     // 5
         uint32_t intonation : 1;
         uint32_t alpha : 1;
         uint32_t normal : 1;
         uint32_t joy : 1;
-        uint32_t anger : 1;
+        uint32_t anger : 1;     // 10
         uint32_t sorrow : 1;
         uint32_t cast : 1;
     };
     
     Flags flags = {};
     int mute = false; // as bool
+    int force_mono = false; // as bool
     float volume = 1.0f;
     float speed = 1.0f;
     float pitch = 1.0f;
@@ -40,6 +44,7 @@ struct TalkParams
 
 #define Set(V) flags.V = 1; ##V = v;
     void setMute(bool v) { Set(mute); }
+    void setForceMono(bool v) { Set(force_mono); }
     void setVolume(float v) { Set(volume); }
     void setSpeed(float v) { Set(speed); }
     void setPitch(float v) { Set(pitch); }

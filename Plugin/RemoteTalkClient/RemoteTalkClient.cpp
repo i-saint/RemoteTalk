@@ -20,10 +20,12 @@ void rtHTTPClient::release()
 
 rtHTTPClient::async& rtHTTPClient::updateServerStats()
 {
-    m_task_status = std::async(std::launch::async, [this]() {
-        m_client.stats(m_server_stats);
+    m_task_stats = std::async(std::launch::async, [this]() {
+        if (!m_client.stats(m_server_stats)) {
+            m_server_stats.host = "Server Not Found";
+        }
     });
-    return m_task_status;
+    return m_task_stats;
 }
 
 const rt::TalkServerStats& rtHTTPClient::getServerStats() const
@@ -62,8 +64,8 @@ rtHTTPClient::async& rtHTTPClient::stop()
 
 void rtHTTPClient::wait()
 {
-    if (m_task_status.valid())
-        m_task_status.wait();
+    if (m_task_stats.valid())
+        m_task_stats.wait();
     if (m_task_talk.valid())
         m_task_talk.wait();
     if (m_task_stop.valid())

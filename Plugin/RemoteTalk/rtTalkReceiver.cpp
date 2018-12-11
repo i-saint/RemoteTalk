@@ -33,7 +33,7 @@ TalkReceiverRequestHandler::TalkReceiverRequestHandler(TalkReceiver *server)
 
 void TalkReceiverRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
-    auto& uri = request.getURI();
+    //auto& uri = request.getURI();
 
     bool handled = false;
     if (request.getMethod() == HTTPServerRequest::HTTP_GET) {
@@ -42,6 +42,7 @@ void TalkReceiverRequestHandler::handleRequest(HTTPServerRequest& request, HTTPS
     if (!handled)
         ServeText(response, "", HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
 }
+
 
 TalkReceiverRequestHandlerFactory::TalkReceiverRequestHandlerFactory(TalkReceiver *server)
     : m_server(server)
@@ -62,8 +63,9 @@ TalkReceiver::~TalkReceiver()
     stop();
 }
 
-void TalkReceiver::setSettings(const TalkServerSettings & v)
+void TalkReceiver::setSettings(const TalkServerSettings& v)
 {
+    m_settings = v;
 }
 
 bool TalkReceiver::start()

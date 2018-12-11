@@ -30,7 +30,7 @@ private:
     rt::AudioData m_buf_receiving;
     rt::AudioData m_buf_public;
     std::mutex m_mutex;
-    async m_task_status;
+    async m_task_stats;
     async m_task_talk;
     async m_task_stop;
     bool m_processing = false;

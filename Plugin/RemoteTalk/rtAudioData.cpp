@@ -94,6 +94,48 @@ double AudioData::getDuration() const
     return (double)getSampleLength() / (frequency * channels);
 }
 
+void AudioData::convertToMono()
+{
+    if (channels == 1)
+        return; // nothing todo
+
+    int size = (int)data.size();
+    int c = channels;
+    for (int i = 0; i*c < size; ++i)
+        data[i] = data[i*c];
+    data.resize(size / c);
+    channels = 1;
+}
+
+void AudioData::increaseChannels(int n)
+{
+    if (channels != 1 || channels == n)
+        return; // must be mono before convert
+
+    int len = getSampleLength();
+    if (len == 0)
+        return; // data is empty or unknown format
+
+    data.resize(data.size() * n);
+
+    auto convert = [n](auto *dst, int len) {
+        while (len--) {
+            for (int ci = 0; ci < n; ++ci)
+                dst[len*n + ci] = dst[len];
+        }
+    };
+
+    switch (format) {
+    case AudioFormat::U8:  convert((unorm8n*)data.data(), len); break;
+    case AudioFormat::S16: convert((snorm16*)data.data(), len); break;
+    case AudioFormat::S24: convert((snorm24*)data.data(), len); break;
+    case AudioFormat::S32: convert((snorm32*)data.data(), len); break;
+    case AudioFormat::F32: convert((float*)data.data(), len); break;
+    default: return;
+    }
+    channels = n;
+}
+
 
 
 struct WaveHeader
