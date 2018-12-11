@@ -144,22 +144,25 @@ rt::CastList rtcvInterfaceManaged::getCastList()
     return ret;
 }
 
+static inline float to_f(uint32_t v) { return (float)v / 100.0f; }
+static inline uint32_t to_u(float v) { return (uint32_t)(v * 100.0f); }
+
 bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
 {
     updateCast();
     params.setCast(m_cast);
     if (m_talker) {
-        params.setVolume((float)m_talker->Volume / 100.0f);
-        params.setSpeed((float)m_talker->Speed / 100.0f);
-        params.setPitch((float)m_talker->Tone / 100.0f);
-        params.setIntonation((float)m_talker->ToneScale / 100.0f);
-        params.setAlpha((float)m_talker->Alpha / 100.0f);
+        params.setVolume(to_f(m_talker->Volume));
+        params.setSpeed(to_f(m_talker->Speed));
+        params.setPitch(to_f(m_talker->Tone));
+        params.setIntonation(to_f(m_talker->ToneScale));
+        params.setAlpha(to_f(m_talker->Alpha));
 
         int n = m_talker->Components->Count;
         for (int i = 0; i < n; ++i) {
             auto c = m_talker->Components->At(i);
             auto name = c->Name;
-            auto val = (float)c->Value / 100.0f;
+            auto val = to_f(c->Value);
             if (name == L"Œ³‹C")
                 params.setJoy(val);
             else if (name == L"•’Ê")
@@ -177,6 +180,34 @@ bool rtcvInterfaceManaged::setParams(const rt::TalkParams& params)
 {
     if (params.flags.cast)
         m_cast = params.cast;
+    updateCast();
+    if (!m_talker)
+        return false;
+
+    if (params.flags.volume)
+        m_talker->Volume = to_u(params.volume);
+    if (params.flags.speed)
+        m_talker->Speed = to_u(params.speed);
+    if (params.flags.pitch)
+        m_talker->Tone = to_u(params.pitch);
+    if (params.flags.intonation)
+        m_talker->ToneScale = to_u(params.intonation);
+    if (params.flags.alpha)
+        m_talker->Alpha = to_u(params.alpha);
+
+    int n = m_talker->Components->Count;
+    for (int i = 0; i < n; ++i) {
+        auto c = m_talker->Components->At(i);
+        auto name = c->Name;
+        if (name == L"Œ³‹C" && params.flags.joy)
+            c->Value = to_u(params.joy);
+        else if (name == L"•’Ê"&& params.flags.normal)
+            c->Value = to_u(params.normal);
+        else if (name == L"“{‚è"&& params.flags.anger)
+            c->Value = to_u(params.anger);
+        else if (name == L"ˆ£‚µ‚Ý"&& params.flags.sorrow)
+            c->Value = to_u(params.sorrow);
+    }
     return true;
 }
 
@@ -200,11 +231,10 @@ bool rtcvInterfaceManaged::talk()
     stop();
     updateCast();
 
-    if (!m_talker)
+    if (!m_talker || !m_text)
         return false;
-
-    //m_talker->Volume = m_volume;
-    //m_talker->Speed = m_speed;
+    if (m_text->Length == 0)
+        return true;
 
     m_state = m_talker->Speak(m_text);
     return true;
@@ -228,7 +258,7 @@ rtcvTalkInterface::~rtcvTalkInterface()
 }
 
 void rtcvTalkInterface::release() { /*do nothing*/ }
-const char* rtcvTalkInterface::getClientName() const { return "CeVIO CS"; }
+const char* rtcvTalkInterface::getClientName() const { return "CeVIO Creative Studio"; }
 int rtcvTalkInterface::getPluginVersion() const { return rtPluginVersion; }
 int rtcvTalkInterface::getProtocolVersion() const { return rtProtocolVersion; }
 

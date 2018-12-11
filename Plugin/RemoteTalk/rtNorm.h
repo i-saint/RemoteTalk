@@ -4,10 +4,10 @@
 
 namespace rt {
 
-inline int clamp(int v, int n, int x) { return std::max(std::min(v, x), n); }
-inline float clamp01(float v) { return std::max(std::min(v, 1.0f), 0.0f); }
-inline float clamp11(float v) { return std::max(std::min(v, 1.0f), -1.0f); }
-inline double clamp11(double v) { return std::max(std::min(v, 1.0), -1.0); }
+template<class T> inline T clamp(T v, T n, T x) { return std::max(std::min(v, x), n); }
+inline float clamp01(float v) { return clamp(v, 1.0f, 0.0f); }
+inline float clamp11(float v) { return clamp(v, 1.0f, -1.0f); }
+inline double clamp11(double v) { return clamp(v, 1.0, -1.0); }
 
 // -1.0f - 1.0f <-> -127 - 127
 struct snorm8
