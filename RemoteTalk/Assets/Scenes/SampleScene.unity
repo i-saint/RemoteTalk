@@ -215,14 +215,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 0
+      m_cast: 0
     text: "\u3053\u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u306F\u3001\u30DC\u30A4\u30B9\u30ED\u30A4\u30C9\u3092\u9060\u9694\u64CD\u4F5C\u3057\u3066\u30E6\u30CB\u30C6\u30A3\u30FC\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u3068\u3057\u3066\u4F7F\u3048\u308B\u3088\u3046\u306B\u3057\u307E\u3059\u3002"
     delay: 0
     reverb: 0
@@ -232,14 +235,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 0
+      m_cast: 0
     text: "\u30C6\u30AD\u30B9\u30C8\u306E\u5165\u529B\u3084\u5404\u7A2E\u30D1\u30E9\u30E1\u30FC\u30BF\u306E\u8A2D\u5B9A\u3082\u3001\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u304B\u3089\u884C\u3046\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
     delay: 0
     reverb: 0
@@ -249,14 +255,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 2
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 0
+      m_cast: 0
     text: "\u4F8B\u3048\u3070\u901F\u5EA6\u306E\u5909\u66F4\u3002"
     delay: 0
     reverb: 0
@@ -266,16 +275,19 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1.5
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 0
+      m_cast: 0
     text: "\u3053\u308C\u306F\u9AD8\u3055\u306E\u5909\u66F4\u3067\u3059\u3002"
-    delay: 40
+    delay: 0
     reverb: 0
     echo: 0
   - talkParams:
@@ -283,14 +295,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 1
+      m_cast: 1
     text: "\u3082\u3061\u308D\u3093\u3001\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u306E\u5909\u66F4\u3082\u53EF\u80FD\u3067\u3059\u3002"
     delay: 0
     reverb: 0
@@ -300,14 +315,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 1
+      m_cast: 1
     text: "\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u3067\u306F\u672C\u5F53\u306B\u305F\u3060\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u306A\u306E\u3067\u3001\u97F3\u306B\u5BFE\u3057\u3066\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u306B\u52A0\u5DE5\u3084\u89E3\u6790\u3092\u65BD\u3059\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002"
     delay: 0
     reverb: 0
@@ -317,14 +335,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 1
+      m_cast: 1
     text: "\u4F8B\u3048\u3070\u3001\u3053\u308C\u306F\u30AA\u30FC\u30C7\u30A3\u30AA\u30D5\u30A3\u30EB\u30BF\u3001\u30EA\u30D0\u30FC\u30D6\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
     delay: 0
     reverb: 1
@@ -334,14 +355,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 1
+      m_cast: 1
     text: "\u3053\u308C\u306F\u30A8\u30B3\u30FC\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
     delay: 100
     reverb: 0
@@ -351,14 +375,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 0
+      m_cast: 0
     text: "3D\u97F3\u97FF\u52B9\u679C\u3082\u3082\u3061\u308D\u3093\u304B\u304B\u308A\u307E\u3059\u3002\u5148\u7A0B\u304B\u3089\u97F3\u6E90\u304C\u56DE\u3063\u3066\u3044\u308B\u306E\u306F\u305D\u306E\u78BA\u8A8D\u7528\u3067\u3059\u3002"
     delay: 0
     reverb: 1
@@ -368,14 +395,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 0
+      m_cast: 0
     text: "CeVIO\u306B\u3082\u5BFE\u5FDC\u3057\u305F\u3089\u30EA\u30EA\u30FC\u30B9\u3059\u308B\u4E88\u5B9A\u3067\u3059\u3002\u4ECA\u6708\u4E2D\u306B\u3067\u304D\u305F\u3089\u3044\u3044\u306A\u3042\u3002"
     delay: 0
     reverb: 0
@@ -385,14 +415,17 @@ MonoBehaviour:
         bits:
           bits: 0
       m_mute: 0
+      m_forceMono: 0
       m_volume: 1
       m_speed: 1.3
       m_pitch: 1
       m_intonation: 1
+      m_alpha: 0
+      m_normal: 0
       m_joy: 0
       m_anger: 0
       m_sorrow: 0
-      m_avator: 1
+      m_cast: 0
     text: "\u4ECA\u56DE\u306F\u4EE5\u4E0A\u306B\u306A\u308A\u307E\u3059\u3002\u3054\u8996\u8074\u3042\u308A\u304C\u3068\u3046\u3054\u3056\u3044\u307E\u3057\u305F\u3002"
     delay: 0
     reverb: 0
@@ -593,6 +626,7 @@ GameObject:
   - component: {fileID: 1476112018}
   - component: {fileID: 1476112019}
   - component: {fileID: 1476112017}
+  - component: {fileID: 1476112021}
   - component: {fileID: 1476112020}
   m_Layer: 0
   m_Name: RemoteTalkClient
@@ -612,25 +646,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8176c32a82d5a740b2a9fe9035a92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_server: 127.0.0.1
-  m_port: 8081
+  m_serverAddress: '127.0.0.1 '
+  m_serverPort: 8081
   m_params:
     flags:
       bits:
-        bits: 511
-    m_mute: 0
+        bits: 3901
+    m_mute: 1
+    m_forceMono: 0
     m_volume: 1
     m_speed: 1
     m_pitch: 1
     m_intonation: 1
+    m_alpha: 0
+    m_normal: 0
     m_joy: 0
     m_anger: 0
     m_sorrow: 0
-    m_avator: 1
-  m_text: "\u3053\u3053\u306B\u9069\u5F53\u306A\u9577\u3044\u9577\u3044\u9577\u30FC\u3044\u6587\u7AE0\u3092\u5165\u529B"
-  m_avatorName: "\u7D32\u661F\u3042\u304B\u308A"
+    m_cast: 0
+  m_text: "\u307B\u3052\u30FC"
+  m_castName: "\u7D32\u661F\u3042\u304B\u308A"
   m_exportAudio: 0
   m_assetDir: RemoteTalkAssets
+  m_logging: 0
+  m_applyBestLatency: 1
+  m_sampleGranularity: 22000
+  m_host: VOICEROID2
 --- !u!4 &1476112018
 Transform:
   m_ObjectHideFlags: 0
@@ -653,11 +694,11 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 1572276859}
-  m_PlayOnAwake: 1
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -757,30 +798,15 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!83 &1572276859
-AudioClip:
+--- !u!114 &1476112021
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: RemoteTalkAudio
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 44100
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
+  m_GameObject: {fileID: 1476112016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5002f309736868459b20157eaf3e47d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_baseAudioSource: {fileID: 1476112019}
