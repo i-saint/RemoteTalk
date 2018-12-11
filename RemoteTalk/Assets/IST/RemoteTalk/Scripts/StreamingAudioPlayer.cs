@@ -91,10 +91,11 @@ namespace IST.RemoteTalk
             if (m_scheduledPlayers.Count == 0)
                 return;
 
+            var time = AudioSettings.dspTime;
             while (m_scheduledPlayers.Count > 0)
             {
                 var p = m_scheduledPlayers.First.Value;
-                if (!p.isPlaying)
+                if (time > p.endTime && !p.audioSource.isPlaying)
                 {
                     p.audioSource.clip = null;
                     m_idlingPlayers.AddLast(p);

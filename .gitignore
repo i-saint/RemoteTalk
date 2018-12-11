@@ -41,9 +41,6 @@ TestLocal.meta
 
 RemoteTalk/*.csproj
 RemoteTalk/*.sln
+RemoteTalkAssets/
 
 Plugin/dist/
-Plugin/MeshSyncClientBlender2.*/
-Plugin/MeshSyncClientMaya20*/
-Plugin/MeshSyncClientMayaLT20*/
-Plugin/MeshSyncClientMotionBuilder20*/
