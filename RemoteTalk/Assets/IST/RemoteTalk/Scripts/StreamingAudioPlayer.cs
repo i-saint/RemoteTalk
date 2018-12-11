@@ -49,11 +49,12 @@ namespace IST.RemoteTalk
                 player = new Player();
                 GameObject child = new GameObject("Player");
                 child.hideFlags = HideFlags.DontSave;
-                child.transform.parent = gameObject.transform;
+                child.transform.SetParent(gameObject.transform, false);
                 player.audioSource = child.AddComponent<AudioSource>();
             }
 
             // setup AudioSource
+            player.audioSource.clip = clip;
             player.audioSource.playOnAwake = false;
             player.audioSource.loop = false;
             if (m_baseAudioSource != null)
@@ -76,21 +77,12 @@ namespace IST.RemoteTalk
                 player.audioSource.rolloffMode = m_baseAudioSource.rolloffMode;
             }
 
-            player.audioSource.clip = clip;
             if (m_scheduledPlayers.Count == 0)
-            {
-                // first clip. play immediately
-                player.startTime = AudioSettings.dspTime;
-                player.endTime = player.startTime + clip.length;
-                player.audioSource.Play();
-            }
+                player.startTime = AudioSettings.dspTime + 0.1;
             else
-            {
-                // schedule clip
                 player.startTime = m_scheduledPlayers.Last.Value.endTime;
-                player.endTime = player.startTime + clip.length;
-                player.audioSource.PlayScheduled(player.startTime);
-            }
+            player.endTime = player.startTime + clip.length;
+            player.audioSource.PlayScheduled(player.startTime);
             m_scheduledPlayers.AddLast(player);
         }
 
