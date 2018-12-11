@@ -8,6 +8,7 @@ namespace IST.RemoteTalk
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(AudioSource))]
+    [RequireComponent(typeof(StreamingAudioPlayer))]
     public class RemoteTalkClient : MonoBehaviour
     {
         #region Fields
@@ -33,10 +34,11 @@ namespace IST.RemoteTalk
 
         int m_samplePos;
         bool m_readySamples = false;
-        bool m_ready = false;
-        bool m_talking = false;
+        bool m_isServerReady = false;
+        bool m_isServerTalking = false;
         int m_bufferDepleted = 0;
         AudioSource m_audioSource;
+        StreamingAudioPlayer m_player;
         #endregion
 
 
@@ -62,13 +64,13 @@ namespace IST.RemoteTalk
             set { m_text = value; }
         }
 
-        public bool isReady
+        public bool isServerReady
         {
-            get { return m_ready; }
+            get { return m_isServerReady; }
         }
-        public bool isTalking
+        public bool isServerTalking
         {
-            get { return m_talking; }
+            get { return m_isServerTalking; }
         }
         public bool isPlaying
         {
@@ -110,7 +112,7 @@ namespace IST.RemoteTalk
 
         void ReleaseClient()
         {
-            if (m_talking)
+            if (m_isServerTalking)
                 Stop();
             m_asyncStats.Release();
             m_asyncTalk.Release();
@@ -131,7 +133,7 @@ namespace IST.RemoteTalk
             m_params.flags = m_serverParams.flags;
             m_params.mute = true;
             m_readySamples = false;
-            m_talking = true;
+            m_isServerTalking = true;
             m_asyncTalk = m_client.Talk(ref m_params, m_text);
         }
 
@@ -154,7 +156,7 @@ namespace IST.RemoteTalk
 
             for (int i = 0; i < 20; ++i)
             {
-                if (m_samplePos + samples.Length <= m_client.SyncBuffers().sampleLength || !m_talking)
+                if (m_samplePos + samples.Length <= m_client.SyncBuffers().sampleLength || !m_isServerTalking)
                     break;
                 System.Threading.Thread.Sleep(16);
             }
@@ -167,7 +169,7 @@ namespace IST.RemoteTalk
             if (m_logging)
                 Debug.Log("new pos: " + pos);
 
-            if (!m_talking && m_samplePos >= m_client.buffer.sampleLength)
+            if (!m_isServerTalking && m_samplePos >= m_client.buffer.sampleLength)
                 ++m_bufferDepleted;
         }
 
@@ -179,7 +181,7 @@ namespace IST.RemoteTalk
                 m_serverParams = m_client.serverParams;
                 m_casts = m_client.casts;
                 m_asyncStats.Release();
-                m_ready = true;
+                m_isServerReady = true;
 #if UNITY_EDITOR
                 Misc.ForceRepaint();
 #endif
@@ -211,7 +213,7 @@ namespace IST.RemoteTalk
                 if (m_asyncTalk.isFinished)
                 {
                     m_asyncTalk.Release();
-                    m_talking = false;
+                    m_isServerTalking = false;
 #if UNITY_EDITOR
                     if (m_exportAudio)
                         Export(m_client.buffer);
@@ -219,7 +221,7 @@ namespace IST.RemoteTalk
                 }
             }
 
-            if (!m_talking)
+            if (!m_isServerTalking)
             {
                 if (m_audioSource.isPlaying)
                 {
@@ -286,6 +288,8 @@ namespace IST.RemoteTalk
         void OnEnable()
         {
             m_audioSource = GetComponent<AudioSource>();
+            m_player = GetComponent<StreamingAudioPlayer>();
+            m_player.baseAudioSource = m_audioSource;
 #if UNITY_EDITOR
             EditorApplication.update += UpdateSamples;
 #endif
