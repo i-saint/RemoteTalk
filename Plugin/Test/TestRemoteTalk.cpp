@@ -75,6 +75,8 @@ static rt::AudioDataPtr CreateAudioAsset(rt::AudioFormat fmt)
     case AudioFormat::F32:
         GenerateAudioSample((float*)samples, a->getSampleLength() * Channels);
         break;
+    default:
+        break;
     }
     return a;
 }

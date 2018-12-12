@@ -238,6 +238,7 @@ AudioData& AudioData::operator+=(const AudioData& v)
                 case AudioFormat::S24: convert((SrcT*)&data[pos], (const snorm24*)&v.data[0], v.data.size() / sizeof(snorm24)); break;\
                 case AudioFormat::S32: convert((SrcT*)&data[pos], (const snorm32*)&v.data[0], v.data.size() / sizeof(snorm32)); break;\
                 case AudioFormat::F32: convert((SrcT*)&data[pos], (const float*)&v.data[0], v.data.size() / sizeof(float)); break;\
+                default: break;\
                 }
 
             switch (format) {
@@ -255,6 +256,8 @@ AudioData& AudioData::operator+=(const AudioData& v)
                 break;
             case AudioFormat::F32:
                 Impl(float);
+                break;
+            default:
                 break;
             }
 #undef Impl
