@@ -29,4 +29,30 @@ void ToAudioData(AudioData& dst, const TalkSample& ts)
     dst.frequency = ts.frequency;
 }
 
+void CastInfoImpl::fromCastInfo(const CastInfo& src)
+{
+    id = src.id;
+    name = src.name;
+
+    param_names.resize(src.num_ex_params);
+    for (int i = 0; i < src.num_ex_params; ++i)
+        param_names[i] = src.ex_param_names[i];
+}
+
+CastInfo CastInfoImpl::toCastInfo()
+{
+    static std::vector<const char*> s_pnames;
+
+    CastInfo dst;
+    s_pnames.resize(param_names.size());
+    for (size_t i = 0; i < param_names.size(); ++i)
+        s_pnames[i] = param_names[i].c_str();
+
+    dst.id = id;
+    dst.name = name.c_str();
+    dst.num_ex_params = (int)param_names.size();
+    dst.ex_param_names = &s_pnames[0];
+    return dst;
+}
+
 } // namespace rt

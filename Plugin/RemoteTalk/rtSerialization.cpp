@@ -206,6 +206,14 @@ template<> picojson::value to_json(const TalkParams& v)
     if (v.flags.anger) t["anger"] = value(v.anger);
     if (v.flags.sorrow) t["sorrow"] = value(v.sorrow);
     if (v.flags.cast) t["cast"] = value((float)v.cast);
+
+    t["num_params"] = value((float)v.num_params);
+    {
+        array params;
+        for(auto p : v.params)
+            params.push_back(value(p));
+        t["params"] = value(params);
+    }
     return value(std::move(t));
 }
 template<> bool from_json(TalkParams& dst, const picojson::value& v)
@@ -226,6 +234,18 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
         else if (kvp.first == "anger") { dst.setAnger(kvp.second.get<float>()); }
         else if (kvp.first == "sorrow") { dst.setSorrow(kvp.second.get<float>()); }
         else if (kvp.first == "cast") { dst.setCast((int)kvp.second.get<float>()); }
+        else if (kvp.first == "num_params") { dst.num_params = (int)kvp.second.get<float>(); }
+        else if (kvp.first == "params") {
+            if (kvp.second.is<array>()) {
+                array params = kvp.second.get<array>();
+                int n = std::min((int)params.size(), TalkParams::max_params);
+                dst.num_params = n;
+                for (int i = 0; i < n; ++i) {
+                    if (params[i].is<float>())
+                        dst.params[i] = params[i].get<float>();
+                }
+            }
+        }
     }
     return true;
 }
@@ -236,6 +256,14 @@ template<> picojson::value to_json(const CastInfoImpl& v)
     object o;
     o["id"] = value((float)v.id);
     o["name"] = value(v.name);
+
+    if (!v.param_names.empty()) {
+        array exp;
+        for (auto& pname : v.param_names)
+            exp.push_back(value(pname));
+        o["param_names"] = value(exp);
+    }
+
     return value(std::move(o));
 }
 template<> bool from_json(CastInfoImpl& dst, const picojson::value& v)
@@ -254,6 +282,15 @@ template<> bool from_json(CastInfoImpl& dst, const picojson::value& v)
         auto it = o.find("name");
         if (it != o.end() && it->second.is<std::string>())
             dst.name = it->second.get<std::string>();
+    }
+    {
+        auto it = o.find("param_names");
+        if (it != o.end() && it->second.is<array>()) {
+            auto& exp = it->second.get<array>();
+            dst.param_names.clear();
+            for (auto& pname : exp)
+                dst.param_names.push_back(pname.get<std::string>());
+        }
     }
     return true;
 }

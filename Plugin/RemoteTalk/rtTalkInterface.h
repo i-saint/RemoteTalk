@@ -12,6 +12,8 @@ namespace rt {
 
 struct TalkParams
 {
+    static const int max_params = 12;
+
     struct Flags
     {
         uint32_t mute : 1;
@@ -41,6 +43,8 @@ struct TalkParams
     float anger = 0.0f;
     float sorrow = 0.0f;
     int cast = 0;
+    int num_params = 0;
+    float params[max_params] = {};
 
 #define Set(V) flags.V = 1; V = v;
     void setMute(bool v) { Set(mute); }
@@ -61,7 +65,9 @@ struct TalkParams
 struct CastInfo
 {
     int id = 0;
+    int num_ex_params = 0;
     const char *name = nullptr;
+    const char **ex_param_names = nullptr;
 };
 
 struct TalkSample

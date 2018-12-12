@@ -20,6 +20,7 @@ public:
     rt::CastList getCastList();
 
     bool getParams(rt::TalkParams& params);
+    bool setCast(int v);
     bool setParams(const rt::TalkParams& params);
     bool setText(const char *text);
 
@@ -43,8 +44,9 @@ private:
     public:
         int id;
         String^ name;
+        List<String^>^ param_names;
 
-        CastInfo(int i,  String^ n) : id(i), name(n) {}
+        CastInfo(int i,  String^ n) : id(i), name(n), param_names(gcnew List<String^>){}
     };
     List<CastInfo^>^ m_casts;
 };
@@ -88,8 +90,10 @@ private:
 };
 
 
-static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj, String^ name, List<System::Windows::DependencyObject^>^ dst, bool one)
+static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj, String^ name, List<System::Windows::DependencyObject^>^ dst, bool one, bool recursive, int depth = 0)
 {
+    if (!obj || (!recursive && depth > 1))
+        return;
     if (obj->GetType()->FullName == name) {
         dst->Add(obj);
         if (one)
@@ -98,22 +102,22 @@ static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj,
 
     int num_children = System::Windows::Media::VisualTreeHelper::GetChildrenCount(obj);
     for (int i = 0; i < num_children; i++)
-        SelectControlsByTypeNameImpl(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), name, dst, one);
+        SelectControlsByTypeNameImpl(System::Windows::Media::VisualTreeHelper::GetChild(obj, i), name, dst, one, recursive, depth + 1);
 }
 
-static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(System::Windows::DependencyObject^ obj, String^ name, bool one)
+static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(System::Windows::DependencyObject^ obj, String^ name, bool one, bool recursive = true)
 {
     auto ret = gcnew List<System::Windows::DependencyObject^>();
-    SelectControlsByTypeNameImpl(obj, name, ret, one);
+    SelectControlsByTypeNameImpl(obj, name, ret, one, recursive);
     return ret;
 }
 
-static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String^ name, bool one)
+static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String^ name, bool one, bool recursive = true)
 {
     auto ret = gcnew List<System::Windows::DependencyObject^>();
     if (System::Windows::Application::Current != nullptr) {
         for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows)
-            SelectControlsByTypeNameImpl(w, name, ret, one);
+            SelectControlsByTypeNameImpl(w, name, ret, one, recursive);
     }
     return ret;
 }
@@ -173,8 +177,14 @@ rt::CastList rtvr2InterfaceManaged::getCastList()
 
     rt::CastList ret;
     if (m_casts) {
-        for each(auto ti in m_casts)
-            ret.push_back({ ti->id, ToStdString(ti->name) });
+        for each(auto ti in m_casts) {
+            rt::CastInfoImpl ci;
+            ci.id = ti->id;
+            ci.name = ToStdString(ti->name);
+            for each(auto pname in ti->param_names)
+                ci.param_names.push_back(ToStdString(pname));
+            ret.push_back(std::move(ci));
+        }
     }
     return ret;
 }
@@ -192,10 +202,18 @@ bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
     return true;
 }
 
+bool rtvr2InterfaceManaged::setCast(int v)
+{
+    if (!m_lv_casts || v < 0 && v >= m_lv_casts->Items->Count)
+        return false;
+    m_lv_casts->SelectedIndex = v;
+    return false;
+}
+
 bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
 {
     if (params.flags.cast && m_lv_casts)
-        m_lv_casts->SelectedIndex = params.cast;
+        setCast(params.cast);
 
 #define DoSetParam(N) if (params.flags.N && m_sl_##N) UpdateValue(m_sl_##N, params.N);
     DoSetParam(volume);
@@ -264,12 +282,31 @@ bool rtvr2InterfaceManaged::setupControls()
     {
         auto vpev = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetEditView", true);
         if (vpev->Count >= 1) {
+            auto cast = m_casts[m_lv_casts->SelectedIndex];
+            cast->param_names->Clear();
+
             auto lfs = SelectControlsByTypeName(vpev[0], "AI.Framework.Wpf.Controls.LinearFader", false);
             for (int lfi = 0; lfi < lfs->Count; ++lfi) {
                 Slider^ slider = nullptr;
-                auto sls = SelectControlsByTypeName(lfs[lfi], "System.Windows.Controls.Slider", true);
-                if (sls->Count >= 1)
-                    slider = dynamic_cast<Slider^>(sls[0]);
+                TextBlock^ tblock = nullptr;
+
+                {
+                    auto c = SelectControlsByTypeName(lfs[lfi], "System.Windows.Controls.Slider", true);
+                    if (c->Count >= 1)
+                        slider = dynamic_cast<Slider^>(c[0]);
+                }
+                {
+                    auto g = SelectControlsByTypeName(lfs[lfi], "System.Windows.Controls.Grid", true);
+                    if (g->Count > 0) {
+                        auto c = SelectControlsByTypeName(g[0], "System.Windows.Controls.TextBlock", true, false);
+                        if (c->Count >= 1)
+                            tblock = dynamic_cast<TextBlock^>(c[0]);
+                    }
+                }
+
+                if (!slider || !tblock || !slider->IsEnabled)
+                    continue;
+                cast->param_names->Add(tblock->Text);
 
                 switch (lfi)
                 {
@@ -338,16 +375,14 @@ bool rtvr2TalkInterface::setParams(const rt::TalkParams& params)
 
 int rtvr2TalkInterface::getNumCasts() const
 {
-    if (m_casts.empty())
-        m_casts = rtvr2InterfaceManaged::getInstance()->getCastList();
+    m_casts = rtvr2InterfaceManaged::getInstance()->getCastList();
     return (int)m_casts.size();
 }
 
 bool rtvr2TalkInterface::getCastInfo(int i, rt::CastInfo *dst) const
 {
-    if (i < (int)m_casts.size()) {
-        dst->id = m_casts[i].id;
-        dst->name = m_casts[i].name.c_str();
+    if (i >= 0 && i < (int)m_casts.size()) {
+        *dst = m_casts[i].toCastInfo();
         return true;
     }
     return false;

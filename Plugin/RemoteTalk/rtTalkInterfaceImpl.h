@@ -11,6 +11,10 @@ struct CastInfoImpl
 {
     int id = 0;
     std::string name;
+    std::vector<std::string> param_names;
+
+    void fromCastInfo(const CastInfo& src);
+    CastInfo toCastInfo();
 };
 using CastList = std::vector<CastInfoImpl>;
 

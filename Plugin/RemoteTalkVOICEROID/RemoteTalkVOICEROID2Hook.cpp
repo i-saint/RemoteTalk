@@ -92,9 +92,12 @@ rtvrTalkServer::Status rtvrTalkServer::onStats(StatsMessage& mes)
     {
         int n = ifs->getNumCasts();
         for (int i = 0; i < n; ++i) {
-            rt::CastInfo ti;
-            ifs->getCastInfo(i, &ti);
-            stats.casts.push_back({ ti.id, ti.name });
+            rt::CastInfo ci;
+            ifs->getCastInfo(i, &ci);
+
+            rt::CastInfoImpl cii;
+            cii.fromCastInfo(ci);
+            stats.casts.push_back(std::move(cii));
         }
     }
     stats.host = ifs->getClientName();

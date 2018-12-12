@@ -40,8 +40,9 @@ private:
     public:
         int id;
         String^ name;
+        List<String^>^ param_names;
 
-        CastInfo(int i,  String^ n) : id(i), name(n) {}
+        CastInfo(int i, String^ n) : id(i), name(n), param_names(gcnew List<String^>()) {}
     };
     List<CastInfo^>^ m_casts;
     int m_cast = 0;
@@ -113,8 +114,21 @@ void rtcvInterfaceManaged::updateStats()
     if (!m_casts) {
         m_casts = gcnew List<CastInfo^>();
         auto list = TalkerAgent::AvailableCasts;
-        for (int i = 0; i < list->Length; ++i)
-            m_casts->Add(gcnew CastInfo(i, list[i]));
+        for (int i = 0; i < list->Length; ++i) {
+            auto info = gcnew CastInfo(i, list[i]);
+            info->param_names->Add(L"‘å‚«‚³");
+            info->param_names->Add(L"‘¬‚³");
+            info->param_names->Add(L"‚‚³");
+            info->param_names->Add(L"ºŽ¿");
+            info->param_names->Add(L"—}—g");
+
+            auto talker = gcnew Talker(list[i]);
+            int n = talker->Components->Count;
+            for (int i = 0; i < n; ++i)
+                info->param_names->Add(talker->Components->At(i)->Name);
+
+            m_casts->Add(info);
+        }
     }
 }
 
@@ -138,8 +152,14 @@ rt::CastList rtcvInterfaceManaged::getCastList()
 
     rt::CastList ret;
     if (m_casts) {
-        for each(auto ti in m_casts)
-            ret.push_back({ ti->id, ToStdString(ti->name) });
+        for each(auto ti in m_casts) {
+            rt::CastInfoImpl ci;
+            ci.id = ti->id;
+            ci.name = ToStdString(ti->name);
+            for each(auto pname in ti->param_names)
+                ci.param_names.push_back(ToStdString(pname));
+            ret.push_back(std::move(ci));
+        }
     }
     return ret;
 }
@@ -152,6 +172,7 @@ bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
     updateCast();
     params.setCast(m_cast);
     if (m_talker) {
+        params.num_params = m_casts[m_cast]->param_names->Count;
         params.setVolume(to_f(m_talker->Volume));
         params.setSpeed(to_f(m_talker->Speed));
         params.setPitch(to_f(m_talker->Tone));
@@ -295,8 +316,7 @@ int rtcvTalkInterface::getNumCasts() const
 bool rtcvTalkInterface::getCastInfo(int i, rt::CastInfo *dst) const
 {
     if (i < (int)m_casts.size()) {
-        dst->id = m_casts[i].id;
-        dst->name = m_casts[i].name.c_str();
+        *dst = m_casts[i].toCastInfo();
         return true;
     }
     return false;
