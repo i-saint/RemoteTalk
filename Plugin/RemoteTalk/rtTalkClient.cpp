@@ -101,7 +101,7 @@ bool TalkClient::talk(const TalkParams& params, const std::string& text, const s
         URI uri;
         uri.setPath("/talk");
 
-#define AddParam(N) if(params.flags.N) { uri.addQueryParameter(#N, to_string(params.##N)); }
+#define AddParam(N) if(params.flags.N) { uri.addQueryParameter(#N, to_string(params.N)); }
         rtEachTalkParams(AddParam)
 #undef AddParam
         if (!text.empty())

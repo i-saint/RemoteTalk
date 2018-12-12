@@ -486,7 +486,7 @@ inline std::string value::to_str() const {
   case number_type: {
     char buf[256];
     float tmp;
-    SNPRINTF(buf, sizeof(buf), fabs(u_.number_) < (1ULL << 53) && modf(u_.number_, &tmp) == 0 ? "%.f" : "%.17g", u_.number_);
+    SNPRINTF(buf, sizeof(buf), std::abs(u_.number_) < (1ULL << 53) && std::modf(u_.number_, &tmp) == 0 ? "%.f" : "%.17g", u_.number_);
 #if PICOJSON_USE_LOCALE
     char *decimal_point = localeconv()->decimal_point;
     if (strcmp(decimal_point, ".") != 0) {

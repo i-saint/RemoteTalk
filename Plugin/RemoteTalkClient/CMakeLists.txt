@@ -1,0 +1,10 @@
+file(GLOB sources *.cpp *.h)
+set(plugins_dir "${CMAKE_SOURCE_DIR}/../RemoteTalk/Assets/IST/RemoteTalk/Plugins/x86_64")
+add_plugin(RemoteTalkClient SOURCES ${sources} PLUGINS_DIR ${plugins_dir})
+
+add_dependencies(RemoteTalkClient RemoteTalk)
+target_include_directories(RemoteTalkClient PUBLIC "${CMAKE_SOURCE_DIR}")
+target_link_libraries(RemoteTalkClient RemoteTalk ${Poco_LIBRARIES})
+if(LINUX)
+    target_link_libraries(RemoteTalkClient pthread "-Wl,--no-undefined")
+endif()

@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef _WIN32
 #pragma warning(disable:4996)
 #define NOMINMAX
 #include <winsock2.h>
@@ -7,12 +8,15 @@
 #include <tlhelp32.h>
 #include <mmsystem.h>
 #include <ppl.h>
+#endif
 
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
 #include <codecvt>
+#include <locale>
 #include <sstream>
 #include <fstream>
 #include <vector>

@@ -1,0 +1,10 @@
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
+
+file(GLOB sources *.cpp *.h)
+add_executable(Test ${sources})
+add_dependencies(Test RemoteTalk)
+target_include_directories(Test PUBLIC "${CMAKE_SOURCE_DIR}")
+target_link_libraries(Test RemoteTalk ${Poco_LIBRARIES})
+if(LINUX)
+    target_link_libraries(Test pthread "-Wl,--no-undefined")
+endif()

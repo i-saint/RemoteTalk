@@ -42,7 +42,7 @@ struct TalkParams
     float sorrow = 0.0f;
     int cast = 0;
 
-#define Set(V) flags.V = 1; ##V = v;
+#define Set(V) flags.V = 1; V = v;
     void setMute(bool v) { Set(mute); }
     void setForceMono(bool v) { Set(force_mono); }
     void setVolume(float v) { Set(volume); }
