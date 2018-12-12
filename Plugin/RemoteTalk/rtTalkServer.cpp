@@ -32,39 +32,6 @@ void ServeBinary(Poco::Net::HTTPServerResponse& response, RawVector<char>& data,
 }
 
 
-std::string TalkServerStats::to_json()
-{
-    using namespace picojson;
-    object ret;
-    ret["host"] = rt::to_json(host);
-    ret["plugin_version"] = rt::to_json(plugin_version);
-    ret["protocol_version"] = rt::to_json(protocol_version);
-    ret["params"] = rt::to_json(params);
-    ret["casts"] = rt::to_json(casts);
-    return value(std::move(ret)).serialize(true);
-}
-
-bool TalkServerStats::from_json(const std::string& str)
-{
-    using namespace picojson;
-    value val;
-    parse(val, str);
-
-    bool ret = false;
-    if (rt::from_json(host, val.get("host")))
-        ret = true;
-    if (rt::from_json(plugin_version, val.get("plugin_version")))
-        ret = true;
-    if (rt::from_json(protocol_version, val.get("protocol_version")))
-        ret = true;
-    if (rt::from_json(params, val.get("params")))
-        ret = true;
-    if (rt::from_json(casts, val.get("casts")))
-        ret = true;
-    return ret;
-}
-
-
 
 class TalkServerRequestHandler : public HTTPRequestHandler
 {
@@ -104,17 +71,29 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
 
         auto qparams = uri.getQueryParameters();
         for (auto& nvp : qparams) {
-            if (nvp.first == "text") {
+            if (nvp.first == "mute") {
+                mes->params.mute = rt::from_string<int>(nvp.second);
+            }
+            else if (nvp.first == "force_mono") {
+                mes->params.force_mono = rt::from_string<int>(nvp.second);
+            }
+            else if (nvp.first == "cast") {
+                mes->params.cast = rt::from_string<int>(nvp.second);
+            }
+            else if (nvp.first == "text") {
                 Poco::URI::decode(nvp.second, mes->text, true);
                 mes->text = ToANSI(mes->text.c_str());
             }
-#define Decode(N)\
-            if (nvp.first == #N) {\
-                mes->params.flags.N = 1;\
-                mes->params.N = rt::from_string<decltype(mes->params.N)>(nvp.second);\
+            else {
+                for (int i = 0; i < TalkParams::max_params; ++i) {
+                    char name[32];
+                    sprintf(name, "param%d", i);
+                    if (nvp.first == name) {
+                        mes->params.params[i] = rt::from_string<float>(nvp.second);
+                        mes->params.num_params = i;
+                    }
+                }
             }
-            rtEachTalkParams(Decode)
-#undef Decode
         }
 
         {
@@ -192,6 +171,24 @@ bool TalkServer::Message::isProcessing()
     return task.valid() && task.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout;
 }
 
+std::string TalkServer::StatsMessage::to_json()
+{
+    using namespace picojson;
+    return rt::to_json(stats).serialize(true);
+}
+
+bool TalkServer::StatsMessage::from_json(const std::string& str)
+{
+    using namespace picojson;
+    value val;
+    parse(val, str);
+
+    bool ret = false;
+    if (rt::from_json(stats, val))
+        ret = true;
+    return ret;
+}
+
 
 std::string TalkServer::TalkMessage::to_json()
 {
@@ -214,16 +211,6 @@ bool TalkServer::TalkMessage::from_json(const std::string & str)
     if (rt::from_json(text, val.get("text")))
         ret = true;
     return ret;
-}
-
-std::string TalkServer::StatsMessage::to_json()
-{
-    return stats.to_json();
-}
-
-bool TalkServer::StatsMessage::from_json(const std::string& str)
-{
-    return stats.from_json(str);
 }
 
 

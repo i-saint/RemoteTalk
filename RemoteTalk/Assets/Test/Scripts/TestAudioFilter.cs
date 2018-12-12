@@ -29,11 +29,11 @@ public class TestAudioFilter : MonoBehaviour
     {
         if (!m_audioSource.isPlaying && (m_playOnAudioRead || m_playOnAudioFilterRead))
         {
-            var clip = AudioClip.Create("TestAudioFilterAudio",
-                44000,
-                1, 44000, true,
-                OnAudioRead, OnAudioSetPosition);
-            m_audioSource.clip = clip;
+            //var clip = AudioClip.Create("TestAudioFilterAudio",
+            //    44000,
+            //    1, 44000, true,
+            //    OnAudioRead, OnAudioSetPosition);
+            //m_audioSource.clip = clip;
             m_audioSource.loop = true;
             m_audioSource.Play();
         }

@@ -41,7 +41,7 @@ namespace IST.RemoteTalk
         rtAsync m_asyncTalk;
         rtAsync m_asyncStop;
         rtTalkParams m_serverParams;
-        CastInfo[] m_casts = new CastInfo[0] { };
+        public CastInfo[] m_casts = new CastInfo[0] { };
 
         int m_samplePos;
         int m_sampleSkipped;
@@ -147,8 +147,7 @@ namespace IST.RemoteTalk
                 m_params.cast = Mathf.Clamp(m_params.cast, 0, m_casts.Length - 1);
                 m_castName = m_casts[m_params.cast].name;
             }
-            m_params.flags = m_serverParams.flags;
-            m_params.mute = true;
+            m_params.mute = 1;
             m_readySamples = false;
             m_isServerTalking = true;
             m_samplePos = 0;

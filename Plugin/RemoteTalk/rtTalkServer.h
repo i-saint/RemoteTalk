@@ -35,9 +35,6 @@ struct TalkServerStats
     int protocol_version = 0;
     TalkParams params;
     CastList casts;
-
-    std::string to_json();
-    bool from_json(const std::string& str);
 };
 
 class TalkServer
@@ -65,6 +62,15 @@ public:
     };
     using MessagePtr = std::shared_ptr<Message>;
 
+    class StatsMessage : public Message
+    {
+    public:
+        TalkServerStats stats;
+
+        std::string to_json();
+        bool from_json(const std::string& str);
+    };
+
     class TalkMessage : public Message
     {
     public:
@@ -78,15 +84,6 @@ public:
     class StopMessage : public Message
     {
     public:
-    };
-
-    class StatsMessage : public Message
-    {
-    public:
-        TalkServerStats stats;
-
-        std::string to_json();
-        bool from_json(const std::string& str);
     };
 
 #ifdef rtDebug

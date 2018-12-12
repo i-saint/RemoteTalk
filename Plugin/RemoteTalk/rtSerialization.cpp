@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "rtSerialization.h"
 #include "rtTalkInterfaceImpl.h"
+#include "rtTalkServer.h"
 #include "picojson/picojson.h"
 
 namespace rt {
@@ -194,24 +195,13 @@ template<> picojson::value to_json(const TalkParams& v)
 {
     using namespace picojson;
     object t;
-    if (v.flags.mute) t["mute"] = value((float)v.mute);
-    if (v.flags.force_mono) t["force_mono"] = value((float)v.force_mono);
-    if (v.flags.volume) t["volume"] = value(v.volume);
-    if (v.flags.speed) t["speed"] = value(v.speed);
-    if (v.flags.pitch) t["pitch"] = value(v.pitch);
-    if (v.flags.intonation) t["intonation"] = value(v.intonation);
-    if (v.flags.alpha) t["alpha"] = value(v.alpha);
-    if (v.flags.normal) t["normal"] = value(v.joy);
-    if (v.flags.joy) t["joy"] = value(v.joy);
-    if (v.flags.anger) t["anger"] = value(v.anger);
-    if (v.flags.sorrow) t["sorrow"] = value(v.sorrow);
-    if (v.flags.cast) t["cast"] = value((float)v.cast);
-
-    t["num_params"] = value((float)v.num_params);
+    t["mute"] = value((float)v.mute);
+    t["force_mono"] = value((float)v.force_mono);
+    t["cast"] = value((float)v.cast);
     {
         array params;
-        for(auto p : v.params)
-            params.push_back(value(p));
+        for (int i = 0; i < v.num_params; ++i)
+            params.push_back(value(v.params[i]));
         t["params"] = value(params);
     }
     return value(std::move(t));
@@ -222,19 +212,9 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
     if (!v.is<object>())
         return false;
     for (auto& kvp : v.get<object>()) {
-        if      (kvp.first == "mute") { dst.setMute((int)kvp.second.get<float>() != 0); }
-        else if (kvp.first == "force_mono") { dst.setForceMono((int)kvp.second.get<float>() != 0); }
-        else if (kvp.first == "volume") { dst.setVolume(kvp.second.get<float>()); }
-        else if (kvp.first == "speed") { dst.setSpeed(kvp.second.get<float>()); }
-        else if (kvp.first == "pitch") { dst.setPitch(kvp.second.get<float>()); }
-        else if (kvp.first == "intonation") { dst.setIntonation(kvp.second.get<float>()); }
-        else if (kvp.first == "alpha") { dst.setAlpha(kvp.second.get<float>()); }
-        else if (kvp.first == "normal") { dst.setNormal(kvp.second.get<float>()); }
-        else if (kvp.first == "joy") { dst.setJoy(kvp.second.get<float>()); }
-        else if (kvp.first == "anger") { dst.setAnger(kvp.second.get<float>()); }
-        else if (kvp.first == "sorrow") { dst.setSorrow(kvp.second.get<float>()); }
-        else if (kvp.first == "cast") { dst.setCast((int)kvp.second.get<float>()); }
-        else if (kvp.first == "num_params") { dst.num_params = (int)kvp.second.get<float>(); }
+        if      (kvp.first == "mute") { dst.mute = (int)kvp.second.get<float>(); }
+        else if (kvp.first == "force_mono") { dst.force_mono = (int)kvp.second.get<float>(); }
+        else if (kvp.first == "cast") { dst.cast = (int)kvp.second.get<float>(); }
         else if (kvp.first == "params") {
             if (kvp.second.is<array>()) {
                 array params = kvp.second.get<array>();
@@ -315,6 +295,35 @@ template<> bool from_json(CastList& dst, const picojson::value& v)
             dst.push_back(ai);
     }
     return true;
+}
+
+template<> picojson::value to_json(const TalkServerStats& v)
+{
+    using namespace picojson;
+    object ret;
+    ret["host"] = rt::to_json(v.host);
+    ret["plugin_version"] = rt::to_json(v.plugin_version);
+    ret["protocol_version"] = rt::to_json(v.protocol_version);
+    ret["params"] = rt::to_json(v.params);
+    ret["casts"] = rt::to_json(v.casts);
+    return value(std::move(ret));
+}
+
+template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    bool ret = false;
+    if (rt::from_json(dst.host, v.get("host")))
+        ret = true;
+    if (rt::from_json(dst.plugin_version, v.get("plugin_version")))
+        ret = true;
+    if (rt::from_json(dst.protocol_version, v.get("protocol_version")))
+        ret = true;
+    if (rt::from_json(dst.params, v.get("params")))
+        ret = true;
+    if (rt::from_json(dst.casts, v.get("casts")))
+        ret = true;
+    return ret;
 }
 
 

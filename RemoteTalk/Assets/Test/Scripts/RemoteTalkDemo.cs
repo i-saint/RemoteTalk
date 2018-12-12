@@ -9,7 +9,7 @@ public class RemoteTalkDemo : MonoBehaviour
     [Serializable]
     public class Script
     {
-        public rtTalkParams talkParams= rtTalkParams.defaultValue;
+        public rtTalkParams talkParams = rtTalkParams.defaultValue;
         public string text;
         public int delay = 0;
         public bool reverb;
@@ -19,6 +19,7 @@ public class RemoteTalkDemo : MonoBehaviour
     public RemoteTalkClient m_remoteTalk;
     public AudioReverbFilter m_reverb;
     public AudioEchoFilter m_echo;
+    public List<CastInfo> m_casts = new List<CastInfo>();
     public List<Script> m_scripts = new List<Script>();
     public int m_scriptPos = 0;
     public int m_delay;

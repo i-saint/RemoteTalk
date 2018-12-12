@@ -37,7 +37,7 @@ private:
     Button^ m_bu_stop;
     Button^ m_bu_rewind;
     ListView^ m_lv_casts;
-    Slider ^m_sl_volume, ^m_sl_speed, ^m_sl_pitch, ^m_sl_intonation, ^m_sl_joy, ^m_sl_anger, ^m_sl_sorrow;
+    List<Slider^>^ m_sl_params = gcnew List<Slider^>();
 
     ref class CastInfo
     {
@@ -72,6 +72,9 @@ public:
     bool ready() const override;
     bool talk(rt::TalkSampleCallback cb, void *userdata) override;
     bool stop() override;
+
+
+    bool setCast(int v) override;
 
     bool prepareUI() override;
     void onPlay() override;
@@ -191,14 +194,13 @@ rt::CastList rtvr2InterfaceManaged::getCastList()
 
 bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
 {
-    if (m_sl_volume)    params.setVolume((float)m_sl_volume->Value);
-    if (m_sl_speed)     params.setSpeed((float)m_sl_speed->Value);
-    if (m_sl_pitch)     params.setPitch((float)m_sl_pitch->Value);
-    if (m_sl_intonation)params.setIntonation((float)m_sl_intonation->Value);
-    if (m_sl_joy)       params.setJoy((float)m_sl_joy->Value);
-    if (m_sl_anger)     params.setAnger((float)m_sl_anger->Value);
-    if (m_sl_sorrow)    params.setSorrow((float)m_sl_sorrow->Value);
-    if (m_lv_casts)   params.setCast(m_lv_casts->SelectedIndex);
+    if (m_lv_casts)
+        params.cast = m_lv_casts->SelectedIndex;
+
+    int n = std::min(m_sl_params->Count, rt::TalkParams::max_params);
+    params.num_params = n;
+    for (int i = 0; i < n; ++i)
+        params.params[i] = (float)m_sl_params[i]->Value;
     return true;
 }
 
@@ -212,18 +214,13 @@ bool rtvr2InterfaceManaged::setCast(int v)
 
 bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
 {
-    if (params.flags.cast && m_lv_casts)
+    if (m_lv_casts)
         setCast(params.cast);
 
-#define DoSetParam(N) if (params.flags.N && m_sl_##N) UpdateValue(m_sl_##N, params.N);
-    DoSetParam(volume);
-    DoSetParam(speed);
-    DoSetParam(pitch);
-    DoSetParam(intonation);
-    DoSetParam(joy);
-    DoSetParam(anger);
-    DoSetParam(sorrow);
-#undef DoSetParam
+    for (int i = 0; i < params.num_params; ++i) {
+        if(i < m_sl_params->Count)
+            UpdateValue(m_sl_params[i], params.params[i]);
+    }
 
     return true;
 }
@@ -284,6 +281,7 @@ bool rtvr2InterfaceManaged::setupControls()
         if (vpev->Count >= 1) {
             auto cast = m_casts[m_lv_casts->SelectedIndex];
             cast->param_names->Clear();
+            m_sl_params->Clear();
 
             auto lfs = SelectControlsByTypeName(vpev[0], "AI.Framework.Wpf.Controls.LinearFader", false);
             for (int lfi = 0; lfi < lfs->Count; ++lfi) {
@@ -307,23 +305,7 @@ bool rtvr2InterfaceManaged::setupControls()
                 if (!slider || !tblock || !slider->IsEnabled)
                     continue;
                 cast->param_names->Add(tblock->Text);
-
-                switch (lfi)
-                {
-                case 0: m_sl_volume = slider; break;
-                case 1: m_sl_speed = slider; break;
-                case 2: m_sl_pitch = slider; break;
-                case 3: m_sl_intonation = slider; break;
-                case 4: break;
-                case 5: break;
-                case 6: m_sl_joy = slider; break;
-                case 7: m_sl_anger = slider; break;
-                case 8: m_sl_sorrow = slider; break;
-                default: break;
-                }
-            }
-            if (lfs->Count < 6) {
-                m_sl_joy = m_sl_anger = m_sl_sorrow = nullptr;
+                m_sl_params->Add(slider);
             }
         }
     }
@@ -421,6 +403,11 @@ bool rtvr2TalkInterface::stop()
     return rtvr2InterfaceManaged::getInstance()->stop();
 }
 
+
+bool rtvr2TalkInterface::setCast(int v)
+{
+    return rtvr2InterfaceManaged::getInstance()->setCast(v);
+}
 
 bool rtvr2TalkInterface::prepareUI()
 {

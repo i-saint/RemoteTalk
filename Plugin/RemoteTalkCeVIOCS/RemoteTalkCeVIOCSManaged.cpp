@@ -170,28 +170,21 @@ static inline uint32_t to_u(float v) { return (uint32_t)(v * 100.0f); }
 bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
 {
     updateCast();
-    params.setCast(m_cast);
+    params.cast = m_cast;
     if (m_talker) {
         params.num_params = m_casts[m_cast]->param_names->Count;
-        params.setVolume(to_f(m_talker->Volume));
-        params.setSpeed(to_f(m_talker->Speed));
-        params.setPitch(to_f(m_talker->Tone));
-        params.setIntonation(to_f(m_talker->ToneScale));
-        params.setAlpha(to_f(m_talker->Alpha));
+        int pi = 0;
+        params.params[pi++] = to_f(m_talker->Volume);
+        params.params[pi++] = to_f(m_talker->Speed);
+        params.params[pi++] = to_f(m_talker->Tone);
+        params.params[pi++] = to_f(m_talker->ToneScale);
+        params.params[pi++] = to_f(m_talker->Alpha);
 
         int n = m_talker->Components->Count;
         for (int i = 0; i < n; ++i) {
-            auto c = m_talker->Components->At(i);
-            auto name = c->Name;
-            auto val = to_f(c->Value);
-            if (name == L"Œ³‹C")
-                params.setJoy(val);
-            else if (name == L"•’Ê")
-                params.setNormal(val);
-            else if (name == L"“{‚è")
-                params.setAnger(val);
-            else if (name == L"ˆ£‚µ‚Ý")
-                params.setSorrow(val);
+            params.params[pi++] = to_f(m_talker->Components->At(i)->Value);
+            if (pi >= 12)
+                break;
         }
     }
     return true;
@@ -199,35 +192,23 @@ bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
 
 bool rtcvInterfaceManaged::setParams(const rt::TalkParams& params)
 {
-    if (params.flags.cast)
-        m_cast = params.cast;
+    m_cast = params.cast;
     updateCast();
     if (!m_talker)
         return false;
 
-    if (params.flags.volume)
-        m_talker->Volume = to_u(params.volume);
-    if (params.flags.speed)
-        m_talker->Speed = to_u(params.speed);
-    if (params.flags.pitch)
-        m_talker->Tone = to_u(params.pitch);
-    if (params.flags.intonation)
-        m_talker->ToneScale = to_u(params.intonation);
-    if (params.flags.alpha)
-        m_talker->Alpha = to_u(params.alpha);
+    int pi = 0;
+    m_talker->Volume = to_u(params.params[pi++]);
+    m_talker->Speed = to_u(params.params[pi++]);
+    m_talker->Tone = to_u(params.params[pi++]);
+    m_talker->ToneScale = to_u(params.params[pi++]);
+    m_talker->Alpha = to_u(params.params[pi++]);
 
     int n = m_talker->Components->Count;
     for (int i = 0; i < n; ++i) {
-        auto c = m_talker->Components->At(i);
-        auto name = c->Name;
-        if (name == L"Œ³‹C" && params.flags.joy)
-            c->Value = to_u(params.joy);
-        else if (name == L"•’Ê"&& params.flags.normal)
-            c->Value = to_u(params.normal);
-        else if (name == L"“{‚è"&& params.flags.anger)
-            c->Value = to_u(params.anger);
-        else if (name == L"ˆ£‚µ‚Ý"&& params.flags.sorrow)
-            c->Value = to_u(params.sorrow);
+        m_talker->Components->At(i)->Value = to_u(params.params[pi++]);
+        if (pi >= 12)
+            break;
     }
     return true;
 }
@@ -371,7 +352,7 @@ void rtcvTalkInterface::onStop()
 void rtcvTalkInterface::onUpdateBuffer(rt::AudioData& ad)
 {
     if (m_sample_cb && rtcvInterfaceManaged::getInstance()->isPlaying()) {
-        if (m_params.flags.force_mono && m_params.force_mono)
+        if (m_params.force_mono)
             ad.convertToMono();
 
         auto sd = rt::ToTalkSample(ad);

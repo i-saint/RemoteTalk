@@ -101,9 +101,14 @@ bool TalkClient::talk(const TalkParams& params, const std::string& text, const s
         URI uri;
         uri.setPath("/talk");
 
-#define AddParam(N) if(params.flags.N) { uri.addQueryParameter(#N, to_string(params.N)); }
-        rtEachTalkParams(AddParam)
-#undef AddParam
+        uri.addQueryParameter("mute", to_string(params.mute));
+        uri.addQueryParameter("force_mono", to_string(params.force_mono));
+        uri.addQueryParameter("cast", to_string(params.cast));
+        for (int i = 0; i < params.num_params; ++i) {
+            char name[32];
+            sprintf(name, "param%d", i);
+            uri.addQueryParameter(name, to_string(params.params[i]));
+        }
         if (!text.empty())
             uri.addQueryParameter("text", text);
 

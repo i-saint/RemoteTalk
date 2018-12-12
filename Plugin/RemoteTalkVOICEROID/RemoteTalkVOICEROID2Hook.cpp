@@ -121,9 +121,7 @@ rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
 
-    if (mes.params.flags.mute) {
-        rtvrDSoundHandler::getInstance().mute = mes.params.mute;
-    }
+    rtvrDSoundHandler::getInstance().mute = mes.params.mute;
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.clear();

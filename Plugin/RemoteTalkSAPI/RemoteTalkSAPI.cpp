@@ -98,11 +98,11 @@ rtspTalkServer::Status rtspTalkServer::onStats(StatsMessage& mes)
     if (!m_voice)
         return Status::Failed;
 
-    mes.stats.params.setCast(0);
+    mes.stats.params.cast = 0;
 
     USHORT volume;
     m_voice->GetVolume(&volume);
-    mes.stats.params.setVolume((float)volume/ 100.0f);
+    mes.stats.params.params[0] = (float)volume/ 100.0f;
     //mes.stats.params.setVolume();
 
     mes.stats.host = "Windows SAPI";
@@ -119,10 +119,8 @@ rtspTalkServer::Status rtspTalkServer::onTalk(TalkMessage& mes)
 
     wait();
 
-    if (mes.params.flags.volume)
-        m_voice->SetVolume((USHORT)(mes.params.volume * 100.0f));
-    if (mes.params.flags.cast && mes.params.cast < (int)m_voice_tokens.size())
-        m_voice->SetVoice(m_voice_tokens[mes.params.cast]);
+    m_voice->SetVoice(m_voice_tokens[mes.params.cast]);
+    m_voice->SetVolume((USHORT)(mes.params.params[0] * 100.0f));
 
     auto text = rt::ToWCS(mes.text);
     m_task_talk = std::async(std::launch::async, [this, text]() {

@@ -23,7 +23,7 @@ TestCase(RemoteTalkClient)
         return;
 
     rt::TalkParams params = stats.params;
-    params.setVolume(0.8f);
+    params.params[0] = 0.8f;
     std::string text = "hello voiceroid! this is a test of remote talk client.";
 
     rt::AudioData sequence;

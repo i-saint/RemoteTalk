@@ -190,8 +190,20 @@ rtExport int rtCastInfoGetID(rtCastInfo *self)
 rtExport const char* rtCastInfoGetName(rtCastInfo *self)
 {
     if (!self)
-        return nullptr;
+        return "";
     return self->name.c_str();
+}
+rtExport int rtCastInfoGetNumParams(rtCastInfo *self)
+{
+    if (!self)
+        return 0;
+    return (int)self->param_names.size();
+}
+rtExport const char* rtCastInfoGetParamName(rtCastInfo *self, int i)
+{
+    if (!self)
+        return "";
+    return self->param_names[i].c_str();
 }
 
 #pragma endregion

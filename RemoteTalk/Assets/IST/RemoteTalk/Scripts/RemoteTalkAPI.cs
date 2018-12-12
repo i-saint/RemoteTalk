@@ -121,161 +121,25 @@ namespace IST.RemoteTalk
 
 
     [Serializable]
-    public struct rtTalkParamFlags
+    public unsafe struct rtTalkParams
     {
-        [SerializeField] public BitFlags bits;
-        public bool mute
-        {
-            get { return bits[0]; }
-            set { bits[0] = value; }
-        }
-        public bool forceMono
-        {
-            get { return bits[1]; }
-            set { bits[1] = value; }
-        }
-        public bool volume
-        {
-            get { return bits[2]; }
-            set { bits[2] = value; }
-        }
-        public bool speed
-        {
-            get { return bits[3]; }
-            set { bits[3] = value; }
-        }
-        public bool pitch
-        {
-            get { return bits[4]; }
-            set { bits[4] = value; }
-        }
-        public bool intonation
-        {
-            get { return bits[5]; }
-            set { bits[5] = value; }
-        }
-        public bool alpha
-        {
-            get { return bits[6]; }
-            set { bits[6] = value; }
-        }
-        public bool normal
-        {
-            get { return bits[7]; }
-            set { bits[7] = value; }
-        }
-        public bool joy
-        {
-            get { return bits[8]; }
-            set { bits[8] = value; }
-        }
-        public bool anger
-        {
-            get { return bits[9]; }
-            set { bits[9] = value; }
-        }
-        public bool sorrow
-        {
-            get { return bits[10]; }
-            set { bits[10] = value; }
-        }
-        public bool cast
-        {
-            get { return bits[11]; }
-            set { bits[11] = value; }
-        }
-    }
+        public const int maxParams = 12;
 
-    [Serializable]
-    public struct rtTalkParams
-    {
-        [SerializeField] public rtTalkParamFlags flags;
-        [SerializeField] int m_mute;
-        [SerializeField] int m_forceMono;
-        [SerializeField] float m_volume;
-        [SerializeField] float m_speed;
-        [SerializeField] float m_pitch;
-        [SerializeField] float m_intonation;
-        [SerializeField] float m_alpha;
-        [SerializeField] float m_normal;
-        [SerializeField] float m_joy;
-        [SerializeField] float m_anger;
-        [SerializeField] float m_sorrow;
-        [SerializeField] int m_cast;
+        public int mute;
+        public int forceMono;
+        public int cast;
+        public int numParams;
+        public fixed float param[maxParams];
 
         public static rtTalkParams defaultValue
         {
             get
             {
                 return new rtTalkParams {
-                    m_mute = 0,
-                    m_volume = 1.0f,
-                    m_speed = 1.0f,
-                    m_pitch = 1.0f,
-                    m_intonation = 1.0f,
+                    mute = 0,
+                    forceMono = 1,
                 };
             }
-        }
-
-        public bool mute
-        {
-            get { return m_mute != 0; }
-            set { m_mute = value ? 1 : 0; flags.mute = true; }
-        }
-        public bool forceMono
-        {
-            get { return m_forceMono != 0; }
-            set { m_forceMono = value ? 1 : 0; flags.forceMono = true; }
-        }
-        public float volume
-        {
-            get { return m_volume; }
-            set { m_volume = value; flags.volume = true; }
-        }
-        public float speed
-        {
-            get { return m_speed; }
-            set { m_speed = value; flags.speed = true; }
-        }
-        public float pitch
-        {
-            get { return m_pitch; }
-            set { m_pitch = value; flags.pitch = true; }
-        }
-        public float intonation
-        {
-            get { return m_intonation; }
-            set { m_intonation = value; flags.intonation = true; }
-        }
-        public float alpha
-        {
-            get { return m_alpha; }
-            set { m_alpha = value; flags.alpha = true; }
-        }
-        public float normal
-        {
-            get { return m_normal; }
-            set { m_normal = value; flags.normal = true; }
-        }
-        public float joy
-        {
-            get { return m_joy; }
-            set { m_joy = value; flags.joy = true; }
-        }
-        public float anger
-        {
-            get { return m_anger; }
-            set { m_anger = value; flags.anger = true; }
-        }
-        public float sorrow
-        {
-            get { return m_sorrow; }
-            set { m_sorrow = value; flags.sorrow = true; }
-        }
-        public int cast
-        {
-            get { return m_cast; }
-            set { m_cast = value; flags.cast = true; }
         }
     };
 
@@ -285,12 +149,22 @@ namespace IST.RemoteTalk
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetID(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetName(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetNumParams(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetParamName(IntPtr self, int i);
         #endregion
 
         public static implicit operator bool(rtCastInfo v) { return v.self != IntPtr.Zero; }
 
         public int id { get { return rtCastInfoGetID(self); } }
         public string name { get { return Misc.S(rtCastInfoGetName(self)); } }
+        public string[] paramNames {
+            get {
+                var ret = new string[rtCastInfoGetNumParams(self)];
+                for (int i = 0; i < ret.Length; ++i)
+                    ret[i] = Misc.S(rtCastInfoGetParamName(self, i));
+                return ret;
+            }
+        }
     }
 
     public struct rtAsync
@@ -358,7 +232,7 @@ namespace IST.RemoteTalk
                 for (int i = 0; i < ret.Length; ++i)
                 {
                     var ai = rtHTTPClientGetCast(self, i);
-                    ret[i] = new CastInfo { id = ai.id, name = ai.name };
+                    ret[i] = new CastInfo { id = ai.id, name = ai.name, paramNames = ai.paramNames };
                 }
                 return ret;
             }
@@ -415,5 +289,6 @@ namespace IST.RemoteTalk
     {
         public int id;
         public string name;
+        public string[] paramNames;
     }
 }
