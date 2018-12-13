@@ -7,6 +7,12 @@ using UnityEditor;
 
 namespace IST.RemoteTalk
 {
+    public enum rtFileFormat
+    {
+        Wave,
+        Ogg
+    }
+
     [ExecuteInEditMode]
     [RequireComponent(typeof(AudioSource))]
     public class RemoteTalkClient : MonoBehaviour
@@ -21,6 +27,8 @@ namespace IST.RemoteTalk
         [SerializeField] int m_sampleGranularity = 8192;
         [SerializeField] bool m_exportAudio = false;
         [SerializeField] string m_exportDir = "RemoteTalkAssets";
+        [SerializeField] rtFileFormat m_exportFileFormat = rtFileFormat.Ogg;
+        [SerializeField] rtOggSettings m_oggSettings = rtOggSettings.defaultValue;
         [SerializeField] bool m_useCache = true;
         [SerializeField] bool m_logging = false;
 
@@ -162,7 +170,10 @@ namespace IST.RemoteTalk
         {
             var name = castName;
             if (name != null)
-                return name + "-" + m_talkText.Substring(0, Math.Min(32, m_talkText.Length)) + ".wav";
+            {
+                string ext = m_exportFileFormat == rtFileFormat.Ogg ? ".ogg" : ".wav";
+                return Misc.SanitizeFileName(name + "-" + m_talkText.Substring(0, Math.Min(32, m_talkText.Length)) + ext);
+            }
             else
                 return null;
         }
@@ -262,7 +273,10 @@ namespace IST.RemoteTalk
                 {
                     MakeSureAssetDirectoryExists();
                     var dstPath = assetPath + "/" + m_cacheFileName;
-                    m_asyncExport = m_client.ExportWave(dstPath);
+                    if (m_exportFileFormat == rtFileFormat.Ogg)
+                        m_asyncExport = m_client.ExportOgg(dstPath, ref m_oggSettings);
+                    else
+                        m_asyncExport = m_client.ExportWave(dstPath);
                     m_exportedFiles.Add(dstPath);
                 }
 #endif

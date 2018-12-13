@@ -69,7 +69,19 @@ rtHTTPClient::async& rtHTTPClient::exportWave(const std::wstring& path)
 
     auto tmp_buf = std::make_shared<rt::AudioData>(m_buf_public);
     m_task_export = std::async(std::launch::async, [tmp_buf, path]() {
-        tmp_buf->exportWave(path);
+        ExportWave(*tmp_buf, path);
+    });
+    return m_task_export;
+}
+
+rtHTTPClient::async& rtHTTPClient::exportOgg(const std::wstring & path, const rt::OggSettings& settings)
+{
+    if (m_task_export.valid())
+        m_task_export.wait();
+
+    auto tmp_buf = std::make_shared<rt::AudioData>(m_buf_public);
+    m_task_export = std::async(std::launch::async, [tmp_buf, path, settings]() {
+        ExportOgg(*tmp_buf, path, settings);
     });
     return m_task_export;
 }
@@ -124,6 +136,7 @@ rtExport void rtAsyncWait(rtAsync *self)
 #pragma region rtAudioData
 using rtAudioData = rt::AudioData;
 using rtAudioFormat = rt::AudioFormat;
+using rtOggSettings = rt::OggSettings;
 
 rtExport rtAudioData* rtAudioDataCreate()
 {
@@ -190,11 +203,18 @@ rtExport void rtAudioDataClearSample(float *dst, int len)
         dst[i] = 0.0f;
 }
 
-rtExport bool rtAudioDataExportAsWave(rtAudioData *self, const char *path)
+rtExport bool rtAudioDataExportWave(rtAudioData *self, const char *path)
 {
-    if (!self)
+    if (!self || !path)
         return false;
-    return self->exportWave(rt::ToWCS(path));
+    return rt::ExportWave(*self, rt::ToWCS(path));
+}
+
+rtExport bool rtAudioDataExportOgg(rtAudioData *self, const char *path, const rtOggSettings *settings)
+{
+    if (!self || !path || !settings)
+        return false;
+    return rt::ExportOgg(*self, rt::ToWCS(path), *settings);
 }
 #pragma endregion
 
@@ -316,8 +336,14 @@ rtExport rtAudioData* rtHTTPClientGetBuffer(rtHTTPClient *self)
 
 rtExport rtAsync* rtHTTPClientExportWave(rtHTTPClient *self, const char *path)
 {
-    if (!self)
+    if (!self || !path)
         return false;
     return &self->exportWave(rt::ToWCS(path));
+}
+rtExport rtAsync* rtHTTPClientExportOgg(rtHTTPClient *self, const char *path, const rtOggSettings *settings)
+{
+    if (!self || !path || !settings)
+        return false;
+    return &self->exportOgg(rt::ToWCS(path), *settings);
 }
 #pragma endregion

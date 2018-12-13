@@ -21,7 +21,7 @@ namespace IST.RemoteTalk
 
         public static string SanitizeFileName(string name)
         {
-            var reg = new Regex("[:<>|\\*\\?]");
+            var reg = new Regex("[:<>|\\*\\?\\\\]");
             return reg.Replace(name, "_");
         }
 
@@ -82,6 +82,32 @@ namespace IST.RemoteTalk
         RawFile = 100,
     }
 
+    public enum rtBitrateMode
+    {
+        CBR,
+        VBR,
+    };
+
+    [Serializable]
+    public struct rtOggSettings
+    {
+        public rtBitrateMode bitrateMode;
+        public int targetBitrate;
+
+        public static rtOggSettings defaultValue
+        {
+            get
+            {
+                return new rtOggSettings
+                {
+                    bitrateMode = rtBitrateMode.VBR,
+                    targetBitrate = 128 * 1000,
+                };
+            }
+        }
+    };
+
+
     public struct rtAudioData
     {
         #region internal
@@ -93,7 +119,6 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataReadSamples(IntPtr self, float[] dst, int pos, int len);
         [DllImport("RemoteTalkClient")] static extern double rtAudioDataReample(IntPtr self, float[] dst, int frequency, int channels, int length, double pos);
         [DllImport("RemoteTalkClient")] static extern void rtAudioDataClearSample(float[] dst, int len);
-        [DllImport("RemoteTalkClient")] static extern byte rtAudioDataExportAsWave(IntPtr self, string path);
         #endregion
 
         public static implicit operator bool(rtAudioData v) { return v.self != IntPtr.Zero; }
@@ -118,7 +143,6 @@ namespace IST.RemoteTalk
         public int ReadSamples(float[] dst, int pos, int len) { return rtAudioDataReadSamples(self, dst, pos, len); }
         public double Resample(float[] dst, int frequency, int channels, int length, double pos) { return rtAudioDataReample(self, dst, frequency, channels, length, pos); }
         static public void ClearSamples(float[] dst) { rtAudioDataClearSample(dst, dst.Length); }
-        public bool ExportAsWave(string path) { return rtAudioDataExportAsWave(self, path) != 0; }
     }
 
 
@@ -206,6 +230,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientSyncBuffers(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientGetBuffer(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientExportWave(IntPtr self, string path);
+        [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientExportOgg(IntPtr self, string path, ref rtOggSettings settings);
         #endregion
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
@@ -258,6 +283,7 @@ namespace IST.RemoteTalk
         public rtAsync Stop() { return rtHTTPClientStop(self); }
         public rtAudioData SyncBuffers() { return rtHTTPClientSyncBuffers(self); }
         public rtAsync ExportWave(string path) { return rtHTTPClientExportWave(self, path); }
+        public rtAsync ExportOgg(string path, ref rtOggSettings s) { return rtHTTPClientExportOgg(self, path, ref s); }
     }
 
 

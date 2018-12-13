@@ -12,6 +12,7 @@
     <ClCompile Include="rtTalkReceiver.cpp" />
     <ClCompile Include="rtTalkServer.cpp" />
     <ClCompile Include="rtSerialization.cpp" />
+    <ClCompile Include="rtAudioFile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RemoteTalkNet.h" />
@@ -34,6 +35,7 @@
     <ClInclude Include="picojson\picojson.h">
       <Filter>picojson</Filter>
     </ClInclude>
+    <ClInclude Include="rtAudioFile.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="picojson">

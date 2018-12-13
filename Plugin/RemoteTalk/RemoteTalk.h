@@ -7,6 +7,7 @@
 
 #include "rtNorm.h"
 #include "rtAudioData.h"
+#include "rtAudioFile.h"
 
 #include "rtTalkInterface.h"
 #include "rtSerialization.h"

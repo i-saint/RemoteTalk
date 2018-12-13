@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include "rtRawVector.h"
+#include "rtNorm.h"
 
 namespace rt {
 
@@ -21,18 +22,6 @@ enum class AudioFormat
 };
 int SizeOf(AudioFormat f);
 int GetNumBits(AudioFormat f);
-
-enum class BitrateMode
-{
-    CBR,
-    VBR,
-};
-
-struct OggSettings
-{
-    BitrateMode bitrate_mode = BitrateMode::VBR;
-    int target_bitrate = 128 * 1000;
-};
 
 
 class AudioData
@@ -70,9 +59,6 @@ public:
     double resampleFloat(float *dst, int frequency, int channels, int length, double pos = 0.0);
 
     AudioData& operator+=(const AudioData& v);
-
-    bool exportWave(const std::wstring& path) const;
-    bool exportOgg(const std::wstring& path, const OggSettings& settings) const;
 };
 using AudioDataPtr = std::shared_ptr<AudioData>;
 
