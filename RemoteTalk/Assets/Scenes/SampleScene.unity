@@ -209,7 +209,6 @@ MonoBehaviour:
   m_remoteTalk: {fileID: 1476112017}
   m_reverb: {fileID: 534669906}
   m_echo: {fileID: 534669909}
-  m_casts: []
   m_scripts:
   - talkParams:
       mute: 0
@@ -650,6 +649,7 @@ GameObject:
   - component: {fileID: 1476112019}
   - component: {fileID: 1476112017}
   - component: {fileID: 1476112020}
+  - component: {fileID: 1476112021}
   m_Layer: 0
   m_Name: RemoteTalkClient
   m_TagString: Untagged
@@ -668,14 +668,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8176c32a82d5a740b2a9fe9035a92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_serverAddress: '127.0.0.1 '
+  m_serverAddress: 127.0.0.1
   m_serverPort: 8081
   m_talkParams:
-    mute: 0
+    mute: 1
     forceMono: 1
     cast: 1
     numParams: 0
     paramValues:
+    - 1
+    - 1
+    - 1
+    - 1
     - 0
     - 0
     - 0
@@ -684,13 +688,9 @@ MonoBehaviour:
     - 0
     - 0
     - 0
-    - 0
-    - 0
-    - 0
-    - 0
-  m_talkText: 
+  m_talkText: "\u3042\u3044\u3046\u3048\u304A"
   m_sampleGranularity: 8192
-  m_exportAudio: 1
+  m_exportAudio: 0
   m_exportDir: RemoteTalkAssets
   m_logging: 0
 --- !u!4 &1476112018
@@ -819,3 +819,15 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &1476112021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1476112016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5002f309736868459b20157eaf3e47d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_baseAudioSource: {fileID: 1476112019}

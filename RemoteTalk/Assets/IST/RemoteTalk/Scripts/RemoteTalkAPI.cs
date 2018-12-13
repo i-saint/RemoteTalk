@@ -138,12 +138,12 @@ namespace IST.RemoteTalk
             get
             {
                 return new rtTalkParams {
-                    mute = 0,
+                    mute = 1,
                     forceMono = 1,
                 };
             }
         }
-    };
+    }
 
     public struct rtCastInfo
     {
@@ -292,17 +292,5 @@ namespace IST.RemoteTalk
         public int id;
         public string name;
         public string[] paramNames;
-    }
-
-    [Serializable]
-    public class TalkParams
-    {
-        public CastInfo castInfo;
-        public int mute;
-        public int forceMono;
-        public int cast;
-        public int numParams;
-        public float[] paramValues = new float[rtTalkParams.maxParams];
-
     }
 }

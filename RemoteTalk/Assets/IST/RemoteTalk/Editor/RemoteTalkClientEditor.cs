@@ -15,8 +15,11 @@ namespace IST.RemoteTalk
             var t = target as RemoteTalkClient;
             var so = serializedObject;
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_serverAddress"));
-            EditorGUILayout.PropertyField(so.FindProperty("m_serverPort"));
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.DelayedTextField(so.FindProperty("m_serverAddress"));
+            EditorGUILayout.DelayedIntField(so.FindProperty("m_serverPort"));
+            if (EditorGUI.EndChangeCheck())
+                t.RefreshClient();
 
             EditorGUILayout.Space();
 
@@ -33,7 +36,9 @@ namespace IST.RemoteTalk
 
             var talkParams = so.FindProperty("m_talkParams");
             RemoteTalkEditor.DrawTalkParams(t.castID, talkParams, t);
-            EditorGUILayout.TextArea(t.talkText, GUILayout.Height(100));
+
+            var text = so.FindProperty("m_talkText");
+            text.stringValue = EditorGUILayout.TextArea(text.stringValue, GUILayout.Height(100));
 
             if (GUI.changed)
                 so.ApplyModifiedProperties();

@@ -43,12 +43,12 @@ namespace IST.RemoteTalk
 
 
         #region Properties
-        public string server
+        public string serverAddress
         {
             get { return m_serverAddress; }
             set { m_serverAddress = value; ReleaseClient(); }
         }
-        public int port
+        public int serverPort
         {
             get { return m_serverPort; }
             set { m_serverPort = value; ReleaseClient(); }
@@ -104,6 +104,13 @@ namespace IST.RemoteTalk
         }
 #endif
 
+
+        public void RefreshClient()
+        {
+            ReleaseClient();
+            MakeClient();
+        }
+
         void MakeClient()
         {
             if (!m_client)
@@ -121,6 +128,7 @@ namespace IST.RemoteTalk
             m_asyncTalk.Release();
             m_asyncStop.Release();
             m_client.Release();
+            m_host = "";
         }
 
 
@@ -201,11 +209,7 @@ namespace IST.RemoteTalk
                 {
                     if (m_player == null)
                     {
-                        var go = new GameObject();
-                        go.name = "AudioFilterPlayer";
-                        go.hideFlags = HideFlags.DontSave;
-                        go.transform.SetParent(transform, false);
-                        m_player = Misc.GetOrAddComponent<AudioFilterPlayer>(go);
+                        m_player = Misc.GetOrAddComponent<AudioFilterPlayer>(gameObject);
                         m_player.baseAudioSource = m_audioSource;
                     }
                     if (!m_player.isPlaying)
@@ -285,12 +289,6 @@ namespace IST.RemoteTalk
                     so.ApplyModifiedProperties();
                 }
             }
-        }
-
-
-        void OnValidate()
-        {
-            ReleaseClient();
         }
 #endif
 
