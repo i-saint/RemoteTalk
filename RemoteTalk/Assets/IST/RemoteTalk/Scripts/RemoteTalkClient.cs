@@ -13,32 +13,31 @@ namespace IST.RemoteTalk
         #region Fields
         [SerializeField] string m_serverAddress = "localhost";
         [SerializeField] int m_serverPort = 8081;
-        [Space(10)]
+
         [SerializeField] rtTalkParams m_talkParams = rtTalkParams.defaultValue;
         [SerializeField] string m_talkText;
 
         [SerializeField] int m_sampleGranularity = 8192;
-
         [SerializeField] bool m_exportAudio = false;
         [SerializeField] string m_exportDir = "RemoteTalkAssets";
         [SerializeField] bool m_logging = false;
-
 
         rtHTTPClient m_client;
         rtAsync m_asyncStats;
         rtAsync m_asyncTalk;
         rtAsync m_asyncStop;
+
         string m_host;
         rtTalkParams m_serverParams;
         CastInfo[] m_casts = new CastInfo[0] { };
-
-        int m_samplePos;
-        int m_sampleSkipped;
-        bool m_readySamples = false;
         bool m_isServerReady = false;
         bool m_isServerTalking = false;
+
         AudioSource m_audioSource;
-        AudioFilterPlayer m_player;
+        bool m_isPlaying;
+        bool m_isFinished;
+        int m_sampleRate;
+        double m_samplePos;
         #endregion
 
 
@@ -80,7 +79,7 @@ namespace IST.RemoteTalk
         }
         public bool isPlaying
         {
-            get { return m_player != null && m_player.isPlaying; }
+            get { return m_isPlaying; }
         }
 
         public string host { get { return m_host; } }
@@ -141,10 +140,8 @@ namespace IST.RemoteTalk
                 m_talkParams.cast = Mathf.Clamp(m_talkParams.cast, 0, m_casts.Length - 1);
             }
             m_talkParams.mute = 1;
-            m_readySamples = false;
             m_isServerTalking = true;
             m_samplePos = 0;
-            m_sampleSkipped = 0;
             m_asyncTalk = m_client.Talk(ref m_talkParams, m_talkText);
         }
 
@@ -152,36 +149,6 @@ namespace IST.RemoteTalk
         {
             MakeClient();
             m_asyncStop = m_client.Stop();
-        }
-
-        void OnAudioRead(float[] samples)
-        {
-            if (m_logging)
-                Debug.Log("read pos: " + m_samplePos + " [" + samples.Length + "]");
-
-            if (!m_readySamples)
-            {
-                rtAudioData.ClearSamples(samples);
-                m_sampleSkipped += samples.Length;
-                return;
-            }
-
-            for (int i = 0; i < 20; ++i)
-            {
-                if (m_samplePos + samples.Length <= m_client.SyncBuffers().sampleLength || !m_isServerTalking)
-                    break;
-                System.Threading.Thread.Sleep(16);
-            }
-
-            int numRead = m_client.SyncBuffers().ReadSamples(samples, m_samplePos, samples.Length);
-            m_samplePos += numRead;
-            m_sampleSkipped += samples.Length - numRead;
-        }
-
-        void OnAudioSetPosition(int pos)
-        {
-            if (m_logging)
-                Debug.Log("new pos: " + pos);
         }
 
         static int s_samplePreloadLength;
@@ -202,18 +169,27 @@ namespace IST.RemoteTalk
 
             if (m_asyncTalk)
             {
-                var buf = m_client.SyncBuffers();
-                int len = buf.sampleLength - m_samplePos;
-
-                if (len > 0 && (len > m_sampleGranularity || m_asyncTalk.isFinished))
+                if(!m_isPlaying)
                 {
-                    if (m_player == null)
+                    var buf = m_client.SyncBuffers();
+                    int len = buf.sampleLength;
+
+                    if (len > m_sampleGranularity || m_asyncTalk.isFinished)
                     {
-                        m_player = Misc.GetOrAddComponent<AudioFilterPlayer>(gameObject);
-                        m_player.baseAudioSource = m_audioSource;
+                        var clip = AudioClip.Create("One", 44000, 1, 44000, false);
+                        var samples = new float[44000];
+                        for (int i = 0; i < 44000; ++i)
+                            samples[i] = 1.0f;
+                        clip.SetData(samples, 0);
+                        m_audioSource.clip = clip;
+                        m_audioSource.loop = true;
+                        m_audioSource.Play();
+
+                        m_sampleRate = AudioSettings.outputSampleRate;
+                        m_samplePos = 0.0;
+                        m_isFinished = false;
+                        m_isPlaying = true;
                     }
-                    if (!m_player.isPlaying)
-                        m_player.Play(buf);
                 }
 
                 if (m_asyncTalk.isFinished)
@@ -225,6 +201,12 @@ namespace IST.RemoteTalk
                         Export(m_client.buffer);
 #endif
                 }
+            }
+            if (m_isFinished)
+            {
+                m_audioSource.Stop();
+                m_isPlaying = false;
+                m_isFinished = false;
             }
         }
 
@@ -295,6 +277,7 @@ namespace IST.RemoteTalk
         void OnEnable()
         {
             m_audioSource = GetComponent<AudioSource>();
+            m_audioSource.playOnAwake = false;
 
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
@@ -315,11 +298,18 @@ namespace IST.RemoteTalk
         void Update()
         {
             UpdateSamples();
-
-            //int len, num;
-            //AudioSettings.GetDSPBufferSize(out len, out num);
-            //Debug.Log("DSP buffer len: " + len + " num: " + num);
-            //Debug.Log("outputSampleRate: " + AudioSettings.outputSampleRate);
         }
+
+        void OnAudioFilterRead(float[] data, int channels)
+        {
+            if (!m_isPlaying)
+                return;
+
+            var prev = m_samplePos;
+            m_samplePos = m_client.SyncBuffers().Resample(data, m_sampleRate, channels, data.Length, m_samplePos);
+            if (m_samplePos == prev)
+                m_isFinished = true;
+        }
+
     }
 }
