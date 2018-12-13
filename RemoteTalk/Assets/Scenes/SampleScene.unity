@@ -649,7 +649,6 @@ GameObject:
   - component: {fileID: 1476112018}
   - component: {fileID: 1476112019}
   - component: {fileID: 1476112017}
-  - component: {fileID: 1476112021}
   - component: {fileID: 1476112020}
   m_Layer: 0
   m_Name: RemoteTalkClient
@@ -692,7 +691,7 @@ MonoBehaviour:
   m_text: "\u307B\u3052\u30FC"
   m_castName: "\u7D32\u661F\u3042\u304B\u308A"
   m_playMode: 1
-  m_sampleGranularity: 10000
+  m_sampleGranularity: 8192
   m_exportAudio: 0
   m_assetDir: RemoteTalkAssets
   m_logging: 0
@@ -823,15 +822,3 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &1476112021
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1476112016}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5002f309736868459b20157eaf3e47d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_baseAudioSource: {fileID: 1476112019}

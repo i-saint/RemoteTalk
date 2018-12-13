@@ -245,7 +245,7 @@ bool AudioData::exportAsWave(const char *path) const
     return true;
 }
 
-int AudioData::toFloat(float *dst, int pos, int len_orig)
+int AudioData::toFloat(float *dst, int pos, int len_orig, bool multiply)
 {
     int sample_length = (int)getSampleLength();
     pos = std::min(pos, sample_length);
@@ -254,9 +254,15 @@ int AudioData::toFloat(float *dst, int pos, int len_orig)
     int len = len_orig;
     len = std::min(len, sample_length - pos);
 
-    auto convert = [dst](const auto *src, int n, int z) {
-        for (int i = 0; i < n; ++i)
-            dst[i] = src[i];
+    auto convert = [dst, multiply](const auto *src, int n, int z) {
+        if (multiply) {
+            for (int i = 0; i < n; ++i)
+                dst[i] *= src[i];
+        }
+        else {
+            for (int i = 0; i < n; ++i)
+                dst[i] = src[i];
+        }
         for (int i = n; i < z; ++i)
             dst[i] = 0.0f;
     };
@@ -277,7 +283,7 @@ double AudioData::resampleFloat(float *dst, int new_frequency, int new_channels,
     AudioData tmp;
     auto ret = resample(tmp, new_frequency, length / new_channels, pos);
     tmp.increaseChannels(new_channels);
-    tmp.toFloat(dst);
+    tmp.toFloat(dst, 0, -1, true);
     return ret;
 }
 

@@ -29,11 +29,16 @@ public class TestAudioFilter : MonoBehaviour
     {
         if (!m_audioSource.isPlaying && (m_playOnAudioRead || m_playOnAudioFilterRead))
         {
-            //var clip = AudioClip.Create("TestAudioFilterAudio",
-            //    44000,
-            //    1, 44000, true,
-            //    OnAudioRead, OnAudioSetPosition);
-            //m_audioSource.clip = clip;
+            var clip = AudioClip.Create("TestAudioFilterAudio",
+                44000,
+                1, 44000, false);
+
+            var samples = new float[44000];
+            for (int i = 0; i < 44000; ++i)
+                samples[i] = 1.0f;
+            clip.SetData(samples, 0);
+
+            m_audioSource.clip = clip;
             m_audioSource.loop = true;
             m_audioSource.Play();
         }
@@ -72,7 +77,7 @@ public class TestAudioFilter : MonoBehaviour
         //    Debug.Log("OnAudioFilterRead() len: " + data.Length + ", channels: " + channels);
 
         for (int i = 0; i < data.Length; ++i)
-            data[i] += Mathf.Sin((float)(m_cycle + i) * 0.5f * Mathf.Deg2Rad) * 0.2f;
+            data[i] *= Mathf.Sin((float)(m_cycle + i) * 0.5f * Mathf.Deg2Rad) * 0.2f;
         m_cycle += data.Length;
     }
 }

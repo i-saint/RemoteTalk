@@ -34,7 +34,15 @@ namespace IST.RemoteTalk
             if (!m_data || m_audioSource == null)
                 return;
 
-            // setup AudioSource
+            {
+                var clip = AudioClip.Create("One", 44000, 1, 44000, false);
+                var samples = new float[44000];
+                for (int i = 0; i < 44000; ++i)
+                    samples[i] = 1.0f;
+                clip.SetData(samples, 0);
+                m_audioSource.clip = clip;
+            }
+
             m_audioSource.playOnAwake = false;
             m_audioSource.loop = true;
             if (m_baseAudioSource != null)
