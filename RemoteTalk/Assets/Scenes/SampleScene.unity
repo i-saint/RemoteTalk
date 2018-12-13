@@ -672,7 +672,7 @@ MonoBehaviour:
   m_serverAddress: '127.0.0.1 '
   m_serverPort: 8081
   m_params:
-    mute: 0
+    mute: 1
     forceMono: 1
     cast: 0
     numParams: 0
@@ -691,30 +691,12 @@ MonoBehaviour:
     - 0
   m_text: "\u307B\u3052\u30FC"
   m_castName: "\u7D32\u661F\u3042\u304B\u308A"
-  m_playMode: 0
-  m_sampleGranularity: 22000
+  m_playMode: 1
+  m_sampleGranularity: 10000
   m_exportAudio: 0
   m_assetDir: RemoteTalkAssets
   m_logging: 0
   m_host: VOICEROID2
-  m_casts:
-  - id: 0
-    name: "\u7D50\u6708\u3086\u304B\u308A"
-    paramNames:
-    - "\u97F3\u91CF"
-    - "\u8A71\u901F"
-    - "\u9AD8\u3055"
-    - "\u6291\u63DA"
-    - "\u559C\u3073"
-    - "\u6012\u308A"
-    - "\u60B2\u3057\u307F"
-  - id: 1
-    name: "\u7D32\u661F\u3042\u304B\u308A"
-    paramNames:
-    - "\u97F3\u91CF"
-    - "\u8A71\u901F"
-    - "\u9AD8\u3055"
-    - "\u6291\u63DA"
 --- !u!4 &1476112018
 Transform:
   m_ObjectHideFlags: 0

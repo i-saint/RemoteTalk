@@ -4,10 +4,13 @@
 
 namespace rt {
 
+template<class T> inline T frac(T a) { return std::fmod(a, T(1)); }
+template<class T> inline T lerp(T a, T b, T t) { return (a * (T(1) - t)) + (b * t); }
+
 template<class T> inline T clamp(T v, T n, T x) { return std::max(std::min(v, x), n); }
-inline float clamp01(float v) { return clamp(v, 1.0f, 0.0f); }
-inline float clamp11(float v) { return clamp(v, 1.0f, -1.0f); }
-inline double clamp11(double v) { return clamp(v, 1.0, -1.0); }
+inline float clamp01(float v) { return clamp(v, 0.0f, 1.0f); }
+inline float clamp11(float v) { return clamp(v, -1.0f, 1.0f); }
+inline double clamp11(double v) { return clamp(v, -1.0, 1.0); }
 
 // -1.0f - 1.0f <-> -127 - 127
 struct snorm8

@@ -122,9 +122,9 @@ TestCase(rtAudioData_Convert)
     data3.convertToMono();
 
     rt::AudioData data4;
-    data.resample(data4, 50, 2, 100);
+    data.resample(data4, 50, 50);
     rt::AudioData data5;
-    data.resample(data5, 5, 3, 15);
+    data2.resample(data5, 5, 20, -5.0);
 
     Expect(data3.data == data.data);
 }

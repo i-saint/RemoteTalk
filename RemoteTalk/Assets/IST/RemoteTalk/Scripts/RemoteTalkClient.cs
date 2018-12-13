@@ -8,14 +8,13 @@ namespace IST.RemoteTalk
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(AudioSource))]
-    [RequireComponent(typeof(StreamingAudioPlayer))]
     public class RemoteTalkClient : MonoBehaviour
     {
         #region Types
         enum PlayMode
         {
             AudioClip,
-            StreamingAudioPlayer,
+            AudioFilter,
         }
         #endregion
 
@@ -28,7 +27,7 @@ namespace IST.RemoteTalk
         [SerializeField] string m_castName = "";
 
         [SerializeField] PlayMode m_playMode = PlayMode.AudioClip;
-        [SerializeField] int m_sampleGranularity = 22000;
+        [SerializeField] int m_sampleGranularity = 8192;
 
         [SerializeField] bool m_exportAudio = false;
         [SerializeField] string m_assetDir = "RemoteTalkAssets";
@@ -41,7 +40,7 @@ namespace IST.RemoteTalk
         rtAsync m_asyncTalk;
         rtAsync m_asyncStop;
         rtTalkParams m_serverParams;
-        public CastInfo[] m_casts = new CastInfo[0] { };
+        CastInfo[] m_casts = new CastInfo[0] { };
 
         int m_samplePos;
         int m_sampleSkipped;
@@ -49,7 +48,7 @@ namespace IST.RemoteTalk
         bool m_isServerReady = false;
         bool m_isServerTalking = false;
         AudioSource m_audioSource;
-        StreamingAudioPlayer m_streamingPlayer;
+        AudioFilterPlayer m_player;
         #endregion
 
 
@@ -90,8 +89,8 @@ namespace IST.RemoteTalk
             {
                 if (m_playMode == PlayMode.AudioClip)
                     return m_audioSource != null && m_audioSource.isPlaying;
-                else if (m_playMode == PlayMode.StreamingAudioPlayer)
-                    return m_streamingPlayer != null && m_streamingPlayer.isPlaying;
+                else if (m_playMode == PlayMode.AudioFilter)
+                    return m_player != null && m_player.isPlaying;
                 else
                     return false;
             }
@@ -245,24 +244,21 @@ namespace IST.RemoteTalk
                         }
                     }
                 }
-                else if(m_playMode == PlayMode.StreamingAudioPlayer)
+                else if(m_playMode == PlayMode.AudioFilter)
                 {
                     if (len > 0 && (len > m_sampleGranularity || m_asyncTalk.isFinished))
                     {
-                        len = Math.Min(len, m_sampleGranularity);
-                        var samples = new float[len];
-                        buf.ReadSamples(samples, m_samplePos, len);
-                        m_samplePos += len;
-
-                        var clip = AudioClip.Create("RemoteTalkAudio", len, buf.channels, buf.frequency, false);
-                        clip.SetData(samples, 0);
-
-                        if (m_streamingPlayer == null)
+                        if (m_player == null)
                         {
-                            m_streamingPlayer = Misc.GetOrAddComponent<StreamingAudioPlayer>(gameObject);
-                            m_streamingPlayer.baseAudioSource = m_audioSource;
+                            var go = new GameObject();
+                            go.name = "AudioFilterPlayer";
+                            go.hideFlags = HideFlags.DontSave;
+                            go.transform.SetParent(transform, false);
+                            m_player = Misc.GetOrAddComponent<AudioFilterPlayer>(go);
+                            m_player.baseAudioSource = m_audioSource;
                         }
-                        m_streamingPlayer.Play(clip);
+                        if (!m_player.isPlaying)
+                            m_player.Play(buf);
                     }
                 }
 

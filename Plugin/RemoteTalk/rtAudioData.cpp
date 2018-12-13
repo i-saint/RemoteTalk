@@ -99,7 +99,7 @@ void AudioData::convertToMono()
     if (channels == 1)
         return; // nothing todo
 
-    int len = getSampleLength();
+    int len = (int)getSampleLength();
     if (len == 0)
         return; // data is empty or unknown format
 
@@ -126,13 +126,14 @@ void AudioData::increaseChannels(int n)
     if (channels != 1 || channels == n)
         return; // must be mono before convert
 
-    int len = getSampleLength();
+    int ch = channels;
+    int len = (int)getSampleLength() / ch;
     if (len == 0)
         return; // data is empty or unknown format
 
     data.resize(data.size() * n);
 
-    auto convert = [len, n](auto *dst) {
+    auto convert = [len, ch, n](auto *dst) {
         int i = len;
         while (i--) {
             for (int ci = 0; ci < n; ++ci)
@@ -151,42 +152,39 @@ void AudioData::increaseChannels(int n)
     channels = n;
 }
 
-static inline float frac(float a) { return std::fmod(a, 1.0f); }
-static inline float lerp(float a, float b, float t) { return (a * (1.0f - t)) + (b * t); }
-
-bool AudioData::resample(AudioData& dst, int new_frequency, int new_channels, int new_length) const
+double AudioData::resample(AudioData& dst, int new_frequency, int new_length, double pos) const
 {
     if (getSampleLength() == 0)
-        return false;
-    if (frequency == new_frequency && channels == new_channels) {
-        dst = *this;
-        return true;
-    }
+        return 0.0;
 
-    AudioData src = *this;
-    src.convertToMono();
-    if (frequency == new_frequency && channels == 1) {
-        dst = src;
-        return true;
-    }
-
+    const auto& src = *this;
     dst.format = src.format;
-    dst.channels = 1;
+    dst.channels = src.channels;
     dst.frequency = new_frequency;
-    dst.allocateSample(new_length / new_channels);
+    dst.allocateSample(new_length);
 
-    float rate = (float)(frequency - 1) / (float)(new_frequency - 1);
-    int src_len = (int)src.getSampleLength();
-    int dst_len = (int)dst.getSampleLength();
+    double step = (double)(frequency - 1) / (double)(new_frequency - 1);
+    int src_len = (int)src.getSampleLength() / src.channels;
+    int dst_len = (int)dst.getSampleLength() / src.channels;
+    int ch = channels;
 
-    auto convert = [rate, src_len, dst_len](auto *d, auto *s) {
-        for (size_t i = 0; i < dst_len; ++i) {
-            size_t si = size_t((float)i * rate);
-            float t = frac((float)i * rate);
-            if (si < src_len - 1)
-                d[i] = lerp((float)s[si], (float)s[si + 1], t);
-            else
-                d[i] = s[src_len - 1];
+    auto convert = [step, src_len, dst_len, ch, pos](auto *dst, auto *src) {
+        for (int i = 0; i < dst_len; ++i) {
+            double sp = (double)i * step + pos;
+            int si = (int)sp;
+            float st = (float)frac(sp);
+            if (sp < 0.0) {
+                for (int ci = 0; ci < ch; ++ci)
+                    dst[i*ch + ci] = src[ci];
+            }
+            else if (si < src_len - 1) {
+                for (int ci = 0; ci < ch; ++ci)
+                    dst[i*ch + ci] = lerp((float)src[si * ch + ci], (float)src[(si + 1) * ch + ci], st);
+            }
+            else {
+                for (int ci = 0; ci < ch; ++ci)
+                    dst[i*ch + ci] = src[(src_len - 1) * ch + ci];
+            }
         }
     };
     switch (format) {
@@ -197,9 +195,7 @@ bool AudioData::resample(AudioData& dst, int new_frequency, int new_channels, in
     case AudioFormat::F32: convert(dst.get<float>(), src.get<float>()); break;
     default: break;
     }
-
-    dst.increaseChannels(new_channels);
-    return true;
+    return std::min(step * dst_len + pos, (double)src_len);
 }
 
 
@@ -249,7 +245,7 @@ bool AudioData::exportAsWave(const char *path) const
     return true;
 }
 
-int AudioData::convertSamplesToFloat(float *dst, int pos, int len_orig)
+int AudioData::toFloat(float *dst, int pos, int len_orig)
 {
     int sample_length = (int)getSampleLength();
     pos = std::min(pos, sample_length);
@@ -258,7 +254,7 @@ int AudioData::convertSamplesToFloat(float *dst, int pos, int len_orig)
     int len = len_orig;
     len = std::min(len, sample_length - pos);
 
-    auto convert = [dst](auto *src, int n, int z) {
+    auto convert = [dst](const auto *src, int n, int z) {
         for (int i = 0; i < n; ++i)
             dst[i] = src[i];
         for (int i = n; i < z; ++i)
@@ -266,14 +262,23 @@ int AudioData::convertSamplesToFloat(float *dst, int pos, int len_orig)
     };
 
     switch (format) {
-    case AudioFormat::U8:  convert(get<const unorm8n>() + pos, len, len_orig); break;
-    case AudioFormat::S16: convert(get<const snorm16>() + pos, len, len_orig); break;
-    case AudioFormat::S24: convert(get<const snorm24>() + pos, len, len_orig); break;
-    case AudioFormat::S32: convert(get<const snorm32>() + pos, len, len_orig); break;
-    case AudioFormat::F32: convert(get<const float>() + pos, len, len_orig); break;
-    default: return false;
+    case AudioFormat::U8:  convert(get<unorm8n>() + pos, len, len_orig); break;
+    case AudioFormat::S16: convert(get<snorm16>() + pos, len, len_orig); break;
+    case AudioFormat::S24: convert(get<snorm24>() + pos, len, len_orig); break;
+    case AudioFormat::S32: convert(get<snorm32>() + pos, len, len_orig); break;
+    case AudioFormat::F32: convert(get<float>() + pos, len, len_orig); break;
+    default: return 0;
     }
     return len;
+}
+
+double AudioData::resampleFloat(float *dst, int new_frequency, int new_channels, int length, double pos)
+{
+    AudioData tmp;
+    auto ret = resample(tmp, new_frequency, length / new_channels, pos);
+    tmp.increaseChannels(new_channels);
+    tmp.toFloat(dst);
+    return ret;
 }
 
 AudioData& AudioData::operator+=(const AudioData& v)

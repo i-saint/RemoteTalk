@@ -156,11 +156,18 @@ rtExport int rtAudioDataGetSampleLength(rtAudioData *self)
     return (int)self->getSampleLength();
 }
 
-rtExport int rtAudioDataReadSamplesFloat(rtAudioData *self, float *dst, int pos, int len)
+rtExport int rtAudioDataReadSamples(rtAudioData *self, float *dst, int pos, int len)
 {
     if (!self)
         return 0;
-    return self->convertSamplesToFloat(dst, pos, len);
+    return self->toFloat(dst, pos, len);
+}
+
+rtExport double rtAudioDataReample(rtAudioData *self, float *dst, int frequency, int channels, int length, double pos)
+{
+    if (!self)
+        return 0;
+    return self->resampleFloat(dst, frequency, channels, length, pos);
 }
 
 rtExport void rtAudioDataClearSample(float *dst, int len)

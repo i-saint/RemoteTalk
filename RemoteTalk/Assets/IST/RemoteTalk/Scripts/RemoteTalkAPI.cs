@@ -90,7 +90,8 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetChannels(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetFrequency(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetSampleLength(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern int rtAudioDataReadSamplesFloat(IntPtr self, float[] dst, int pos, int len);
+        [DllImport("RemoteTalkClient")] static extern int rtAudioDataReadSamples(IntPtr self, float[] dst, int pos, int len);
+        [DllImport("RemoteTalkClient")] static extern double rtAudioDataReample(IntPtr self, float[] dst, int frequency, int channels, int length, double pos);
         [DllImport("RemoteTalkClient")] static extern void rtAudioDataClearSample(float[] dst, int len);
         [DllImport("RemoteTalkClient")] static extern byte rtAudioDataExportAsWave(IntPtr self, string path);
         #endregion
@@ -114,7 +115,8 @@ namespace IST.RemoteTalk
             get { return rtAudioDataGetSampleLength(self); }
         }
 
-        public int ReadSamples(float[] dst, int pos, int len) { return rtAudioDataReadSamplesFloat(self, dst, pos, len); }
+        public int ReadSamples(float[] dst, int pos, int len) { return rtAudioDataReadSamples(self, dst, pos, len); }
+        public double Resample(float[] dst, int frequency, int channels, int length, double pos) { return rtAudioDataReample(self, dst, frequency, channels, length, pos); }
         static public void ClearSamples(float[] dst) { rtAudioDataClearSample(dst, dst.Length); }
         public bool ExportAsWave(string path) { return rtAudioDataExportAsWave(self, path) != 0; }
     }
@@ -290,5 +292,17 @@ namespace IST.RemoteTalk
         public int id;
         public string name;
         public string[] paramNames;
+    }
+
+    [Serializable]
+    public class TalkParams
+    {
+        public CastInfo castInfo;
+        public int mute;
+        public int forceMono;
+        public int cast;
+        public int numParams;
+        public float[] paramValues = new float[rtTalkParams.maxParams];
+
     }
 }
