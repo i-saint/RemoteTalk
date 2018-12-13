@@ -107,20 +107,24 @@ TestCase(rtAudioData_Convert)
 {
     rt::AudioData data;
     data.format = rt::AudioFormat::F32;
-    data.frequency = Frequency;
-    data.channels = Channels;
+    data.frequency = 10;
+    data.channels = 1;
 
-    const int Len = 128;
+    const int Len = 10;
     auto *samples = (float*)data.allocateSample(Len);
-    for (int i = 0; i < Len; ++i) {
-        samples[i] = (2.0f / Len) *i - 1.0f;
-    }
+    for (int i = 0; i < Len; ++i)
+        samples[i] = (2.0f / (Len - 1)) * i - 1.0f;
 
     rt::AudioData data2 = data;
     data2.increaseChannels(2);
 
     rt::AudioData data3 = data2;
     data3.convertToMono();
+
+    rt::AudioData data4;
+    data.resample(data4, 50, 2, 100);
+    rt::AudioData data5;
+    data.resample(data5, 5, 3, 15);
 
     Expect(data3.data == data.data);
 }

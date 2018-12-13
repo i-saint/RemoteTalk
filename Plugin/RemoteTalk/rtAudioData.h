@@ -40,14 +40,18 @@ public:
     uint64_t hash() const;
 
     void clear();
+    template<class T> T* get() { return (T*)data.data(); }
+    template<class T> const T* get() const { return (const T*)data.data(); }
+
     void* allocateByte(size_t num);
-    // allocate num_samples * channels * size_of_format bytes
+    // allocate num_samples * size_of_format bytes
     void* allocateSample(size_t num_samples);
     size_t getSampleLength() const;
     double getDuration() const;
 
     void convertToMono();
     void increaseChannels(int n); // must be mono before call
+    bool resample(AudioData& dst, int frequency, int channels, int length) const;
 
     bool exportAsWave(const char *path) const;
     int convertSamplesToFloat(float *dst, int pos = 0, int len = -1);

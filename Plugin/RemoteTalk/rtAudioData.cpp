@@ -79,7 +79,7 @@ void* AudioData::allocateByte(size_t num)
 
 void* AudioData::allocateSample(size_t num_samples)
 {
-    data.resize(channels * SizeOf(format) * num_samples);
+    data.resize(SizeOf(format) * num_samples);
     return data.data();
 }
 
@@ -99,11 +99,25 @@ void AudioData::convertToMono()
     if (channels == 1)
         return; // nothing todo
 
-    int size = (int)data.size();
+    int len = getSampleLength();
+    if (len == 0)
+        return; // data is empty or unknown format
+
     int c = channels;
-    for (int i = 0; i*c < size; ++i)
-        data[i] = data[i*c];
-    data.resize(size / c);
+    auto convert = [len, c](auto *dst) {
+        for (int i = 0; i*c < len; ++i)
+            dst[i] = dst[i*c];
+    };
+
+    switch (format) {
+    case AudioFormat::U8:  convert(get<unorm8n>()); break;
+    case AudioFormat::S16: convert(get<snorm16>()); break;
+    case AudioFormat::S24: convert(get<snorm24>()); break;
+    case AudioFormat::S32: convert(get<snorm32>()); break;
+    case AudioFormat::F32: convert(get<float>()); break;
+    default: return;
+    }
+    data.resize(data.size() / c);
     channels = 1;
 }
 
@@ -118,22 +132,74 @@ void AudioData::increaseChannels(int n)
 
     data.resize(data.size() * n);
 
-    auto convert = [n](auto *dst, int len) {
-        while (len--) {
+    auto convert = [len, n](auto *dst) {
+        int i = len;
+        while (i--) {
             for (int ci = 0; ci < n; ++ci)
-                dst[len*n + ci] = dst[len];
+                dst[i*n + ci] = dst[i];
         }
     };
 
     switch (format) {
-    case AudioFormat::U8:  convert((unorm8n*)data.data(), len); break;
-    case AudioFormat::S16: convert((snorm16*)data.data(), len); break;
-    case AudioFormat::S24: convert((snorm24*)data.data(), len); break;
-    case AudioFormat::S32: convert((snorm32*)data.data(), len); break;
-    case AudioFormat::F32: convert((float*)data.data(), len); break;
+    case AudioFormat::U8:  convert(get<unorm8n>()); break;
+    case AudioFormat::S16: convert(get<snorm16>()); break;
+    case AudioFormat::S24: convert(get<snorm24>()); break;
+    case AudioFormat::S32: convert(get<snorm32>()); break;
+    case AudioFormat::F32: convert(get<float>()); break;
     default: return;
     }
     channels = n;
+}
+
+static inline float frac(float a) { return std::fmod(a, 1.0f); }
+static inline float lerp(float a, float b, float t) { return (a * (1.0f - t)) + (b * t); }
+
+bool AudioData::resample(AudioData& dst, int new_frequency, int new_channels, int new_length) const
+{
+    if (getSampleLength() == 0)
+        return false;
+    if (frequency == new_frequency && channels == new_channels) {
+        dst = *this;
+        return true;
+    }
+
+    AudioData src = *this;
+    src.convertToMono();
+    if (frequency == new_frequency && channels == 1) {
+        dst = src;
+        return true;
+    }
+
+    dst.format = src.format;
+    dst.channels = 1;
+    dst.frequency = new_frequency;
+    dst.allocateSample(new_length / new_channels);
+
+    float rate = (float)(frequency - 1) / (float)(new_frequency - 1);
+    int src_len = (int)src.getSampleLength();
+    int dst_len = (int)dst.getSampleLength();
+
+    auto convert = [rate, src_len, dst_len](auto *d, auto *s) {
+        for (size_t i = 0; i < dst_len; ++i) {
+            size_t si = size_t((float)i * rate);
+            float t = frac((float)i * rate);
+            if (si < src_len - 1)
+                d[i] = lerp((float)s[si], (float)s[si + 1], t);
+            else
+                d[i] = s[src_len - 1];
+        }
+    };
+    switch (format) {
+    case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<unorm8n>()); break;
+    case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<snorm16>()); break;
+    case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<snorm24>()); break;
+    case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<snorm32>()); break;
+    case AudioFormat::F32: convert(dst.get<float>(), src.get<float>()); break;
+    default: break;
+    }
+
+    dst.increaseChannels(new_channels);
+    return true;
 }
 
 
@@ -200,11 +266,11 @@ int AudioData::convertSamplesToFloat(float *dst, int pos, int len_orig)
     };
 
     switch (format) {
-    case AudioFormat::U8:  convert((const unorm8n*)data.data() + pos, len, len_orig); break;
-    case AudioFormat::S16: convert((const snorm16*)data.data() + pos, len, len_orig); break;
-    case AudioFormat::S24: convert((const snorm24*)data.data() + pos, len, len_orig); break;
-    case AudioFormat::S32: convert((const snorm32*)data.data() + pos, len, len_orig); break;
-    case AudioFormat::F32: convert((const float*)data.data() + pos, len, len_orig); break;
+    case AudioFormat::U8:  convert(get<const unorm8n>() + pos, len, len_orig); break;
+    case AudioFormat::S16: convert(get<const snorm16>() + pos, len, len_orig); break;
+    case AudioFormat::S24: convert(get<const snorm24>() + pos, len, len_orig); break;
+    case AudioFormat::S32: convert(get<const snorm32>() + pos, len, len_orig); break;
+    case AudioFormat::F32: convert(get<const float>() + pos, len, len_orig); break;
     default: return false;
     }
     return len;
