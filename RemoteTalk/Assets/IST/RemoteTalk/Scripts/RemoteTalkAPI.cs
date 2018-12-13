@@ -131,7 +131,7 @@ namespace IST.RemoteTalk
         public int forceMono;
         public int cast;
         public int numParams;
-        public fixed float param[maxParams];
+        public fixed float paramValues[maxParams];
 
         public static rtTalkParams defaultValue
         {

@@ -19,7 +19,6 @@ public class RemoteTalkDemo : MonoBehaviour
     public RemoteTalkClient m_remoteTalk;
     public AudioReverbFilter m_reverb;
     public AudioEchoFilter m_echo;
-    public List<CastInfo> m_casts = new List<CastInfo>();
     public List<Script> m_scripts = new List<Script>();
     public int m_scriptPos = 0;
     public int m_delay;
