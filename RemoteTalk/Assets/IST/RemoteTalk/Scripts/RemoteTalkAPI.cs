@@ -205,6 +205,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientStop(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientSyncBuffers(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientGetBuffer(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientExportWave(IntPtr self, string path);
         #endregion
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
@@ -256,6 +257,7 @@ namespace IST.RemoteTalk
         public rtAsync Talk(ref rtTalkParams para, string text) { return rtHTTPClientTalk(self, ref para, text); }
         public rtAsync Stop() { return rtHTTPClientStop(self); }
         public rtAudioData SyncBuffers() { return rtHTTPClientSyncBuffers(self); }
+        public rtAsync ExportWave(string path) { return rtHTTPClientExportWave(self, path); }
     }
 
 

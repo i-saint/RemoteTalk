@@ -17,6 +17,7 @@ public:
     bool isReady();
     async& talk(const rt::TalkParams& params, const std::string& text);
     async& stop();
+    async& exportWave(const std::wstring& path);
 
     void wait();
     rt::AudioData* syncBuffers();
@@ -33,6 +34,7 @@ private:
     async m_task_stats;
     async m_task_talk;
     async m_task_stop;
+    async m_task_export;
     bool m_processing = false;
 };
 

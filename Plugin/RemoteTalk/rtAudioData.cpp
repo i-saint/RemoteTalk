@@ -217,12 +217,12 @@ struct WaveHeader
     int32_t nBytesData = 0;
 };
 
-bool AudioData::exportAsWave(const char *path) const
+bool AudioData::exportAsWave(const std::wstring& path) const
 {
     if (format == AudioFormat::RawFile || format == AudioFormat::F32)
         return false;
 
-    std::ofstream os(path, std::ios::binary);
+    std::ofstream os(path.c_str(), std::ios::binary);
     if (!os)
         return false;
 

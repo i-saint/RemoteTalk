@@ -53,7 +53,7 @@ public:
     void increaseChannels(int n); // must be mono before call
     double resample(AudioData& dst, int frequency, int length, double pos = 0.0) const;
 
-    bool exportAsWave(const char *path) const;
+    bool exportAsWave(const std::wstring& path) const;
     int toFloat(float *dst, int pos = 0, int len = -1, bool multiply = false);
     double resampleFloat(float *dst, int frequency, int channels, int length, double pos = 0.0);
 

@@ -27,6 +27,7 @@ namespace IST.RemoteTalk
             EditorGUILayout.PropertyField(exportAudio);
             if (exportAudio.boolValue)
                 EditorGUILayout.PropertyField(so.FindProperty("m_exportDir"));
+            EditorGUILayout.PropertyField(so.FindProperty("m_useCache"));
             EditorGUILayout.PropertyField(so.FindProperty("m_sampleGranularity"));
             EditorGUILayout.PropertyField(so.FindProperty("m_logging"));
 

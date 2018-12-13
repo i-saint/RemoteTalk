@@ -649,7 +649,6 @@ GameObject:
   - component: {fileID: 1476112019}
   - component: {fileID: 1476112017}
   - component: {fileID: 1476112020}
-  - component: {fileID: 1476112021}
   m_Layer: 0
   m_Name: RemoteTalkClient
   m_TagString: Untagged
@@ -690,8 +689,9 @@ MonoBehaviour:
     - 0
   m_talkText: "\u3042\u3044\u3046\u3048\u304A"
   m_sampleGranularity: 8192
-  m_exportAudio: 0
+  m_exportAudio: 1
   m_exportDir: RemoteTalkAssets
+  m_useCache: 0
   m_logging: 0
 --- !u!4 &1476112018
 Transform:
@@ -715,7 +715,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
+  m_audioClip: {fileID: 1711155311}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -819,15 +819,30 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &1476112021
-MonoBehaviour:
+--- !u!83 &1711155311
+AudioClip:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1476112016}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5002f309736868459b20157eaf3e47d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_baseAudioSource: {fileID: 1476112019}
+  m_Name: Dummy
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 44000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0

@@ -33,7 +33,7 @@ TestCase(RemoteTalkClient)
         sequence += ad;
     });
     if (!sequence.data.empty())
-        sequence.exportAsWave("hello_voiceroid.wav");
+        sequence.exportAsWave(L"hello_voiceroid.wav");
 }
 
 
@@ -100,7 +100,7 @@ TestCase(rtAudioData)
     sum += *ads32;
     sum += *adf32;
 
-    sum.exportAsWave("sum.wav");
+    sum.exportAsWave(L"sum.wav");
 }
 
 TestCase(rtAudioData_Convert)
