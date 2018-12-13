@@ -69,7 +69,7 @@ rtHTTPClient::async& rtHTTPClient::exportWave(const std::wstring& path)
 
     auto tmp_buf = std::make_shared<rt::AudioData>(m_buf_public);
     m_task_export = std::async(std::launch::async, [tmp_buf, path]() {
-        tmp_buf->exportAsWave(path);
+        tmp_buf->exportWave(path);
     });
     return m_task_export;
 }
@@ -194,7 +194,7 @@ rtExport bool rtAudioDataExportAsWave(rtAudioData *self, const char *path)
 {
     if (!self)
         return false;
-    return self->exportAsWave(rt::ToWCS(path));
+    return self->exportWave(rt::ToWCS(path));
 }
 #pragma endregion
 

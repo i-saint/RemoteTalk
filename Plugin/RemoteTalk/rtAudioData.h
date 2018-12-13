@@ -22,6 +22,19 @@ enum class AudioFormat
 int SizeOf(AudioFormat f);
 int GetNumBits(AudioFormat f);
 
+enum class BitrateMode
+{
+    CBR,
+    VBR,
+};
+
+struct OggSettings
+{
+    BitrateMode bitrate_mode = BitrateMode::VBR;
+    int target_bitrate = 128 * 1000;
+};
+
+
 class AudioData
 {
 public:
@@ -53,11 +66,13 @@ public:
     void increaseChannels(int n); // must be mono before call
     double resample(AudioData& dst, int frequency, int length, double pos = 0.0) const;
 
-    bool exportAsWave(const std::wstring& path) const;
     int toFloat(float *dst, int pos = 0, int len = -1, bool multiply = false);
     double resampleFloat(float *dst, int frequency, int channels, int length, double pos = 0.0);
 
     AudioData& operator+=(const AudioData& v);
+
+    bool exportWave(const std::wstring& path) const;
+    bool exportOgg(const std::wstring& path, const OggSettings& settings) const;
 };
 using AudioDataPtr = std::shared_ptr<AudioData>;
 

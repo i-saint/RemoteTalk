@@ -60,10 +60,10 @@
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <LibraryPath>$(SolutionDir)External\Poco\lib64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)External\lib64;$(SolutionDir)External\Poco\lib64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <LibraryPath>$(SolutionDir)External\Poco\lib32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)External\lib32;$(SolutionDir)External\Poco\lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>

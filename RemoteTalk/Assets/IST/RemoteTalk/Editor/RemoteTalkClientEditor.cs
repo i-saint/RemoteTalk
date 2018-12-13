@@ -20,6 +20,8 @@ namespace IST.RemoteTalk
             EditorGUILayout.DelayedIntField(so.FindProperty("m_serverPort"));
             if (EditorGUI.EndChangeCheck())
                 t.RefreshClient();
+            if (GUILayout.Button("Refresh"))
+                t.RefreshClient();
 
             EditorGUILayout.Space();
 
@@ -44,8 +46,16 @@ namespace IST.RemoteTalk
             if (GUI.changed)
                 so.ApplyModifiedProperties();
 
-            if (GUILayout.Button("Talk"))
-                t.Talk();
+            if(t.isIdling)
+            {
+                if (GUILayout.Button("Talk"))
+                    t.Talk();
+            }
+            else
+            {
+                if (GUILayout.Button("Stop"))
+                    t.Stop();
+            }
 
             EditorGUILayout.Space();
 

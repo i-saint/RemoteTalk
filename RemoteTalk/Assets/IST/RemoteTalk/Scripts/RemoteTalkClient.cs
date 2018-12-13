@@ -98,6 +98,10 @@ namespace IST.RemoteTalk
         {
             get { return m_isPlaying || (m_audioSource != null && m_audioSource.isPlaying); }
         }
+        public bool isIdling
+        {
+            get { return !isServerTalking && !isPlaying; }
+        }
 
         public string host { get { return m_host; } }
         public rtTalkParams serverParams { get { return m_serverParams; } }
@@ -197,7 +201,6 @@ namespace IST.RemoteTalk
 
         public void Stop()
         {
-            MakeClient();
             m_asyncStop = m_client.Stop();
         }
 
@@ -233,13 +236,13 @@ namespace IST.RemoteTalk
                                 samples[i] = 1.0f;
                             m_dummyClip.SetData(samples, 0);
                         }
+
                         m_audioSource.clip = m_dummyClip;
                         m_audioSource.loop = true;
                         m_audioSource.Play();
 
                         m_sampleRate = AudioSettings.outputSampleRate;
                         m_samplePos = 0.0;
-                        m_isFinished = false;
                         m_isPlaying = true;
                     }
                 }
@@ -289,23 +292,6 @@ namespace IST.RemoteTalk
                 if (!AssetDatabase.IsValidFolder(assetPath))
                     AssetDatabase.CreateFolder("Assets", m_exportDir);
             });
-        }
-
-        void ForceBestLatency()
-        {
-            var audioManager = AssetDatabase.LoadMainAssetAtPath("ProjectSettings/AudioManager.asset");
-            if (audioManager != null)
-            {
-                var so = new SerializedObject(audioManager);
-                so.Update();
-
-                var dspbufsize = so.FindProperty("m_DSPBufferSize");
-                if (dspbufsize != null)
-                {
-                    dspbufsize.intValue = 256;
-                    so.ApplyModifiedProperties();
-                }
-            }
         }
 #endif
 
