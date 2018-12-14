@@ -17,8 +17,8 @@ public:
     bool isReady();
     async& talk(const rt::TalkParams& params, const std::string& text);
     async& stop();
-    async& exportWave(const std::wstring& path);
-    async& exportOgg(const std::wstring& path, const rt::OggSettings& settings);
+    async& exportWave(const std::string& path);
+    async& exportOgg(const std::string& path, const rt::OggSettings& settings);
 
     void wait();
     rt::AudioData* syncBuffers();

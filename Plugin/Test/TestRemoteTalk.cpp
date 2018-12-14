@@ -33,7 +33,7 @@ TestCase(RemoteTalkClient)
         sequence += ad;
     });
     if (!sequence.data.empty()) {
-        rt::ExportWave(sequence, L"hello_voiceroid.wav");
+        rt::ExportWave(sequence, "hello_voiceroid.wav");
     }
 }
 
@@ -101,15 +101,15 @@ TestCase(rtAudioData)
     sum += *ads32;
     sum += *adf32;
 
-    rt::ExportWave(sum, L"sum.wav");
+    rt::ExportWave(sum, "sum.wav");
     {
         rt::OggSettings ogg;
-        rt::ExportOgg(sum, L"sum_vbr.ogg", ogg);
+        rt::ExportOgg(sum, "sum_vbr.ogg", ogg);
     }
     {
         rt::OggSettings ogg;
         ogg.bitrate_mode = rt::BitrateMode::CBR;
-        rt::ExportOgg(sum, L"sum_cbr.ogg", ogg);
+        rt::ExportOgg(sum, "sum_cbr.ogg", ogg);
     }
 }
 

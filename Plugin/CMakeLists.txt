@@ -1,8 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(RemoteTalk)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-find_package(Poco COMPONENTS Net QUIET)
 if(APPLE)
     find_library(COCOA_LIBRARY Cocoa)
     mark_as_advanced(COCOA_LIBRARY)
@@ -13,17 +11,26 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LINUX ON)
 endif()
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(AddPlugin)
+find_package(Poco COMPONENTS Net QUIET)
+find_package(OGG QUIET)
+find_package(VORBIS QUIET)
 
-# Client
+option(ENABLE_OGG "Enable Ogg/Vorbis Encoder" ON)
 option(BUILD_CLIENT "Build RemoteTalkClient" ON)
-
-# Tests
 option(BUILD_TESTS "Tests" OFF)
-
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -fPIC -std=c++14 -Wno-deprecated")
+
+list(APPEND RT_ADDITIONAL_INCLUDES ${Poco_INCLUDE_DIRS})
+list(APPEND RT_ADDITIONAL_LIBS ${Poco_LIBRARIES})
+if(ENABLE_OGG)
+    add_definitions(-DrtEnableOgg)
+    list(APPEND RT_ADDITIONAL_INCLUDES ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
+    list(APPEND RT_ADDITIONAL_LIBS ${OGG_LIBRARY} ${VORBIS_LIBRARIES})
+endif()
 
 function(add_subdirectory_link to from)
     if(NOT EXISTS "${CMAKE_SOURCE_DIR}/${to}")

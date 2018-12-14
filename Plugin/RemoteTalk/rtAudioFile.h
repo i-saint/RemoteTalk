@@ -16,7 +16,7 @@ struct OggSettings
 };
 
 
-bool ExportWave(const AudioData& ad, const std::wstring& path);
-bool ExportOgg(const AudioData& ad, const std::wstring& path, const OggSettings& settings);
+bool ExportWave(const AudioData& ad, const char* path);
+bool ExportOgg(const AudioData& ad, const char* path, const OggSettings& settings);
 
 } // namespace rt

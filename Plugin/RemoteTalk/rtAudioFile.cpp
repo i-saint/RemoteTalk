@@ -1,5 +1,7 @@
 #include "pch.h"
+#include <fstream>
 #include "rtAudioFile.h"
+#include "rtSerialization.h"
 
 #ifdef rtEnableOgg
 #ifdef _MSC_VER
@@ -28,12 +30,17 @@ struct WaveHeader
     int32_t nBytesData = 0;
 };
 
-bool ExportWave(const AudioData& ad, const std::wstring & path)
+bool ExportWave(const AudioData& ad, const char *path)
 {
     if (ad.format == AudioFormat::RawFile || ad.format == AudioFormat::F32)
         return false;
 
-    std::ofstream os(path.c_str(), std::ios::binary);
+#if _WIN32
+    auto wpath = ToWCS(path);
+    std::ofstream os(wpath.c_str(), std::ios::binary);
+#else
+    std::ofstream os(path, std::ios::binary);
+#endif
     if (!os)
         return false;
 
@@ -56,10 +63,15 @@ bool ExportWave(const AudioData& ad, const std::wstring & path)
     return true;
 }
 
-bool ExportOgg(const AudioData& ad, const std::wstring & path, const OggSettings & settings)
+bool ExportOgg(const AudioData& ad, const char *path, const OggSettings& settings)
 {
 #ifdef rtEnableOgg
-    std::ofstream os(path.c_str(), std::ios::binary);
+#if _WIN32
+    auto wpath = ToWCS(path);
+    std::ofstream os(wpath.c_str(), std::ios::binary);
+#else
+    std::ofstream os(path, std::ios::binary);
+#endif
     if (!os)
         return false;
 
