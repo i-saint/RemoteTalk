@@ -32,21 +32,10 @@ if(ENABLE_OGG)
     list(APPEND RT_ADDITIONAL_LIBS ${OGG_LIBRARY} ${VORBIS_LIBRARIES})
 endif()
 
-function(add_subdirectory_link to from)
-    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/${to}")
-        execute_process(WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" COMMAND ln -s "${from}" "${to}")
-    endif()
-    add_subdirectory("${to}")
-endfunction()
-
 add_subdirectory(RemoteTalk)
-
-# Client
 if(BUILD_CLIENT)
     add_subdirectory(RemoteTalkClient)
 endif()
-
-# Tests
 if(BUILD_TESTS)
     add_subdirectory(Test)
 endif()

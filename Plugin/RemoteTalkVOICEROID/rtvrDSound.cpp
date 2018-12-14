@@ -90,6 +90,7 @@ void rtvrDSoundHandler::afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this,
 void rtvrDSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret)
 {
     update(_this);
+    mute = false;
     m_playing = false;
     if (onStop)
         onStop();
