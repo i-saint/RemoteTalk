@@ -86,8 +86,6 @@ static void OverrideLoadLibrary(HMODULE mod)
 
 bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler, HookType ht)
 {
-    g_loadlibrary_handlers.push_back(handler);
-
     static bool s_first = true;
     if (s_first) {
         s_first = false;
@@ -101,9 +99,13 @@ bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler, HookType ht)
         }
         else if (ht == HookType::Hotpatch)
         {
-            // todo
+#define Override(Name) (void*&)Name##_orig = Hotpatch(::GetProcAddress(mod, #Name), Name##_hook)
+            EachFunctions(Override);
+#undef Override
         }
     }
+
+    g_loadlibrary_handlers.push_back(handler);
     return true;
 }
 
@@ -168,8 +170,6 @@ public:
 
 bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll, HookType ht)
 {
-    g_cocreate_handlers.push_back(handler);
-
     // setup hooks
     auto ole32 = load_dll ? ::LoadLibraryA(OLE32_Dll) : ::GetModuleHandleA(OLE32_Dll);
     if (!ole32)
@@ -191,6 +191,8 @@ bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll, HookType ht
         else if (ht == HookType::Hotpatch) {
         }
     }
+
+    g_cocreate_handlers.push_back(handler);
     return true;
 }
 
@@ -248,8 +250,6 @@ public:
 
 bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll, HookType ht)
 {
-    g_windowmessage_handlers.push_back(handler);
-
     // setup hooks
     auto mod = load_dll ? ::LoadLibraryA(User32_Dll) : ::GetModuleHandleA(User32_Dll);
     if (!mod)
@@ -274,6 +274,8 @@ bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll, H
 #undef Override
         }
     }
+
+    g_windowmessage_handlers.push_back(handler);
     return true;
 }
 

@@ -30,18 +30,9 @@ struct WaveHeader
     int32_t nBytesData = 0;
 };
 
-bool ExportWave(const AudioData& ad, const char *path)
+bool ExportWave(const AudioData& ad, std::ostream& os)
 {
-    if (ad.format == AudioFormat::RawFile || ad.format == AudioFormat::F32)
-        return false;
-
-#if _WIN32
-    auto wpath = ToWCS(path);
-    std::ofstream os(wpath.c_str(), std::ios::binary);
-#else
-    std::ofstream os(path, std::ios::binary);
-#endif
-    if (!os)
+    if (ad.channels == 0 || ad.format == AudioFormat::RawFile || ad.format == AudioFormat::F32)
         return false;
 
     WaveHeader header;
@@ -63,9 +54,8 @@ bool ExportWave(const AudioData& ad, const char *path)
     return true;
 }
 
-bool ExportOgg(const AudioData& ad, const char *path, const OggSettings& settings)
+bool ExportWave(const AudioData& ad, const char *path)
 {
-#ifdef rtEnableOgg
 #if _WIN32
     auto wpath = ToWCS(path);
     std::ofstream os(wpath.c_str(), std::ios::binary);
@@ -73,6 +63,14 @@ bool ExportOgg(const AudioData& ad, const char *path, const OggSettings& setting
     std::ofstream os(path, std::ios::binary);
 #endif
     if (!os)
+        return false;
+    return ExportWave(ad, os);
+}
+
+bool ExportOgg(const AudioData& ad, std::ostream& os, const OggSettings& settings)
+{
+#ifdef rtEnableOgg
+    if (ad.channels == 0 || ad.format == AudioFormat::RawFile)
         return false;
 
     vorbis_info         vo_info;
@@ -116,49 +114,58 @@ bool ExportOgg(const AudioData& ad, const char *path, const OggSettings& setting
     }
 
 
-    int block_size = (int)ad.getSampleLength() / ad.channels;
-    float **buffer = vorbis_analysis_buffer(&vo_dsp, block_size);
+    int sample_len = (int)ad.getSampleLength() / ad.channels;
 
-    auto convert = [&ad, block_size, buffer](const auto *src) {
-        for (int bi = 0; bi < block_size; ++bi) {
+    auto convert_block = [&](const auto *src, int pos, int len) -> int {
+        len = std::min(len, sample_len - pos);
+        float **buffer = vorbis_analysis_buffer(&vo_dsp, len);
+        for (int bi = 0; bi < len; ++bi) {
             for (int ci = 0; ci < ad.channels; ++ci)
-                buffer[ci][bi] = src[bi*ad.channels + ci];
+                buffer[ci][bi] = src[(bi*ad.channels + ci) + (pos * ad.channels)];
         }
+        return len;
     };
-    switch (ad.format) {
-    case AudioFormat::U8:  convert(ad.get<unorm8n>()); break;
-    case AudioFormat::S16: convert(ad.get<snorm16>()); break;
-    case AudioFormat::S24: convert(ad.get<snorm24>()); break;
-    case AudioFormat::S32: convert(ad.get<snorm32>()); break;
-    case AudioFormat::F32: convert(ad.get<float>()); break;
-    default: break;
-    }
 
-    auto page_out = [&]() {
-        while (vorbis_analysis_blockout(&vo_dsp, &vo_block) == 1) {
-            vorbis_analysis(&vo_block, nullptr);
-            vorbis_bitrate_addblock(&vo_block);
+    auto page_out = [&](int len) {
+        if (vorbis_analysis_wrote(&vo_dsp, len) == 0) {
+            while (vorbis_analysis_blockout(&vo_dsp, &vo_block) == 1) {
+                vorbis_analysis(&vo_block, nullptr);
+                vorbis_bitrate_addblock(&vo_block);
 
-            ogg_packet packet;
-            while (vorbis_bitrate_flushpacket(&vo_dsp, &packet) == 1) {
-                ogg_stream_packetin(&og_stream, &packet);
-                for (;;) {
-                    int result = ogg_stream_pageout(&og_stream, &og_page);
-                    if (result == 0)
-                        break;
-                    os.write((char*)og_page.header, og_page.header_len);
-                    os.write((char*)og_page.body, og_page.body_len);
-                    if (ogg_page_eos(&og_page))
-                        break;
+                ogg_packet packet;
+                while (vorbis_bitrate_flushpacket(&vo_dsp, &packet) == 1) {
+                    ogg_stream_packetin(&og_stream, &packet);
+                    for (;;) {
+                        int result = ogg_stream_pageout(&og_stream, &og_page);
+                        if (result == 0)
+                            break;
+                        os.write((char*)og_page.header, og_page.header_len);
+                        os.write((char*)og_page.body, og_page.body_len);
+                        if (ogg_page_eos(&og_page))
+                            break;
+                    }
                 }
             }
         }
     };
 
-    if (vorbis_analysis_wrote(&vo_dsp, block_size) == 0)
-        page_out();
-    if (vorbis_analysis_wrote(&vo_dsp, 0) == 0)
-        page_out();
+    const int block_size = 4096;
+    int sample_pos = 0;
+    for (;;) {
+        int len = 0;
+        switch (ad.format) {
+        case AudioFormat::U8:  len = convert_block(ad.get<unorm8n>(), sample_pos, block_size); break;
+        case AudioFormat::S16: len = convert_block(ad.get<snorm16>(), sample_pos, block_size); break;
+        case AudioFormat::S24: len = convert_block(ad.get<snorm24>(), sample_pos, block_size); break;
+        case AudioFormat::S32: len = convert_block(ad.get<snorm32>(), sample_pos, block_size); break;
+        case AudioFormat::F32: len = convert_block(ad.get<float>()  , sample_pos, block_size); break;
+        default: break;
+        }
+        page_out(len);
+        sample_pos += len;
+        if (len == 0)
+            break;
+    }
 
     ogg_stream_clear(&og_stream);
     vorbis_block_clear(&vo_block);
@@ -169,6 +176,19 @@ bool ExportOgg(const AudioData& ad, const char *path, const OggSettings& setting
 #else
     return false;
 #endif
+}
+
+bool ExportOgg(const AudioData& ad, const char *path, const OggSettings& settings)
+{
+#if _WIN32
+    auto wpath = ToWCS(path);
+    std::ofstream os(wpath.c_str(), std::ios::binary);
+#else
+    std::ofstream os(path, std::ios::binary);
+#endif
+    if (!os)
+        return false;
+    return ExportOgg(ad, os, settings);
 }
 
 } // namespace rt

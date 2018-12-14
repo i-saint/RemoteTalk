@@ -225,7 +225,7 @@ namespace IST.RemoteTalk
                 m_serverParams = m_client.serverParams;
                 m_casts = m_client.casts;
                 m_asyncStats.Release();
-                m_isServerReady = true;
+                m_isServerReady = m_host != "Server Not Found";
 #if UNITY_EDITOR
                 Misc.ForceRepaint();
 #endif
@@ -262,24 +262,24 @@ namespace IST.RemoteTalk
                 {
                     m_asyncTalk.Release();
                     m_isServerTalking = false;
+#if UNITY_EDITOR
+                    if (m_exportAudio)
+                    {
+                        MakeSureAssetDirectoryExists();
+                        var dstPath = assetPath + "/" + m_cacheFileName;
+                        if (m_exportFileFormat == rtFileFormat.Ogg)
+                            m_asyncExport = m_client.ExportOgg(dstPath, ref m_oggSettings);
+                        else
+                            m_asyncExport = m_client.ExportWave(dstPath);
+                        m_exportedFiles.Add(dstPath);
+                    }
+#endif
                 }
             }
             if (m_isFinished)
             {
                 m_audioSource.Stop();
                 m_isFinished = false;
-#if UNITY_EDITOR
-                if (m_exportAudio)
-                {
-                    MakeSureAssetDirectoryExists();
-                    var dstPath = assetPath + "/" + m_cacheFileName;
-                    if (m_exportFileFormat == rtFileFormat.Ogg)
-                        m_asyncExport = m_client.ExportOgg(dstPath, ref m_oggSettings);
-                    else
-                        m_asyncExport = m_client.ExportWave(dstPath);
-                    m_exportedFiles.Add(dstPath);
-                }
-#endif
             }
         }
 

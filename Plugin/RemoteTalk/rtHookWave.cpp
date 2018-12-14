@@ -147,8 +147,6 @@ public:
 
 bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll, HookType ht)
 {
-    g_waveouthandlers.push_back(handler);
-
     // setup hooks
     auto mod = load_dll ? ::LoadLibraryA(WinMM_DLL) : ::GetModuleHandleA(WinMM_DLL);
     if (!mod)
@@ -170,6 +168,8 @@ bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll, HookType ht)
 #undef Override
         }
     }
+
+    g_waveouthandlers.push_back(handler);
     return true;
 }
 

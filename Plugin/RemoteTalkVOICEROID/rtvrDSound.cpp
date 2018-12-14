@@ -10,39 +10,42 @@ void rtvrDSoundHandler::clearCallbacks()
 
 void rtvrDSoundHandler::update(IDirectSoundBuffer *_this)
 {
-    DWORD cur, wcur;
-    _this->GetCurrentPosition(&cur, &wcur);
-    if (cur == m_position)
+    if (m_buffer.empty()) {
+        WAVEFORMATEX wf;
+        DWORD written;
+        _this->GetFormat(&wf, sizeof(wf), &written);
+
+        DSBCAPS caps;
+        caps.dwSize = sizeof(caps);
+        _this->GetCaps(&caps);
+
+        m_buffer.resize(caps.dwBufferBytes);
+        m_data.data.resize(caps.dwBufferBytes);
+        m_data.frequency = wf.nSamplesPerSec;
+        m_data.channels = wf.nChannels;
+        switch (wf.wBitsPerSample) {
+        case 8: m_data.format = rt::AudioFormat::U8; break;
+        case 16: m_data.format = rt::AudioFormat::S16; break;
+        case 24: m_data.format = rt::AudioFormat::S24; break;
+        case 32: m_data.format = rt::AudioFormat::S32; break;
+        }
+    }
+
+    DWORD pcur, wcur;
+    _this->GetCurrentPosition(&pcur, &wcur);
+    if (pcur == m_position)
         return;
 
-    if (cur > m_position) {
-        m_data.data.assign(&m_buffer[m_position], &m_buffer[cur]);
+    if (pcur > m_position) {
+        m_data.data.assign(&m_buffer[m_position], &m_buffer[pcur]);
     }
     else {
         m_data.data.assign(&m_buffer[m_position], m_buffer.end());
-        m_data.data.insert(m_data.data.end(), m_buffer.begin(), &m_buffer[cur]);
+        m_data.data.insert(m_data.data.end(), m_buffer.begin(), &m_buffer[pcur]);
     }
-    m_position = cur;
+    m_position = pcur;
     if (m_playing && onUpdate)
         onUpdate(m_data);
-}
-
-void rtvrDSoundHandler::afterIDirectSound8_CreateSoundBuffer(IDirectSound8 *&_this, LPCDSBUFFERDESC& pcDSBufferDesc, LPDIRECTSOUNDBUFFER *&ppDSBuffer, LPUNKNOWN& pUnkOuter, HRESULT& ret)
-{
-    if (ret != S_OK)
-        return;
-
-    m_buffer.resize_zeroclear(pcDSBufferDesc->dwBufferBytes);
-    m_data.data.reserve(pcDSBufferDesc->dwBufferBytes);
-
-    m_data.frequency = pcDSBufferDesc->lpwfxFormat->nSamplesPerSec;
-    m_data.channels = pcDSBufferDesc->lpwfxFormat->nChannels;
-    switch (pcDSBufferDesc->lpwfxFormat->wBitsPerSample) {
-    case 8: m_data.format = rt::AudioFormat::U8; break;
-    case 16: m_data.format = rt::AudioFormat::S16; break;
-    case 24: m_data.format = rt::AudioFormat::S24; break;
-    case 32: m_data.format = rt::AudioFormat::S32; break;
-    }
 }
 
 void rtvrDSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret)
@@ -55,10 +58,6 @@ void rtvrDSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this,
     m_lsize2 = pdwAudioBytes2 ? *pdwAudioBytes2 : 0;
 
     m_offset = dwWriteCursor;
-    if (m_offset + dwWriteBytes > m_buffer.size()) {
-        m_buffer.resize(m_offset + dwWriteBytes);
-        m_data.data.resize(m_offset + dwWriteBytes);
-    }
     if (ppvAudioPtr1)
         *ppvAudioPtr1 = &m_buffer[m_offset];
     if (ppvAudioPtr2)

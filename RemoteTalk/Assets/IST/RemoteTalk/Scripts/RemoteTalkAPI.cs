@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -58,15 +59,37 @@ namespace IST.RemoteTalk
     }
 
 
-    public static class rtPlugin
+    public struct rtPlugin
     {
         #region internal
         [DllImport("RemoteTalkClient")] static extern IntPtr rtGetVersion();
         #endregion
 
-        static string version
+        public static string version
         {
             get { return Misc.S(rtGetVersion()); }
+        }
+
+        public static bool LaunchVOICEROID2()
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkVOICEROID2.exe");
+            proc.WaitForExit();
+            return proc.ExitCode == 0;
+#else
+            return false;
+#endif
+        }
+
+        public static bool LaunchCeVIOCS()
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkCeVIOCS.exe");
+            proc.WaitForExit();
+            return proc.ExitCode == 0;
+#else
+            return false;
+#endif
         }
     }
 
@@ -110,7 +133,7 @@ namespace IST.RemoteTalk
 
     public struct rtAudioData
     {
-        #region internal
+#region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern rtAudioFormat rtAudioDataGetFormat(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataGetChannels(IntPtr self);
@@ -119,7 +142,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern int rtAudioDataReadSamples(IntPtr self, float[] dst, int pos, int len);
         [DllImport("RemoteTalkClient")] static extern double rtAudioDataReample(IntPtr self, float[] dst, int frequency, int channels, int length, double pos);
         [DllImport("RemoteTalkClient")] static extern void rtAudioDataClearSample(float[] dst, int len);
-        #endregion
+#endregion
 
         public static implicit operator bool(rtAudioData v) { return v.self != IntPtr.Zero; }
 
@@ -171,13 +194,13 @@ namespace IST.RemoteTalk
 
     public struct rtCastInfo
     {
-        #region internal
+#region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetID(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetName(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetNumParams(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetParamName(IntPtr self, int i);
-        #endregion
+#endregion
 
         public static implicit operator bool(rtCastInfo v) { return v.self != IntPtr.Zero; }
 
@@ -195,11 +218,11 @@ namespace IST.RemoteTalk
 
     public struct rtAsync
     {
-        #region internal
+#region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern byte rtAsyncIsFinished(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern void rtAsyncWait(IntPtr self);
-        #endregion
+#endregion
 
         public static implicit operator bool(rtAsync v) { return v.self != IntPtr.Zero; }
         public void Release() { self = IntPtr.Zero; }
@@ -213,7 +236,7 @@ namespace IST.RemoteTalk
 
     public struct rtHTTPClient
     {
-        #region internal
+#region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate(string server, int port);
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientRelease(IntPtr self);
@@ -231,7 +254,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientGetBuffer(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientExportWave(IntPtr self, string path);
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientExportOgg(IntPtr self, string path, ref rtOggSettings settings);
-        #endregion
+#endregion
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
 
@@ -289,12 +312,12 @@ namespace IST.RemoteTalk
 
     public struct rtHTTPReceiver
     {
-        #region internal
+#region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern rtHTTPReceiver rtHTTPReceiverCreate();
         [DllImport("RemoteTalkClient")] static extern void rtHTTPReceiverRelease(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtHTTPReceiverConsumeAudioData(IntPtr self, rtAudioDataCallback cb);
-        #endregion
+#endregion
 
         public static implicit operator bool(rtHTTPReceiver v) { return v.self != IntPtr.Zero; }
 
@@ -305,10 +328,10 @@ namespace IST.RemoteTalk
 
     public struct rtspTalkServer
     {
-        #region internal
+#region internal
         public IntPtr self;
         [DllImport("RemoteTalkSAPI")] static extern rtspTalkServer rtspStartServer(int port);
-        #endregion
+#endregion
 
         public static rtspTalkServer StartServer(int port = 8083) { return rtspStartServer(port); }
     }

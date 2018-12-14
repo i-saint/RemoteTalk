@@ -25,45 +25,56 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.Space();
 
-            var exportAudio = so.FindProperty("m_exportAudio");
-            EditorGUILayout.PropertyField(exportAudio);
-            if (exportAudio.boolValue)
-                EditorGUILayout.PropertyField(so.FindProperty("m_exportDir"));
-
-            var exportFileFormat = so.FindProperty("m_exportFileFormat");
-            EditorGUILayout.PropertyField(exportFileFormat);
-            if (exportFileFormat.intValue ==(int)rtFileFormat.Ogg)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_oggSettings"), true);
-            }
-
-            EditorGUILayout.PropertyField(so.FindProperty("m_useCache"));
-            EditorGUILayout.PropertyField(so.FindProperty("m_sampleGranularity"));
-            EditorGUILayout.PropertyField(so.FindProperty("m_logging"));
-
-            EditorGUILayout.Space();
-
             EditorGUILayout.LabelField("Host: " + t.host);
 
-            var talkParams = so.FindProperty("m_talkParams");
-            RemoteTalkEditor.DrawTalkParams(t.castID, talkParams, t);
+            if(t.isServerReady)
+            {
+                var talkParams = so.FindProperty("m_talkParams");
+                RemoteTalkEditor.DrawTalkParams(t.castID, talkParams, t);
 
-            var text = so.FindProperty("m_talkText");
-            text.stringValue = EditorGUILayout.TextArea(text.stringValue, GUILayout.Height(100));
+                var text = so.FindProperty("m_talkText");
+                text.stringValue = EditorGUILayout.TextArea(text.stringValue, GUILayout.Height(100));
+
+                if (t.isIdling)
+                {
+                    if (GUILayout.Button("Talk"))
+                        t.Talk();
+                }
+                else
+                {
+                    if (GUILayout.Button("Stop"))
+                        t.Stop();
+                }
+
+                EditorGUILayout.Space();
+
+                var exportAudio = so.FindProperty("m_exportAudio");
+                EditorGUILayout.PropertyField(exportAudio);
+                if (exportAudio.boolValue)
+                    EditorGUILayout.PropertyField(so.FindProperty("m_exportDir"));
+
+                var exportFileFormat = so.FindProperty("m_exportFileFormat");
+                EditorGUILayout.PropertyField(exportFileFormat);
+                if (exportFileFormat.intValue == (int)rtFileFormat.Ogg)
+                {
+                    EditorGUILayout.PropertyField(so.FindProperty("m_oggSettings"), true);
+                }
+
+                EditorGUILayout.PropertyField(so.FindProperty("m_useCache"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_sampleGranularity"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_logging"));
+            }
 
             if (GUI.changed)
                 so.ApplyModifiedProperties();
 
-            if(t.isIdling)
-            {
-                if (GUILayout.Button("Talk"))
-                    t.Talk();
-            }
-            else
-            {
-                if (GUILayout.Button("Stop"))
-                    t.Stop();
-            }
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button("Launch VOICEROID2"))
+                rtPlugin.LaunchVOICEROID2();
+            EditorGUILayout.Space();
+            if (GUILayout.Button("Launch CeVIO CS"))
+                rtPlugin.LaunchCeVIOCS();
 
             EditorGUILayout.Space();
 

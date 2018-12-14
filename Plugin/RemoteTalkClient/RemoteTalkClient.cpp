@@ -98,17 +98,24 @@ void rtHTTPClient::wait()
         m_task_export.wait();
 }
 
-rt::AudioData* rtHTTPClient::syncBuffers()
+const rt::AudioData& rtHTTPClient::syncBuffers()
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
-    if (m_buf_public.data.size() != m_buf_receiving.data.size())
-        m_buf_public = m_buf_receiving;
-    return getBuffer();
+    if (m_buf_receiving.data.empty())
+        return m_buf_public;
+
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (!m_buf_receiving.data.empty()) {
+            m_buf_public += m_buf_receiving;
+            m_buf_receiving.clear();
+        }
+        return m_buf_public;
+    }
 }
 
-rt::AudioData* rtHTTPClient::getBuffer()
+const rt::AudioData& rtHTTPClient::getBuffer()
 {
-    return &m_buf_public;
+    return m_buf_public;
 }
 
 
@@ -320,18 +327,18 @@ rtExport bool rtHTTPClientIsReady(rtHTTPClient *self)
     return self->isReady();
 }
 
-rtExport rtAudioData* rtHTTPClientSyncBuffers(rtHTTPClient *self)
+rtExport const rtAudioData* rtHTTPClientSyncBuffers(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
-    return self->syncBuffers();
+    return &self->syncBuffers();
 }
 
-rtExport rtAudioData* rtHTTPClientGetBuffer(rtHTTPClient *self)
+rtExport const rtAudioData* rtHTTPClientGetBuffer(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
-    return self->getBuffer();
+    return &self->getBuffer();
 }
 
 rtExport rtAsync* rtHTTPClientExportWave(rtHTTPClient *self, const char *path)

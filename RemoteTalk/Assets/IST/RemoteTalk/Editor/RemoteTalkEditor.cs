@@ -10,6 +10,9 @@ namespace IST.RemoteTalk
         public static void DrawTalkParams(int castID, SerializedProperty talkParamsProp, RemoteTalkClient client)
         {
             var casts = client.casts;
+            if (casts.Length == 0)
+                return;
+
             var castNames = casts.Select(a => a.name).ToArray();
 
             var castProp = talkParamsProp.FindPropertyRelative("cast");

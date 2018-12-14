@@ -21,8 +21,8 @@ public:
     async& exportOgg(const std::string& path, const rt::OggSettings& settings);
 
     void wait();
-    rt::AudioData* syncBuffers();
-    rt::AudioData* getBuffer();
+    const rt::AudioData& syncBuffers();
+    const rt::AudioData& getBuffer();
 
 private:
     rt::TalkClientSettings m_settings;

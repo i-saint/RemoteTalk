@@ -217,10 +217,15 @@ static void SetHook_IDirectSoundBuffer(IDirectSoundBuffer *dst)
 #undef Hook
 }
 
-static void SetupHooks()
+static const GUID CLSID_DirectSound_ = { 0x47d4d946, 0x62e8, 0x11cf, 0x93, 0xbc, 0x44, 0x45, 0x53, 0x54, 0x0, 0x0 };
+static const GUID CLSID_DirectSound8_ = { 0x3901cc3f, 0x84b5, 0x4fa4, 0xba, 0x35, 0xaa, 0x81, 0x72, 0xb8, 0xa0, 0x9b };
+static const GUID IID_IDirectSound8_ = { 0xC50A7E93, 0xF395, 0x4834, 0x9E, 0xF6, 0x7F, 0xA9, 0x9D, 0xE5, 0x09, 0x66 };
+
+
+static bool SetupHooks()
 {
     IDirectSound8 *ds8 = nullptr;
-    auto hr = DirectSoundCreate8_orig(nullptr, &ds8, nullptr);
+    auto hr = ::CoCreateInstance(CLSID_DirectSound8_, nullptr, 0, IID_IDirectSound8_, (LPVOID*)&ds8);
     if (SUCCEEDED(hr)) {
         WAVEFORMATEX wh{};
         wh.cbSize = sizeof(WAVEFORMATEX);
@@ -242,10 +247,13 @@ static void SetupHooks()
         if (SUCCEEDED(hr)) {
             SetHook_IDirectSound8(ds8);
             SetHook_IDirectSoundBuffer(sbuf);
+            sbuf->Release();
+            return true;
         }
+        ds8->Release();
     }
+    return false;
 }
-
 
 
 #define EachFunctions(Body)\
@@ -276,10 +284,6 @@ public:
     }
 };
 
-static const GUID CLSID_DirectSound_ = { 0x47d4d946, 0x62e8, 0x11cf, 0x93, 0xbc, 0x44, 0x45, 0x53, 0x54, 0x0, 0x0 };
-static const GUID CLSID_DirectSound8_ = { 0x3901cc3f, 0x84b5, 0x4fa4, 0xba, 0x35, 0xaa, 0x81, 0x72, 0xb8, 0xa0, 0x9b };
-static const GUID IID_IDirectSound8_ = { 0xC50A7E93, 0xF395, 0x4834, 0x9E, 0xF6, 0x7F, 0xA9, 0x9D, 0xE5, 0x09, 0x66 };
-
 
 class CoCreateHandler_DSound : public CoCreateHandlerBase
 {
@@ -300,8 +304,6 @@ public:
 
 bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll, HookType ht)
 {
-    g_dsoundhandlers.push_back(handler);
-
     // setup hooks
     auto mod = load_dll ? ::LoadLibraryA(DSound_DLL) : ::GetModuleHandleA(DSound_DLL);
     if (!mod)
@@ -319,12 +321,16 @@ bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll, HookType ht)
             EnumerateModules([](HMODULE mod) { LoadLibraryHandler_DSound::hook(mod); });
         }
         if (ht == HookType::Hotpatch) {
+            if (!SetupHooks())
+                return false;
+
 #define Override(Name) (void*&)Name##_orig = Hotpatch(::GetProcAddress(mod, #Name), Name##_hook)
             EachFunctions(Override);
 #undef Override
-            SetupHooks();
         }
     }
+
+    g_dsoundhandlers.push_back(handler);
     return true;
 }
 

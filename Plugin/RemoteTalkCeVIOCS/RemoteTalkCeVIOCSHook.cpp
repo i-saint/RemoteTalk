@@ -267,10 +267,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
         if (rtcvLoadManagedModule()) {
-            rt::AddWindowMessageHandler(&rtcvWindowMessageHandler::getInstance());
+            rt::AddWindowMessageHandler(&rtcvWindowMessageHandler::getInstance(), true, rt::HookType::Hotpatch);
 
             auto& wo = rtcvWaveOutHandler::getInstance();
-            rt::AddWaveOutHandler(&wo);
+            rt::AddWaveOutHandler(&wo, true, rt::HookType::Hotpatch);
             wo.onPlay = []() { rtGetTalkInterface_()->onPlay(); };
             wo.onStop = []() { rtGetTalkInterface_()->onStop(); };
             wo.onUpdate = [](rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
