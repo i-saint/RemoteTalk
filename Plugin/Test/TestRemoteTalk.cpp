@@ -142,8 +142,6 @@ TestCase(rtAudioData_Convert)
 TestCase(LaunchVoiceroid2)
 {
 #ifdef _WIN32
-    //C:\\Program Files (x86)\\AHS\VOICEROID2\\
-
     char install_dir[MAX_PATH+1];
     DWORD install_dir_size = sizeof(install_dir);
     if (::RegGetValueA(HKEY_LOCAL_MACHINE,
@@ -178,11 +176,9 @@ TestCase(LaunchCeVIOCS)
 
     // note: this always fails on x64
     CeVIO::IServiceControl *pServiceControl;
-    HRESULT result0 = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
-    if (FAILED(result0)) {
-        return;
+    HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
+    if (SUCCEEDED(hr)) {
+        pServiceControl->StartHost(false);
     }
-
-    pServiceControl->StartHost(false);
 #endif
 }

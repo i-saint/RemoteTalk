@@ -35,9 +35,9 @@ public:
 };
 #pragma warning(pop)
 
-bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler);
-bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll = true);
-bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll = true);
+bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler, HookType ht = HookType::ATOverride);
+bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll = true, HookType ht = HookType::ATOverride);
+bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll = true, HookType ht = HookType::ATOverride);
 
 } // namespace rt
 #endif // _WIN32

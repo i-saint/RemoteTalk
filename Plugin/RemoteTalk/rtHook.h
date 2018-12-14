@@ -31,10 +31,19 @@ void EnumerateModules(const std::function<void(HMODULE)>& body);
 void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body);
 void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body);
 
+// caller must call CloseHandle() for returned handle
+HANDLE FindProcess(const char *exe);
+
 void EnumerateTopWindows(const std::function<void(HWND)> &body);
 void EnumerateChildWindows(HWND parent, const std::function<void(HWND)> &body);
 void EnumerateChildWindowsRecirsive(HWND parent, const std::function<void(HWND)> &body);
 void EnumerateAllWindows(const std::function<void(HWND)> &body);
 
+
+enum class HookType
+{
+    ATOverride,
+    Hotpatch,
+};
 } // namespace rt
 #endif // _WIN32

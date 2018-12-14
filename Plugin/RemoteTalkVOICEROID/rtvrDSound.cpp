@@ -55,6 +55,10 @@ void rtvrDSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this,
     m_lsize2 = pdwAudioBytes2 ? *pdwAudioBytes2 : 0;
 
     m_offset = dwWriteCursor;
+    if (m_offset + dwWriteBytes > m_buffer.size()) {
+        m_buffer.resize(m_offset + dwWriteBytes);
+        m_data.data.resize(m_offset + dwWriteBytes);
+    }
     if (ppvAudioPtr1)
         *ppvAudioPtr1 = &m_buffer[m_offset];
     if (ppvAudioPtr2)

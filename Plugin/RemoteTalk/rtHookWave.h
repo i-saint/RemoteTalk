@@ -28,22 +28,14 @@ public:
     virtual void afterWaveOutReset(HWAVEOUT& hwo, MMRESULT& ret) {}
     virtual void beforeWaveOutBreakLoop(HWAVEOUT& hwo) {}
     virtual void afterWaveOutBreakLoop(HWAVEOUT& hwo, MMRESULT& ret) {}
-    virtual void beforeWaveOutGetPosition(HWAVEOUT& hwo, LPMMTIME& pmmt, UINT& cbmmt) {}
-    virtual void afterWaveOutGetPosition(HWAVEOUT& hwo, LPMMTIME& pmmt, UINT& cbmmt, MMRESULT& ret) {}
-    virtual void beforeWaveOutGetPitch(HWAVEOUT& hwo, LPDWORD& pdwPitch) {}
-    virtual void afterWaveOutGetPitch(HWAVEOUT& hwo, LPDWORD& pdwPitch, MMRESULT& ret) {}
     virtual void beforeWaveOutSetPitch(HWAVEOUT& hwo, DWORD& dwPitch) {}
     virtual void afterWaveOutSetPitch(HWAVEOUT& hwo, DWORD& dwPitch, MMRESULT& ret) {}
-    virtual void beforeWaveOutGetPlaybackRate(HWAVEOUT& hwo, LPDWORD& pdwRate) {}
-    virtual void afterWaveOutGetPlaybackRate(HWAVEOUT& hwo, LPDWORD& pdwRate, MMRESULT& ret) {}
     virtual void beforeWaveOutSetPlaybackRate(HWAVEOUT& hwo, DWORD& dwRate) {}
     virtual void afterWaveOutSetPlaybackRate(HWAVEOUT& hwo, DWORD& dwRate, MMRESULT& ret) {}
-    virtual void beforeWaveOutGetID(HWAVEOUT& hwo, LPUINT& puDeviceID) {}
-    virtual void afterWaveOutGetID(HWAVEOUT& hwo, LPUINT& puDeviceID, MMRESULT& ret) {}
 };
 #pragma warning(pop)
 
-bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll = true);
+bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll = true, HookType ht = HookType::ATOverride);
 
 } // namespace rt
 #endif // _WIN32

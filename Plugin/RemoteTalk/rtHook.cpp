@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "rtHook.h"
 #ifdef _WIN32
+#include "rtHook.h"
 #include <psapi.h>
 #include <tlhelp32.h>
 
@@ -240,6 +240,34 @@ void EnumerateDLLExports(HMODULE mod, const std::function<void(const char*, void
         body(pName, pFunc);
     }
 }
+
+
+HANDLE FindProcess(const char *exe)
+{
+    DWORD aProcesses[1024], cbNeeded, cProcesses;
+    if (!::EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded))
+        return nullptr;
+
+    cProcesses = cbNeeded / sizeof(DWORD);
+    for (DWORD i = 0; i < cProcesses; i++) {
+        DWORD pid = aProcesses[i];
+        HANDLE hProcess = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+        if (!hProcess)
+            continue;
+
+        TCHAR szProcessName[MAX_PATH] = "\0";
+        HMODULE hMod;
+        DWORD size;
+        if (::EnumProcessModules(hProcess, &hMod, sizeof(hMod), &size)) {
+            ::GetModuleBaseNameA(hProcess, hMod, szProcessName, sizeof(szProcessName));
+            if (_stricmp(szProcessName, exe) == 0)
+                return  hProcess;
+        }
+        ::CloseHandle(hProcess);
+    }
+    return nullptr;
+}
+
 
 std::vector<std::string> g_wclasses;
 
