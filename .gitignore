@@ -39,8 +39,9 @@ obj/
 TestLocal/
 TestLocal.meta
 
-RemoteTalk/*.csproj
-RemoteTalk/*.sln
-RemoteTalkAssets/
+Assembly-CSharp.csproj
+RemoteTalk.csproj
+RemoteTalk.sln
+Assets/RemoteTalkAssets/
 
 Plugin/dist/
