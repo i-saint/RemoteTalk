@@ -176,7 +176,7 @@ double AudioData::resample(AudioData& dst, int new_frequency, int new_length, do
             float st = (float)frac(sp);
             if (sp < 0.0) {
                 for (int ci = 0; ci < ch; ++ci)
-                    dst[i*ch + ci] = src[ci];
+                    dst[i*ch + ci] = 0.0f;
             }
             else if (si < src_len - 1) {
                 for (int ci = 0; ci < ch; ++ci)
@@ -184,7 +184,7 @@ double AudioData::resample(AudioData& dst, int new_frequency, int new_length, do
             }
             else {
                 for (int ci = 0; ci < ch; ++ci)
-                    dst[i*ch + ci] = src[(src_len - 1) * ch + ci];
+                    dst[i*ch + ci] = 0.0f;
             }
         }
     };

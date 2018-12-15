@@ -19,9 +19,16 @@ namespace IST.RemoteTalk
             EditorGUILayout.DelayedTextField(so.FindProperty("m_serverAddress"));
             EditorGUILayout.DelayedIntField(so.FindProperty("m_serverPort"));
             if (EditorGUI.EndChangeCheck())
+            {
+                so.ApplyModifiedProperties();
                 t.RefreshClient();
+            }
             if (GUILayout.Button("Refresh"))
                 t.RefreshClient();
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.PropertyField(so.FindProperty("m_talkAudio"));
 
             EditorGUILayout.Space();
 
@@ -33,7 +40,10 @@ namespace IST.RemoteTalk
                 RemoteTalkEditor.DrawTalkParams(t.castID, talkParams, t);
 
                 var text = so.FindProperty("m_talkText");
+                EditorGUI.BeginChangeCheck();
                 text.stringValue = EditorGUILayout.TextArea(text.stringValue, GUILayout.Height(100));
+                if (EditorGUI.EndChangeCheck())
+                    so.ApplyModifiedProperties();
 
                 if (t.isIdling)
                 {
@@ -51,13 +61,13 @@ namespace IST.RemoteTalk
                 var exportAudio = so.FindProperty("m_exportAudio");
                 EditorGUILayout.PropertyField(exportAudio);
                 if (exportAudio.boolValue)
+                {
                     EditorGUILayout.PropertyField(so.FindProperty("m_exportDir"));
 
-                var exportFileFormat = so.FindProperty("m_exportFileFormat");
-                EditorGUILayout.PropertyField(exportFileFormat);
-                if (exportFileFormat.intValue == (int)rtFileFormat.Ogg)
-                {
-                    EditorGUILayout.PropertyField(so.FindProperty("m_oggSettings"), true);
+                    var exportFileFormat = so.FindProperty("m_exportFileFormat");
+                    EditorGUILayout.PropertyField(exportFileFormat);
+                    if (exportFileFormat.intValue == (int)rtFileFormat.Ogg)
+                        EditorGUILayout.PropertyField(so.FindProperty("m_oggSettings"), true);
                 }
 
                 EditorGUILayout.PropertyField(so.FindProperty("m_useCache"));

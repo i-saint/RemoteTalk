@@ -7,11 +7,12 @@ public:
     rtDefSingleton(rtvrDSoundHandler);
 
     bool mute = false;
+    int margin = 88200 / 10; // 1/10 sec
     std::function<void()> onPlay, onStop;
     std::function<void(const rt::AudioData&)> onUpdate;
 
     void clearCallbacks();
-    void update(IDirectSoundBuffer *_this);
+    void update(IDirectSoundBuffer *_this, bool apply_margin = false);
 
 protected:
     void afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret) override;

@@ -145,6 +145,7 @@ namespace IST.RemoteTalk
 #endregion
 
         public static implicit operator bool(rtAudioData v) { return v.self != IntPtr.Zero; }
+        public void Release() { self = IntPtr.Zero; }
 
         public rtAudioFormat format
         {
@@ -275,15 +276,15 @@ namespace IST.RemoteTalk
             }
         }
 
-        public CastInfo[] casts
+        public Cast[] casts
         {
             get
             {
-                var ret = new CastInfo[rtHTTPClientGetNumCasts(self)];
+                var ret = new Cast[rtHTTPClientGetNumCasts(self)];
                 for (int i = 0; i < ret.Length; ++i)
                 {
                     var ai = rtHTTPClientGetCast(self, i);
-                    ret[i] = new CastInfo { id = ai.id, name = ai.name, paramNames = ai.paramNames };
+                    ret[i] = new Cast { id = ai.id, name = ai.name, paramNames = ai.paramNames };
                 }
                 return ret;
             }
@@ -338,8 +339,9 @@ namespace IST.RemoteTalk
 
 
     [Serializable]
-    public class CastInfo
+    public class Cast
     {
+        public string host;
         public int id;
         public string name;
         public string[] paramNames;

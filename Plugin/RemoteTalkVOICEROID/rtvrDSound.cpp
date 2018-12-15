@@ -8,7 +8,7 @@ void rtvrDSoundHandler::clearCallbacks()
     onUpdate = {};
 }
 
-void rtvrDSoundHandler::update(IDirectSoundBuffer *_this)
+void rtvrDSoundHandler::update(IDirectSoundBuffer *_this, bool apply_margin)
 {
     if (m_buffer.empty()) {
         WAVEFORMATEX wf;
@@ -33,6 +33,10 @@ void rtvrDSoundHandler::update(IDirectSoundBuffer *_this)
 
     DWORD pcur, wcur;
     _this->GetCurrentPosition(&pcur, &wcur);
+    if (apply_margin) {
+        pcur = (pcur + margin) % m_buffer.size();
+    }
+
     if (pcur == m_position)
         return;
 
@@ -92,7 +96,7 @@ void rtvrDSoundHandler::afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this,
 
 void rtvrDSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret)
 {
-    update(_this);
+    update(_this, true);
     mute = false;
     m_playing = false;
     if (onStop)

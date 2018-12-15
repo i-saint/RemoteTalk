@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -14,10 +15,13 @@ namespace IST.RemoteTalk
     }
 
     [ExecuteInEditMode]
-    [RequireComponent(typeof(AudioSource))]
     public class RemoteTalkClient : MonoBehaviour
     {
         #region Fields
+        static List<RemoteTalkClient> s_instances = new List<RemoteTalkClient>();
+
+        [SerializeField] RemoteTalkAudio m_talkAudio;
+
         [SerializeField] string m_serverAddress = "localhost";
         [SerializeField] int m_serverPort = 8081;
 
@@ -40,25 +44,37 @@ namespace IST.RemoteTalk
 
         string m_host;
         rtTalkParams m_serverParams;
-        CastInfo[] m_casts = new CastInfo[0] { };
+        Cast[] m_casts = new Cast[0] { };
         bool m_isServerReady = false;
         bool m_isServerTalking = false;
 
-        AudioSource m_audioSource;
-        AudioClip m_dummyClip;
         string m_cacheFileName;
+
 #if UNITY_EDITOR
         List<string> m_exportedFiles = new List<string>();
 #endif
-
-        bool m_isPlaying;
-        bool m_isFinished;
-        int m_sampleRate;
-        double m_samplePos;
         #endregion
 
 
         #region Properties
+        public static List<RemoteTalkClient> instances
+        {
+            get { return s_instances; }
+        }
+        public static IEnumerable<Cast> allCasts
+        {
+            get {
+                var clients = instances;
+                if (clients.Count == 0)
+                    return new Cast[0] { };
+                IEnumerable<Cast> ret = clients[0].casts;
+                for (int i = 1; i < clients.Count; ++i)
+                    ret = ret.Concat(clients[i].casts);
+                return ret;
+            }
+        }
+
+
         public string serverAddress
         {
             get { return m_serverAddress; }
@@ -68,6 +84,12 @@ namespace IST.RemoteTalk
         {
             get { return m_serverPort; }
             set { m_serverPort = value; ReleaseClient(); }
+        }
+
+        public RemoteTalkAudio talkAudio
+        {
+            get { return m_talkAudio; }
+            set { m_talkAudio = value; }
         }
 
         public int castID
@@ -104,7 +126,7 @@ namespace IST.RemoteTalk
         }
         public bool isPlaying
         {
-            get { return m_isPlaying || (m_audioSource != null && m_audioSource.isPlaying); }
+            get { return m_talkAudio != null && m_talkAudio.isPlaying; }
         }
         public bool isIdling
         {
@@ -113,38 +135,95 @@ namespace IST.RemoteTalk
 
         public string host { get { return m_host; } }
         public rtTalkParams serverParams { get { return m_serverParams; } }
-        public CastInfo[] casts { get { return m_casts; } }
+        public Cast[] casts { get { return m_casts; } }
 
         public int sampleLength { get { return m_client.buffer.sampleLength; } }
         public string assetPath { get { return "Assets/" + m_exportDir; } }
         #endregion
 
 
-#if UNITY_EDITOR
-        [MenuItem("GameObject/RemoteTalk/Create Client", false, 10)]
-        public static void CreateRemoteTalkClient(MenuCommand menuCommand)
+        #region Public Methods
+        public static RemoteTalkClient FindByHost(string host)
         {
-            var go = new GameObject();
-            go.name = "RemoteTalkClient";
-            go.AddComponent<AudioSource>();
-            go.AddComponent<RemoteTalkClient>();
-            Undo.RegisterCreatedObjectUndo(go, "RemoteTalk");
-        }
-#endif
-
-#if UNITY_EDITOR
-        public AudioClip GetCache(ref rtTalkParams tp)
-        {
-            // todo
+            foreach(var c in instances)
+            {
+                if (c.host == host)
+                    return c;
+            }
             return null;
         }
+
+
+        public void Talk()
+        {
+            MakeClient();
+
+            if (m_casts.Length > 0)
+                m_talkParams.cast = Mathf.Clamp(m_talkParams.cast, 0, m_casts.Length - 1);
+            m_talkParams.mute = 1;
+
+            if (m_exportAudio || m_useCache)
+            {
+                m_cacheFileName = GenCacheFileName();
+#if UNITY_EDITOR
+                if (m_useCache)
+                {
+                    var dstPath = assetPath + "/" + m_cacheFileName;
+                    var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
+                    if (clip != null)
+                    {
+                        if (m_talkAudio != null)
+                            m_talkAudio.Play(clip);
+                        return;
+                    }
+                }
 #endif
+            }
+
+            m_isServerTalking = true;
+            m_asyncTalk = m_client.Talk(ref m_talkParams, m_talkText);
+        }
+
+        public void Stop()
+        {
+            m_asyncStop = m_client.Stop();
+        }
+
+        public AudioClip GetCache(ref rtTalkParams tp)
+        {
+#if UNITY_EDITOR
+            // todo
+#endif
+            return null;
+        }
 
         public void RefreshClient()
         {
             ReleaseClient();
             MakeClient();
         }
+        #endregion
+
+
+        #region Impl
+#if UNITY_EDITOR
+        [MenuItem("GameObject/RemoteTalk/Create Client", false, 10)]
+        public static void CreateRemoteTalkClient(MenuCommand menuCommand)
+        {
+            var audio = new GameObject();
+            audio.name = "RemoteTalkAudio";
+            audio.AddComponent<AudioSource>();
+            var rta = audio.AddComponent<RemoteTalkAudio>();
+
+            var client = new GameObject();
+            client.name = "RemoteTalkClient";
+            var rtc = client.AddComponent<RemoteTalkClient>();
+            rtc.talkAudio = rta;
+
+            Undo.RegisterCreatedObjectUndo(audio, "RemoteTalk");
+            Undo.RegisterCreatedObjectUndo(client, "RemoteTalk");
+        }
+#endif
 
         void MakeClient()
         {
@@ -178,88 +257,42 @@ namespace IST.RemoteTalk
                 return null;
         }
 
-        public void Talk()
+        bool SyncBuffers()
         {
-            MakeClient();
-
-            if (m_casts.Length > 0)
-                m_talkParams.cast = Mathf.Clamp(m_talkParams.cast, 0, m_casts.Length - 1);
-            m_talkParams.mute = 1;
-
-            if (m_exportAudio || m_useCache)
-            {
-                m_cacheFileName = GenCacheFileName();
-#if UNITY_EDITOR
-                if (m_useCache)
-                {
-                    var dstPath = assetPath + "/" + m_cacheFileName;
-                    var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
-                    if (clip != null)
-                    {
-                        m_audioSource.loop = false;
-                        m_audioSource.clip = clip;
-                        m_audioSource.Play();
-                        return;
-                    }
-                }
-#endif
-            }
-
-            m_isServerTalking = true;
-            m_samplePos = 0;
-            m_asyncTalk = m_client.Talk(ref m_talkParams, m_talkText);
+            m_client.SyncBuffers();
+            return !m_isServerTalking;
         }
 
-        public void Stop()
-        {
-            m_asyncStop = m_client.Stop();
-        }
-
-        static int s_samplePreloadLength;
-
-        public void UpdateSamples()
+        void UpdateSamples()
         {
             if (m_asyncStats && m_asyncStats.isFinished)
             {
                 m_host = m_client.host;
                 m_serverParams = m_client.serverParams;
                 m_casts = m_client.casts;
+                foreach (var c in m_casts)
+                    c.host = m_host;
+
                 m_asyncStats.Release();
                 m_isServerReady = m_host != "Server Not Found";
-#if UNITY_EDITOR
                 Misc.ForceRepaint();
-#endif
             }
 
             if (m_asyncTalk)
             {
-                if(!m_isPlaying)
+                if(!isPlaying)
                 {
                     var buf = m_client.SyncBuffers();
                     if (buf.sampleLength > m_sampleGranularity || m_asyncTalk.isFinished)
                     {
-                        if (m_dummyClip == null)
-                        {
-                            const int SampleRate = 44000;
-                            m_dummyClip = AudioClip.Create("Dummy", SampleRate, 1, SampleRate, false);
-                            var samples = new float[SampleRate];
-                            for (int i = 0; i < SampleRate; ++i)
-                                samples[i] = 1.0f;
-                            m_dummyClip.SetData(samples, 0);
-                        }
-
-                        m_audioSource.clip = m_dummyClip;
-                        m_audioSource.loop = true;
-                        m_audioSource.Play();
-
-                        m_sampleRate = AudioSettings.outputSampleRate;
-                        m_samplePos = 0.0;
-                        m_isPlaying = true;
+                        if (m_talkAudio != null)
+                            m_talkAudio.Play(buf, SyncBuffers);
                     }
                 }
 
                 if (m_asyncTalk.isFinished)
                 {
+                    m_client.SyncBuffers();
                     m_asyncTalk.Release();
                     m_isServerTalking = false;
 #if UNITY_EDITOR
@@ -276,10 +309,16 @@ namespace IST.RemoteTalk
 #endif
                 }
             }
-            if (m_isFinished)
+            if (m_talkAudio != null && m_talkAudio.isFinished)
             {
-                m_audioSource.Stop();
-                m_isFinished = false;
+                m_talkAudio.Stop();
+                Misc.ForceRepaint();
+            }
+
+            if (m_asyncStop && m_asyncStop.isFinished)
+            {
+                m_asyncStop.Release();
+                Misc.ForceRepaint();
             }
         }
 
@@ -299,7 +338,7 @@ namespace IST.RemoteTalk
             }
         }
 
-        public void MakeSureAssetDirectoryExists()
+        void MakeSureAssetDirectoryExists()
         {
             Try(() =>
             {
@@ -307,22 +346,26 @@ namespace IST.RemoteTalk
                     AssetDatabase.CreateFolder("Assets", m_exportDir);
             });
         }
+
+        void Reset()
+        {
+            m_serverPort = 8081 + instances.Count;
+        }
 #endif
 
         void OnEnable()
         {
-            m_audioSource = GetComponent<AudioSource>();
-            m_audioSource.playOnAwake = false;
-
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
                 EditorApplication.update += UpdateSamples;
 #endif
             MakeClient();
+            instances.Add(this);
         }
 
         void OnDisable()
         {
+            instances.Remove(this);
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
                 EditorApplication.update -= UpdateSamples;
@@ -330,7 +373,11 @@ namespace IST.RemoteTalk
             if (m_exportAudio)
             {
                 foreach(var path in m_exportedFiles)
-                    AssetDatabase.ImportAsset(path);
+                {
+                    Try(()=> {
+                        AssetDatabase.ImportAsset(path);
+                    });
+                }
             }
 #endif
             ReleaseClient();
@@ -340,20 +387,6 @@ namespace IST.RemoteTalk
         {
             UpdateSamples();
         }
-
-        void OnAudioFilterRead(float[] data, int channels)
-        {
-            if (m_isPlaying)
-            {
-                var prev = m_samplePos;
-                m_samplePos = m_client.SyncBuffers().Resample(data, m_sampleRate, channels, data.Length, m_samplePos);
-                if (!m_isServerTalking && m_samplePos == prev)
-                {
-                    m_isPlaying = false;
-                    m_isFinished = true;
-                }
-            }
-        }
-
+        #endregion
     }
 }
