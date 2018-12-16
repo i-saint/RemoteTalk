@@ -2,23 +2,56 @@
 #include "RemoteTalk/RemoteTalk.h"
 #include "RemoteTalk/RemoteTalkNet.h"
 
+struct rtAsyncBase
+{
+    virtual ~rtAsyncBase() {}
+    virtual bool isValid() = 0;
+    virtual bool isFinished() = 0;
+    virtual void wait() = 0;
+};
+
+template<class T>
+struct rtAsync : public rtAsyncBase
+{
+    std::future<T> task;
+
+    bool isValid() override
+    {
+        return task.valid();
+    }
+
+    bool isFinished() override
+    {
+        return !task.valid() || task.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
+    }
+
+    void wait() override
+    {
+        if (task.valid())
+            task.wait();
+    }
+
+    T get()
+    {
+        return task.get();
+    }
+};
+
 class rtHTTPClient
 {
 public:
-    using async = std::future<void>;
-
     rtHTTPClient(const char *server, uint16_t port);
     ~rtHTTPClient();
     void release();
 
-    async& updateServerStats();
+    rtAsync<bool>& updateServerStats();
     const rt::TalkServerStats& getServerStats() const;
 
     bool isReady();
-    async& talk(const rt::TalkParams& params, const std::string& text);
-    async& stop();
-    async& exportWave(const std::string& path);
-    async& exportOgg(const std::string& path, const rt::OggSettings& settings);
+    rtAsync<bool>& talk(const rt::TalkParams& params, const std::string& text);
+    rtAsync<bool>& stop();
+    rtAsync<bool>& exportWave(const std::string& path);
+    rtAsync<bool>& exportOgg(const std::string& path, const rt::OggSettings& settings);
 
     void wait();
     const rt::AudioData& syncBuffers();
@@ -32,10 +65,10 @@ private:
     rt::AudioData m_buf_receiving;
     rt::AudioData m_buf_public;
     std::mutex m_mutex;
-    async m_task_stats;
-    async m_task_talk;
-    async m_task_stop;
-    async m_task_export;
+    rtAsync<bool> m_task_stats;
+    rtAsync<bool> m_task_talk;
+    rtAsync<bool> m_task_stop;
+    rtAsync<bool> m_task_export;
     bool m_processing = false;
 };
 

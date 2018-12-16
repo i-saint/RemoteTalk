@@ -276,7 +276,7 @@ namespace IST.RemoteTalk
                 if(!playing)
                 {
                     var buf = m_client.SyncBuffers();
-                    if (buf.sampleLength > m_sampleGranularity || m_asyncTalk.isFinished)
+                    if (buf.sampleLength > m_sampleGranularity || (m_asyncTalk.isValid && m_asyncTalk.isFinished && m_asyncTalk.boolValue))
                     {
                         foreach (var audio in m_talkAudio)
                         {
@@ -289,10 +289,11 @@ namespace IST.RemoteTalk
                 if (m_asyncTalk.isFinished)
                 {
                     m_client.SyncBuffers();
+                    bool result = m_asyncTalk.isValid && m_asyncTalk.boolValue;
                     m_asyncTalk.Release();
                     m_isServerTalking = false;
 #if UNITY_EDITOR
-                    if (m_exportAudio)
+                    if (result && m_exportAudio)
                     {
                         MakeSureAssetDirectoryExists();
                         var dstPath = assetPath + "/" + m_cacheFileName;
@@ -369,12 +370,14 @@ namespace IST.RemoteTalk
 
             if (m_exportAudio)
             {
-                foreach(var path in m_exportedFiles)
+                m_asyncExport.Wait();
+                foreach (var path in m_exportedFiles)
                 {
                     Try(()=> {
                         AssetDatabase.ImportAsset(path);
                     });
                 }
+                m_exportedFiles.Clear();
             }
 #endif
             ReleaseClient();

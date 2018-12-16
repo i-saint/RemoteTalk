@@ -18,11 +18,15 @@ void rtHTTPClient::release()
     delete this;
 }
 
-rtHTTPClient::async& rtHTTPClient::updateServerStats()
+rtAsync<bool>& rtHTTPClient::updateServerStats()
 {
-    m_task_stats = std::async(std::launch::async, [this]() {
-        if (!m_client.stats(m_server_stats)) {
+    m_task_stats.task = std::async(std::launch::async, [this]() {
+        if (m_client.stats(m_server_stats)) {
+            return true;
+        }
+        else {
             m_server_stats.host = "Server Not Found";
+            return false;
         }
     });
     return m_task_stats;
@@ -38,13 +42,13 @@ bool rtHTTPClient::isReady()
     return m_client.ready();
 }
 
-rtHTTPClient::async& rtHTTPClient::talk(const rt::TalkParams& params, const std::string& text)
+rtAsync<bool>& rtHTTPClient::talk(const rt::TalkParams& params, const std::string& text)
 {
     m_buf_public.clear();
     m_buf_receiving.clear();
 
-    m_task_talk = std::async(std::launch::async, [this, params, text]() {
-        m_client.talk(params, text, [this](const rt::AudioData& ad) {
+    m_task_talk.task = std::async(std::launch::async, [this, params, text]() {
+        return m_client.talk(params, text, [this](const rt::AudioData& ad) {
             if (ad.getSampleLength() != 0) {
                 std::unique_lock<std::mutex> lock(m_mutex);
                 m_buf_receiving += ad;
@@ -54,48 +58,42 @@ rtHTTPClient::async& rtHTTPClient::talk(const rt::TalkParams& params, const std:
     return m_task_talk;
 }
 
-rtHTTPClient::async& rtHTTPClient::stop()
+rtAsync<bool>& rtHTTPClient::stop()
 {
-    m_task_stop = std::async(std::launch::async, [this]() {
-        m_client.stop();
+    m_task_stop.task = std::async(std::launch::async, [this]() {
+        return m_client.stop();
     });
     return m_task_stop;
 }
 
-rtHTTPClient::async& rtHTTPClient::exportWave(const std::string& path)
+rtAsync<bool>& rtHTTPClient::exportWave(const std::string& path)
 {
-    if (m_task_export.valid())
-        m_task_export.wait();
+    m_task_export.wait();
 
     auto tmp_buf = std::make_shared<rt::AudioData>(m_buf_public);
-    m_task_export = std::async(std::launch::async, [tmp_buf, path]() {
-        ExportWave(*tmp_buf, path.c_str());
+    m_task_export.task = std::async(std::launch::async, [tmp_buf, path]() {
+        return ExportWave(*tmp_buf, path.c_str());
     });
     return m_task_export;
 }
 
-rtHTTPClient::async& rtHTTPClient::exportOgg(const std::string& path, const rt::OggSettings& settings)
+rtAsync<bool>& rtHTTPClient::exportOgg(const std::string& path, const rt::OggSettings& settings)
 {
-    if (m_task_export.valid())
-        m_task_export.wait();
+    m_task_export.wait();
 
     auto tmp_buf = std::make_shared<rt::AudioData>(m_buf_public);
-    m_task_export = std::async(std::launch::async, [tmp_buf, path, settings]() {
-        ExportOgg(*tmp_buf, path.c_str(), settings);
+    m_task_export.task = std::async(std::launch::async, [tmp_buf, path, settings]() {
+        return ExportOgg(*tmp_buf, path.c_str(), settings);
     });
     return m_task_export;
 }
 
 void rtHTTPClient::wait()
 {
-    if (m_task_stats.valid())
-        m_task_stats.wait();
-    if (m_task_talk.valid())
-        m_task_talk.wait();
-    if (m_task_stop.valid())
-        m_task_stop.wait();
-    if (m_task_export.valid())
-        m_task_export.wait();
+    m_task_stats.wait();
+    m_task_talk.wait();
+    m_task_stop.wait();
+    m_task_export.wait();
 }
 
 const rt::AudioData& rtHTTPClient::syncBuffers()
@@ -121,20 +119,29 @@ const rt::AudioData& rtHTTPClient::getBuffer()
 
 
 #pragma region rtAudioData
-using rtAsync = std::future<void>;
-
-rtExport bool rtAsyncIsFinished(rtAsync *self)
+rtExport bool rtAsyncIsValid(rtAsyncBase *self)
 {
     if (!self)
         return true;
-    return self->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
+    return self->isValid();
 }
-
-rtExport void rtAsyncWait(rtAsync *self)
+rtExport bool rtAsyncIsFinished(rtAsyncBase *self)
+{
+    if (!self)
+        return true;
+    return self->isFinished();
+}
+rtExport void rtAsyncWait(rtAsyncBase *self)
 {
     if (!self)
         return;
     self->wait();
+}
+rtExport bool rtAsyncGetBool(rtAsyncBase *self)
+{
+    if (auto b = dynamic_cast<rtAsync<bool>*>(self))
+        return b->get();
+    return false;
 }
 #pragma endregion
 
@@ -271,7 +278,7 @@ rtExport void rtHTTPClientRelease(rtHTTPClient *self)
         self->release();
 }
 
-rtExport rtAsync* rtHTTPClientUpdateServerStatus(rtHTTPClient *self)
+rtExport rtAsyncBase* rtHTTPClientUpdateServerStatus(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
@@ -306,14 +313,14 @@ rtExport const rtCastInfo* rtHTTPClientGetCast(rtHTTPClient *self, int i)
     return &self->getServerStats().casts[i];
 }
 
-rtExport rtAsync* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)
+rtExport rtAsyncBase* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)
 {
     if (!self)
         return nullptr;
     return &self->talk(*p, text);
 }
 
-rtExport rtAsync* rtHTTPClientStop(rtHTTPClient *self)
+rtExport rtAsyncBase* rtHTTPClientStop(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
@@ -341,13 +348,13 @@ rtExport const rtAudioData* rtHTTPClientGetBuffer(rtHTTPClient *self)
     return &self->getBuffer();
 }
 
-rtExport rtAsync* rtHTTPClientExportWave(rtHTTPClient *self, const char *path)
+rtExport rtAsyncBase* rtHTTPClientExportWave(rtHTTPClient *self, const char *path)
 {
     if (!self || !path)
         return nullptr;
     return &self->exportWave(path);
 }
-rtExport rtAsync* rtHTTPClientExportOgg(rtHTTPClient *self, const char *path, const rtOggSettings *settings)
+rtExport rtAsyncBase* rtHTTPClientExportOgg(rtHTTPClient *self, const char *path, const rtOggSettings *settings)
 {
     if (!self || !path || !settings)
         return nullptr;

@@ -142,6 +142,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb12442a4fd813143ab56b799d46278a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_delay: 0.5
 --- !u!82 &166210425
 AudioSource:
   m_ObjectHideFlags: 0
@@ -358,7 +359,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 0
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -380,7 +381,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 0
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -402,7 +403,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 0
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1.5
@@ -424,7 +425,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 0
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -446,7 +447,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 1
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -468,7 +469,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 1
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -490,7 +491,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 1
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -512,7 +513,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 1
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -534,7 +535,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 0
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -556,7 +557,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 0
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -578,7 +579,7 @@ MonoBehaviour:
       mute: 0
       forceMono: 1
       cast: 1
-      numParams: 0
+      flags: 4095
       paramValues:
       - 1
       - 1
@@ -860,7 +861,7 @@ MonoBehaviour:
     mute: 1
     forceMono: 1
     cast: 0
-    numParams: 12
+    flags: 4095
     paramValues:
     - 1
     - 1
@@ -929,6 +930,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb12442a4fd813143ab56b799d46278a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_delay: 0
 --- !u!82 &1865400492
 AudioSource:
   m_ObjectHideFlags: 0
