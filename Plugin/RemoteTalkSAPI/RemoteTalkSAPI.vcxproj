@@ -20,12 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="rtspCommon.h" />
+    <ClInclude Include="rtspHookHandler.h" />
+    <ClInclude Include="rtspTalkServer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RemoteTalkSAPI.cpp" />
+    <ClCompile Include="rtspHookHandler.cpp" />
+    <ClCompile Include="rtspTalkServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)RemoteTalk\RemoteTalk.vcxproj">

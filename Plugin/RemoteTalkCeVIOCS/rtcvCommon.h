@@ -4,6 +4,7 @@
 #define rtcvHostName "CeVIO CS6"
 #define rtcvHookDll "RemoteTalkCeVIOCSHook.dll"
 #define rtcvManagedDll "RemoteTalkCeVIOCSManaged.dll"
+#define rtcvHostExe "CeVIO Creative Studio.exe"
 
 
 class rtcvITalkInterface : public rt::TalkInterface

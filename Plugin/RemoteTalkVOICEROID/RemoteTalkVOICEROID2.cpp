@@ -1,8 +1,6 @@
 #include "pch.h"
-#include "RemoteTalk/RemoteTalk.h"
+#include "rtvrCommon.h"
 
-#define HookDllName "RemoteTalkVOICEROID2Hook.dll"
-#define TargetExeName "VoiceroidEditor.exe"
 
 static bool InjectDLL(HANDLE hProcess, const std::string& dllname)
 {
@@ -32,7 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             module_path.resize(spos);
         }
     }
-    std::string hook_path = module_path + "\\" + HookDllName;
+    std::string hook_path = module_path + "\\" + rtvr2HookDll;
 
     std::string exe_path;
 
@@ -41,7 +39,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         exe_path = __argv[1];
     }
     else {
-        auto proc = rt::FindProcess(TargetExeName);
+        auto proc = rt::FindProcess(rtvr2HostExe);
         if (proc) {
             InjectDLL(proc, hook_path);
             ::CloseHandle(proc);
@@ -57,13 +55,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
                     "InstallLocation", RRF_RT_REG_SZ, NULL, tmp, &tmp_size) == ERROR_SUCCESS)
                 {
                     exe_path = std::string(tmp, tmp_size - 1);
-                    exe_path += TargetExeName;
+                    exe_path += rtvr2HostExe;
                 }
             }
 
             if (exe_path.empty()) {
                 // try to open .exe in main module's dir
-                exe_path = module_path + "\\" + TargetExeName;
+                exe_path = module_path + "\\" + rtvr2HostExe;
             }
         }
     }

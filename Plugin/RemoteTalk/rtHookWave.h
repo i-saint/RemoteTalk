@@ -36,6 +36,7 @@ public:
 #pragma warning(pop)
 
 bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll = true, HookType ht = HookType::ATOverride);
+bool OverrideWaveOutIAT(WaveOutHandlerBase *handler, HMODULE target);
 
 } // namespace rt
 #endif // _WIN32

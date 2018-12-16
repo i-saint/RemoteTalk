@@ -173,5 +173,20 @@ bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll, HookType ht)
     return true;
 }
 
+bool OverrideWaveOutIAT(WaveOutHandlerBase *handler, HMODULE mod)
+{
+    if (!handler || !mod)
+        return false;
+
+    if (!waveOutOpen_orig) {
+#define Override(Name) (void*&)Name##_orig = OverrideIAT(mod, WinMM_DLL, #Name, Name##_hook)
+        EachFunctions(Override);
+#undef Override
+    }
+
+    g_waveouthandlers.push_back(handler);
+    return true;
+}
+
 } // namespace rt
 #endif // _WIN32

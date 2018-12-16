@@ -1,8 +1,6 @@
 #include "pch.h"
-#include "RemoteTalk/RemoteTalk.h"
+#include "rtcvCommon.h"
 
-#define HookDllName "RemoteTalkCeVIOCSHook.dll"
-#define TargetExeName "CeVIO Creative Studio.exe"
 
 #import "libid:D3AEA482-B527-4818-8CEA-810AFFCB24B6" named_guids rename_namespace("CeVIO")
 
@@ -34,7 +32,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             module_path.resize(spos);
         }
     }
-    std::string hook_path = module_path + "\\" + HookDllName;
+    std::string hook_path = module_path + "\\" + rtcvHookDll;
 
     if (__argc > 1) {
         std::string exe_path = __argv[1];
@@ -53,14 +51,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         }
     }
     else {
-        auto proc = rt::FindProcess(TargetExeName);
+        auto proc = rt::FindProcess(rtcvHostExe);
         if (!proc) {
             ::CoInitialize(NULL);
             CeVIO::IServiceControl *pServiceControl;
             HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
             if (SUCCEEDED(hr)) {
                 pServiceControl->StartHost(false);
-                proc = rt::FindProcess(TargetExeName);
+                proc = rt::FindProcess(rtcvHostExe);
             }
         }
         if (proc) {

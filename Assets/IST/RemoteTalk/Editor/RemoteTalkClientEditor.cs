@@ -88,8 +88,8 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.Space();
 
-            //if (GUILayout.Button("Start SAPI Server"))
-            //    rtspTalkServer.StartServer();
+            if (GUILayout.Button("Start SAPI Server"))
+                rtspTalkServer.StartServer();
         }
     }
 }

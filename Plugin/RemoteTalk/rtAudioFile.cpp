@@ -90,11 +90,14 @@ bool ExportOgg(const AudioData& ad, std::ostream& os, const OggSettings& setting
         break;
     }
     vorbis_comment_init(&vo_comment);
-    vorbis_analysis_init(&vo_dsp, &vo_info);
-    vorbis_block_init(&vo_dsp, &vo_block);
+    if (vorbis_analysis_init(&vo_dsp, &vo_info) != 0)
+        goto bailout1;
+    if (vorbis_block_init(&vo_dsp, &vo_block) != 0)
+        goto bailout2;
 
     static int s_serial = 0;
-    ogg_stream_init(&og_stream, ++s_serial);
+    if (ogg_stream_init(&og_stream, ++s_serial) != 0)
+        goto bailout3;
 
     {
         ogg_packet og_header, og_header_comm, og_header_code;
@@ -168,8 +171,11 @@ bool ExportOgg(const AudioData& ad, std::ostream& os, const OggSettings& setting
     }
 
     ogg_stream_clear(&og_stream);
+bailout3:
     vorbis_block_clear(&vo_block);
+bailout2:
     vorbis_dsp_clear(&vo_dsp);
+bailout1:
     vorbis_comment_clear(&vo_comment);
     vorbis_info_clear(&vo_info);
     return true;

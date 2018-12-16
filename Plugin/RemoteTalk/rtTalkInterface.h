@@ -15,7 +15,7 @@ struct TalkParams
         operator float() const { return self->params[index]; };
         Proxy& operator=(float v)
         {
-            self->flags = self->flags | (1 << index);
+            self->param_flags = self->param_flags | (1 << index);
             self->params[index] = v;
             return *this;
         }
@@ -26,12 +26,25 @@ struct TalkParams
     int mute = false; // as bool
     int force_mono = false; // as bool
     int cast = 0;
-    int flags = 0;
+    int param_flags = 0;
     float params[MaxParams] = {};
 
     Proxy operator[](int i) { return { this, i }; }
     const Proxy operator[](int i) const { return { (TalkParams*)this, i }; }
-    bool isSet(int i) const { return (flags & (1 << i)) != 0; }
+    bool isSet(int i) const { return (param_flags & (1 << i)) != 0; }
+
+    uint32_t hash() const
+    {
+        uint32_t ret = 0;
+        for (int i = 0; i < MaxParams; ++i) {
+            if (isSet(i)) {
+                auto u = (uint32_t&)params[i];
+                int s = (i * 3) % 32;
+                ret ^= (u << s) | (u >> (32 - s));
+            }
+        }
+        return ret;
+    }
 };
 
 struct CastInfo
