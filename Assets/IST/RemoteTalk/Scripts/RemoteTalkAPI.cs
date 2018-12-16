@@ -114,8 +114,7 @@ namespace IST.RemoteTalk
     [Serializable]
     public struct rtOggSettings
     {
-        public rtBitrateMode bitrateMode;
-        public int targetBitrate;
+        [Range(0, 1)] public float quality;
 
         public static rtOggSettings defaultValue
         {
@@ -123,8 +122,7 @@ namespace IST.RemoteTalk
             {
                 return new rtOggSettings
                 {
-                    bitrateMode = rtBitrateMode.VBR,
-                    targetBitrate = 128 * 1000,
+                    quality = 1.0f,
                 };
             }
         }

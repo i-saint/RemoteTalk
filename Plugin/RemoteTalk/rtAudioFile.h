@@ -3,16 +3,9 @@
 
 namespace rt {
 
-enum class BitrateMode
-{
-    CBR,
-    VBR,
-};
-
 struct OggSettings
 {
-    BitrateMode bitrate_mode = BitrateMode::VBR;
-    int target_bitrate = 128 * 1000;
+    float quality = 1.0f;
 };
 
 

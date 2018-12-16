@@ -108,7 +108,7 @@ TestCase(rtAudioData)
     }
     {
         rt::OggSettings ogg;
-        ogg.bitrate_mode = rt::BitrateMode::CBR;
+        ogg.quality = 1.0f;
         rt::ExportOgg(sum, "sum_cbr.ogg", ogg);
     }
 }
