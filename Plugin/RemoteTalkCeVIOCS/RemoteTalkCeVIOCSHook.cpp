@@ -17,7 +17,6 @@ public:
     rtDefSingleton(rtcvWaveOutHandler);
 
     bool mute = false;
-    std::function<void()> onPlay, onStop;
     std::function<void(rt::AudioData&)> onUpdate;
 
     void clearCallbacks();
@@ -64,6 +63,8 @@ public:
     void sampleCallback(const rt::TalkSample *data);
 
 private:
+    rt::TalkParams m_params;
+    std::future<void> m_task_talk;
     std::mutex m_data_mutex;
     std::vector<rt::AudioDataPtr> m_data_queue;
 };
@@ -93,8 +94,6 @@ void rtcvWindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& 
 
 void rtcvWaveOutHandler::clearCallbacks()
 {
-    onPlay = {};
-    onStop = {};
     onUpdate = {};
 }
 
@@ -125,8 +124,6 @@ void rtcvWaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
     auto& rec = it->second;
     if (rec.is_playing) {
         rec.is_playing = false;
-        if (onStop)
-            onStop();
     }
     rec.is_opened = false;
 }
@@ -141,11 +138,11 @@ void rtcvWaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT&
     rec.data.data.assign(pwh->lpData, pwh->lpData + pwh->dwBufferLength);
     if (!rec.is_playing) {
         rec.is_playing = true;
-        if (onPlay)
-            onPlay();
     }
     if (onUpdate)
         onUpdate(rec.data);
+    if (mute)
+        memset(pwh->lpData, 0, pwh->dwBufferLength);
 }
 
 void rtcvWaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
@@ -155,11 +152,9 @@ void rtcvWaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
         return;
 
     auto& rec = it->second;
-    if (rec.is_playing) {
+    if (rec.is_playing)
         rec.is_playing = false;
-        if (onStop)
-            onStop();
-    }
+    mute = false;
 }
 
 
@@ -205,11 +200,18 @@ rtcvTalkServer::Status rtcvTalkServer::onStats(StatsMessage& mes)
 
 rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
 {
+    m_params = mes.params;
+    rtcvWaveOutHandler::getInstance().mute = m_params.mute;
+
     auto ifs = rtGetTalkInterface_();
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
     if (!ifs->talk(&sampleCallbackS, this))
         Status::Failed;
+
+    m_task_talk = std::async(std::launch::async, [this, ifs]() {
+        ifs->wait();
+    });
 
     mes.task = std::async(std::launch::async, [this, &mes]() {
         std::vector<rt::AudioDataPtr> tmp;
@@ -227,7 +229,7 @@ rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
             if (!tmp.empty() && tmp.back()->data.empty())
                 break;
             else
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     });
     return Status::Succeeded;
@@ -256,6 +258,8 @@ void rtcvTalkServer::sampleCallback(const rt::TalkSample *data)
 {
     auto tmp = std::make_shared<rt::AudioData>();
     rt::ToAudioData(*tmp, *data);
+    if (m_params.force_mono)
+        tmp->convertToMono();
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.push_back(tmp);
@@ -271,8 +275,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
             auto& wo = rtcvWaveOutHandler::getInstance();
             rt::AddWaveOutHandler(&wo, true, rt::HookType::Hotpatch);
-            wo.onPlay = []() { rtGetTalkInterface_()->onPlay(); };
-            wo.onStop = []() { rtGetTalkInterface_()->onStop(); };
             wo.onUpdate = [](rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
         }
     }

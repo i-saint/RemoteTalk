@@ -27,6 +27,11 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteTalk\RemoteTalk.vcxproj">
+      <Project>{fd3fe1ff-abe5-40db-b867-144e9dd9b23c}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FB5400AD-2B63-4C09-91EF-EB9FFD8D12F3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -54,10 +59,10 @@
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)External\lib64;$(SolutionDir)External\Poco\lib64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)External\lib32;$(SolutionDir)External\Poco\lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>

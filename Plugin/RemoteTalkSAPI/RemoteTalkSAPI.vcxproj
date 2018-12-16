@@ -110,10 +110,10 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Master|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\RemoteTalk\Assets\IST\RemoteTalk\Plugins\x86_64\</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Master|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\RemoteTalk\Assets\IST\RemoteTalk\Plugins\x86\</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Plugins\x86\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

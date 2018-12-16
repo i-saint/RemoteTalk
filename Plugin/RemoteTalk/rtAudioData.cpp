@@ -169,34 +169,64 @@ double AudioData::resample(AudioData& dst, int new_frequency, int new_length, do
     int dst_len = (int)dst.getSampleLength() / src.channels;
     int ch = channels;
 
-    auto convert = [step, src_len, dst_len, ch, pos](auto *dst, auto *src) {
-        for (int i = 0; i < dst_len; ++i) {
-            double sp = (double)i * step + pos;
-            int si = (int)sp;
-            float st = (float)frac(sp);
-            if (sp < 0.0) {
-                for (int ci = 0; ci < ch; ++ci)
-                    dst[i*ch + ci] = 0.0f;
+    if (src.frequency == dst.frequency) {
+        auto convert = [step, src_len, dst_len, ch, pos](auto *dst, auto *src) {
+            for (int i = 0; i < dst_len; ++i) {
+                int si = i + (int)pos;
+                if (si < 0) {
+                    for (int ci = 0; ci < ch; ++ci)
+                        dst[i*ch + ci] = 0.0f;
+                }
+                else if (si < src_len) {
+                    for (int ci = 0; ci < ch; ++ci)
+                        dst[i*ch + ci] = src[si * ch + ci];
+                }
+                else {
+                    for (int ci = 0; ci < ch; ++ci)
+                        dst[i*ch + ci] = 0.0f;
+                }
             }
-            else if (si < src_len - 1) {
-                for (int ci = 0; ci < ch; ++ci)
-                    dst[i*ch + ci] = lerp((float)src[si * ch + ci], (float)src[(si + 1) * ch + ci], st);
-            }
-            else {
-                for (int ci = 0; ci < ch; ++ci)
-                    dst[i*ch + ci] = 0.0f;
-            }
+        };
+        switch (format) {
+        case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<unorm8n>()); break;
+        case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<snorm16>()); break;
+        case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<snorm24>()); break;
+        case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<snorm32>()); break;
+        case AudioFormat::F32: convert(dst.get<float>(), src.get<float>()); break;
+        default: break;
         }
-    };
-    switch (format) {
-    case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<unorm8n>()); break;
-    case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<snorm16>()); break;
-    case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<snorm24>()); break;
-    case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<snorm32>()); break;
-    case AudioFormat::F32: convert(dst.get<float>(), src.get<float>()); break;
-    default: break;
+        return std::min(dst_len + pos, (double)src_len);
     }
-    return std::min(step * dst_len + pos, (double)src_len);
+    else {
+        auto convert = [step, src_len, dst_len, ch, pos](auto *dst, auto *src) {
+            for (int i = 0; i < dst_len; ++i) {
+                double sp = (double)i * step + pos;
+                int si = (int)sp;
+                float st = (float)frac(sp);
+                if (sp < 0.0) {
+                    for (int ci = 0; ci < ch; ++ci)
+                        dst[i*ch + ci] = 0.0f;
+                }
+                else if (si < src_len - 1) {
+                    for (int ci = 0; ci < ch; ++ci)
+                        dst[i*ch + ci] = lerp((float)src[si * ch + ci], (float)src[(si + 1) * ch + ci], st);
+                }
+                else {
+                    for (int ci = 0; ci < ch; ++ci)
+                        dst[i*ch + ci] = 0.0f;
+                }
+            }
+        };
+        switch (format) {
+        case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<unorm8n>()); break;
+        case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<snorm16>()); break;
+        case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<snorm24>()); break;
+        case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<snorm32>()); break;
+        case AudioFormat::F32: convert(dst.get<float>(), src.get<float>()); break;
+        default: break;
+        }
+        return std::min(step * dst_len + pos, (double)src_len);
+    }
 }
 
 int AudioData::toFloat(float *dst, int pos, int len_orig, bool multiply)

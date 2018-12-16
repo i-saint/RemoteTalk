@@ -145,7 +145,7 @@ rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
             if (!tmp.empty() && tmp.back()->data.empty())
                 break;
             else
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     });
     return Status::Succeeded;

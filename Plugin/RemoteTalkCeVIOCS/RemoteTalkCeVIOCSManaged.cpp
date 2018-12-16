@@ -75,8 +75,6 @@ public:
     bool stop() override;
     bool wait() override;
 
-    void onPlay() override;
-    void onStop() override;
     void onUpdateBuffer(rt::AudioData& ad) override;
 #ifdef rtDebug
     bool onDebug() override;
@@ -85,6 +83,7 @@ public:
 private:
     mutable rt::CastList m_casts;
     rt::TalkParams m_params;
+    std::atomic_bool m_is_playing{ false };
 
     rt::TalkSampleCallback m_sample_cb = nullptr;
     void *m_sample_cb_userdata = nullptr;
@@ -164,8 +163,8 @@ rt::CastList rtcvInterfaceManaged::getCastList()
     return ret;
 }
 
-static inline float to_f(uint32_t v) { return (float)v / 100.0f; }
-static inline uint32_t to_u(float v) { return (uint32_t)(v * 100.0f); }
+static inline float to_f(uint32_t v) { return (float)v / 50.0f; }
+static inline uint32_t to_u(float v) { return (uint32_t)(v * 50.0f); }
 
 bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
 {
@@ -272,7 +271,7 @@ rtcvTalkInterface::~rtcvTalkInterface()
 }
 
 void rtcvTalkInterface::release() { /*do nothing*/ }
-const char* rtcvTalkInterface::getClientName() const { return "CeVIO Creative Studio"; }
+const char* rtcvTalkInterface::getClientName() const { return "CeVIO CS6"; }
 int rtcvTalkInterface::getPluginVersion() const { return rtPluginVersion; }
 int rtcvTalkInterface::getProtocolVersion() const { return rtProtocolVersion; }
 
@@ -317,7 +316,25 @@ bool rtcvTalkInterface::talk(rt::TalkSampleCallback cb, void *userdata)
 {
     m_sample_cb = cb;
     m_sample_cb_userdata = userdata;
+    m_is_playing = true;
     if (rtcvInterfaceManaged::getInstance()->talk()) {
+        return true;
+    }
+    else {
+        m_is_playing = false;
+        return false;
+    }
+}
+
+bool rtcvTalkInterface::stop()
+{
+    if (rtcvInterfaceManaged::getInstance()->stop()) {
+        m_is_playing = false;
+        if (m_sample_cb) {
+            rt::AudioData dummy;
+            auto sd = rt::ToTalkSample(dummy);
+            m_sample_cb(&sd, m_sample_cb_userdata);
+        }
         return true;
     }
     else {
@@ -325,36 +342,26 @@ bool rtcvTalkInterface::talk(rt::TalkSampleCallback cb, void *userdata)
     }
 }
 
-bool rtcvTalkInterface::stop()
-{
-    return rtcvInterfaceManaged::getInstance()->stop();
-}
-
 bool rtcvTalkInterface::wait()
 {
-    return rtcvInterfaceManaged::getInstance()->wait();
-}
-
-
-void rtcvTalkInterface::onPlay()
-{
-}
-
-void rtcvTalkInterface::onStop()
-{
-    if (m_sample_cb) {
-        rt::AudioData dummy;
-        auto sd = rt::ToTalkSample(dummy);
-        m_sample_cb(&sd, m_sample_cb_userdata);
+    if (rtcvInterfaceManaged::getInstance()->wait()) {
+        m_is_playing = false;
+        if (m_sample_cb) {
+            rt::AudioData dummy;
+            auto sd = rt::ToTalkSample(dummy);
+            m_sample_cb(&sd, m_sample_cb_userdata);
+        }
+        return true;
+    }
+    else {
+        return false;
     }
 }
 
+
 void rtcvTalkInterface::onUpdateBuffer(rt::AudioData& ad)
 {
-    if (m_sample_cb && rtcvInterfaceManaged::getInstance()->isPlaying()) {
-        if (m_params.force_mono)
-            ad.convertToMono();
-
+    if (m_is_playing && m_sample_cb && rtcvInterfaceManaged::getInstance()->isPlaying()) {
         auto sd = rt::ToTalkSample(ad);
         m_sample_cb(&sd, m_sample_cb_userdata);
     }

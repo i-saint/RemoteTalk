@@ -29,7 +29,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
     std::string module_path;
     {
         char buf[2048];
-        GetModuleFileNameA(nullptr, buf, sizeof(buf));
+        ::GetModuleFileNameA(nullptr, buf, sizeof(buf));
         module_path = buf;
         auto spos = module_path.find_last_of("\\");
         if (spos != std::string::npos) {
@@ -64,6 +64,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
                     exe_path += TargetExeName;
                 }
             }
+
             if (exe_path.empty()) {
                 // try to open .exe in main module's dir
                 exe_path = module_path + "\\" + TargetExeName;
@@ -84,7 +85,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             rtDebugSleep(7000); // for debug
             InjectDLL(pi.hProcess, hook_path);
             ::ResumeThread(pi.hThread);
+            return 0;
         }
     }
-    return 0;
+    return 1;
 }

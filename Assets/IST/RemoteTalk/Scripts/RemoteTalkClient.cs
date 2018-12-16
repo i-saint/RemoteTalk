@@ -161,6 +161,7 @@ namespace IST.RemoteTalk
             if (m_casts.Length > 0)
                 m_talkParams.cast = Mathf.Clamp(m_talkParams.cast, 0, m_casts.Length - 1);
             m_talkParams.mute = 1;
+            m_talkParams.numParams = rtTalkParams.maxParams;
 
             if (m_exportAudio || m_useCache)
             {

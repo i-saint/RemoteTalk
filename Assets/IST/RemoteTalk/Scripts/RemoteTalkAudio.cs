@@ -95,7 +95,7 @@ namespace IST.RemoteTalk
 
             bool eos = m_syncBuffers();
             m_samplePos = m_data.Resample(dst, m_sampleRate, channels, dst.Length, m_samplePos);
-            if (eos && (int)m_samplePos == m_data.sampleLength / m_data.channels)
+            if (eos && (m_data.channels == 0 || (int)m_samplePos == m_data.sampleLength / m_data.channels))
             {
                 m_isPlaying = false;
                 m_isFinished = true;
