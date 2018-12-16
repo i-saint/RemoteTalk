@@ -20,13 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RemoteTalkVOICEROIDCommon.h" />
+    <ClInclude Include="rtvr2Interface.h" />
+    <ClInclude Include="rtvr2InterfaceManaged.h" />
+    <ClInclude Include="rtvrCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RemoteTalkVOICEROID2Managed.cpp" />
+    <ClCompile Include="rtvr2Interface.cpp" />
+    <ClCompile Include="rtvr2InterfaceManaged.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)RemoteTalk\RemoteTalk.vcxproj">

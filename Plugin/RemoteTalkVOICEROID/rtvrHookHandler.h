@@ -31,3 +31,11 @@ private:
     uint32_t m_position = 0;
     bool m_playing = false;
 };
+
+class rtvrWindowMessageHandler : public rt::WindowMessageHandlerBase
+{
+public:
+    rtDefSingleton(rtvrWindowMessageHandler);
+    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+};
+

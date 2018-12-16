@@ -1,5 +1,6 @@
 #include "pch.h"
-#include "rtvrDSound.h"
+#include "rtvrHookHandler.h"
+#include "rtvrServer.h"
 
 void rtvrDSoundHandler::clearCallbacks()
 {
@@ -107,4 +108,12 @@ void rtvrDSoundHandler::beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSound
 {
     update(_this);
     m_position = dwNewPosition;
+}
+
+
+void rtvrWindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+{
+    auto& server = rtvrTalkServer::getInstance();
+    server.start();
+    server.processMessages();
 }
