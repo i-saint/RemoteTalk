@@ -85,12 +85,11 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
                 mes->text = ToANSI(mes->text.c_str());
             }
             else {
-                for (int i = 0; i < TalkParams::max_params; ++i) {
-                    char name[32];
-                    sprintf(name, "param%d", i);
+                for (int i = 0; i < TalkParams::MaxParams; ++i) {
+                    char name[128];
+                    sprintf(name, "a%d", i);
                     if (nvp.first == name) {
-                        mes->params.params[i] = rt::from_string<float>(nvp.second);
-                        mes->params.num_params = i;
+                        mes->params[i] = rt::from_string<float>(nvp.second);
                     }
                 }
             }

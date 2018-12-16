@@ -15,11 +15,9 @@ namespace IST.RemoteTalk
     }
 
     [ExecuteInEditMode]
-    public class RemoteTalkClient : MonoBehaviour
+    public class RemoteTalkClient : RemoteTalkProvider
     {
         #region Fields
-        static List<RemoteTalkClient> s_instances = new List<RemoteTalkClient>();
-
         [SerializeField] RemoteTalkAudio[] m_talkAudio = new RemoteTalkAudio[0];
 
         [SerializeField] string m_serverAddress = "127.0.0.1";
@@ -58,24 +56,6 @@ namespace IST.RemoteTalk
 
 
         #region Properties
-        public static List<RemoteTalkClient> instances
-        {
-            get { return s_instances; }
-        }
-        public static IEnumerable<Cast> allCasts
-        {
-            get {
-                var clients = instances;
-                if (clients.Count == 0)
-                    return new Cast[0] { };
-                IEnumerable<Cast> ret = clients[0].casts;
-                for (int i = 1; i < clients.Count; ++i)
-                    ret = ret.Concat(clients[i].casts);
-                return ret;
-            }
-        }
-
-
         public string serverAddress
         {
             get { return m_serverAddress; }
@@ -147,12 +127,12 @@ namespace IST.RemoteTalk
         }
         public bool isIdling
         {
-            get { return !isServerTalking && !isPlaying; }
+            get { return isServerReady && !isServerTalking && !isPlaying; }
         }
 
-        public string host { get { return m_host; } }
+        public override string host { get { return m_host; } }
+        public override Cast[] casts { get { return m_casts; } }
         public rtTalkParams serverParams { get { return m_serverParams; } }
-        public Cast[] casts { get { return m_casts; } }
 
         public int sampleLength { get { return m_client.buffer.sampleLength; } }
         public string assetPath { get { return "Assets/" + m_exportDir; } }
@@ -160,16 +140,6 @@ namespace IST.RemoteTalk
 
 
         #region Public Methods
-        public static RemoteTalkClient FindByHost(string host)
-        {
-            foreach(var c in instances)
-            {
-                if (c.host == host)
-                    return c;
-            }
-            return null;
-        }
-
 
         public void Talk()
         {
@@ -178,7 +148,7 @@ namespace IST.RemoteTalk
             if (m_casts.Length > 0)
                 m_talkParams.cast = Mathf.Clamp(m_talkParams.cast, 0, m_casts.Length - 1);
             m_talkParams.mute = 1;
-            m_talkParams.numParams = rtTalkParams.maxParams;
+            m_talkParams.flags = 0xFFF;
 
             if (m_exportAudio || m_useCache)
             {
@@ -380,19 +350,19 @@ namespace IST.RemoteTalk
         }
 #endif
 
-        void OnEnable()
+        protected override void OnEnable()
         {
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
                 EditorApplication.update += UpdateSamples;
 #endif
             MakeClient();
-            instances.Add(this);
+            base.OnEnable();
         }
 
-        void OnDisable()
+        protected override void OnDisable()
         {
-            instances.Remove(this);
+            base.OnDisable();
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
                 EditorApplication.update -= UpdateSamples;

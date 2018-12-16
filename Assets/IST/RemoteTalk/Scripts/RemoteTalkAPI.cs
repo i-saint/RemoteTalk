@@ -173,13 +173,13 @@ namespace IST.RemoteTalk
     [Serializable]
     public unsafe struct rtTalkParams
     {
-        public const int maxParams = 12;
+        public const int MaxParams = 12;
 
         public int mute;
         public int forceMono;
         public int cast;
-        public int numParams;
-        public fixed float paramValues[maxParams];
+        public int flags;
+        public fixed float paramValues[MaxParams];
 
         public static rtTalkParams defaultValue
         {
@@ -188,8 +188,8 @@ namespace IST.RemoteTalk
                 var ret = default(rtTalkParams);
                 ret.mute = 1;
                 ret.forceMono = 1;
-                ret.numParams = maxParams;
-                for (int i = 0; i < maxParams; ++i)
+                ret.flags = 0xFFF;
+                for (int i = 0; i < MaxParams; ++i)
                     ret.paramValues[i] = 1.0f;
                 return ret;
             }
@@ -348,5 +348,22 @@ namespace IST.RemoteTalk
         public int id;
         public string name;
         public string[] paramNames;
+    }
+
+    [Serializable]
+    public class TalkData
+    {
+        public string castName = "";
+        public float[] param = new float[rtTalkParams.MaxParams];
+        public string text = "";
+
+        public Cast cast
+        {
+            get { return RemoteTalkProvider.FindCast(castName); }
+        }
+        public RemoteTalkProvider provider
+        {
+            get { return RemoteTalkProvider.FindByCast(castName); }
+        }
     }
 }

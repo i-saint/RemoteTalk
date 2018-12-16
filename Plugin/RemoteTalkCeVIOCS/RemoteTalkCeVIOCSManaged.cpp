@@ -171,17 +171,16 @@ bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
     updateCast();
     params.cast = m_cast;
     if (m_talker) {
-        params.num_params = m_casts[m_cast]->param_names->Count;
         int pi = 0;
-        params.params[pi++] = to_f(m_talker->Volume);
-        params.params[pi++] = to_f(m_talker->Speed);
-        params.params[pi++] = to_f(m_talker->Tone);
-        params.params[pi++] = to_f(m_talker->ToneScale);
-        params.params[pi++] = to_f(m_talker->Alpha);
+        params[pi++] = to_f(m_talker->Volume);
+        params[pi++] = to_f(m_talker->Speed);
+        params[pi++] = to_f(m_talker->Tone);
+        params[pi++] = to_f(m_talker->ToneScale);
+        params[pi++] = to_f(m_talker->Alpha);
 
         int n = m_talker->Components->Count;
         for (int i = 0; i < n; ++i) {
-            params.params[pi++] = to_f(m_talker->Components->At(i)->Value);
+            params[pi++] = to_f(m_talker->Components->At(i)->Value);
             if (pi >= 12)
                 break;
         }
@@ -197,15 +196,15 @@ bool rtcvInterfaceManaged::setParams(const rt::TalkParams& params)
         return false;
 
     int pi = 0;
-    m_talker->Volume = to_u(params.params[pi++]);
-    m_talker->Speed = to_u(params.params[pi++]);
-    m_talker->Tone = to_u(params.params[pi++]);
-    m_talker->ToneScale = to_u(params.params[pi++]);
-    m_talker->Alpha = to_u(params.params[pi++]);
+    if (params.isSet(pi)) { m_talker->Volume    = to_u(params[pi]); } ++pi;
+    if (params.isSet(pi)) { m_talker->Speed     = to_u(params[pi]); } ++pi;
+    if (params.isSet(pi)) { m_talker->Tone      = to_u(params[pi]); } ++pi;
+    if (params.isSet(pi)) { m_talker->ToneScale = to_u(params[pi]); } ++pi;
+    if (params.isSet(pi)) { m_talker->Alpha     = to_u(params[pi]); } ++pi;
 
     int n = m_talker->Components->Count;
     for (int i = 0; i < n; ++i) {
-        m_talker->Components->At(i)->Value = to_u(params.params[pi++]);
+        if (params.isSet(pi)) { m_talker->Components->At(i)->Value = to_u(params[pi]); } ++pi;
         if (pi >= 12)
             break;
     }

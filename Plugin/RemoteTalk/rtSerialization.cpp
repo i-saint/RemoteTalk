@@ -199,9 +199,11 @@ template<> picojson::value to_json(const TalkParams& v)
     t["force_mono"] = value((float)v.force_mono);
     t["cast"] = value((float)v.cast);
     {
-        array params;
-        for (int i = 0; i < v.num_params; ++i)
-            params.push_back(value(v.params[i]));
+        object params;
+        for (int i = 0; i < TalkParams::MaxParams; ++i) {
+            if(v.isSet(i))
+                params[to_string(i)] = value(v[i]);
+        }
         t["params"] = value(params);
     }
     return value(std::move(t));
@@ -216,13 +218,13 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
         else if (kvp.first == "force_mono") { dst.force_mono = (int)kvp.second.get<float>(); }
         else if (kvp.first == "cast") { dst.cast = (int)kvp.second.get<float>(); }
         else if (kvp.first == "params") {
-            if (kvp.second.is<array>()) {
-                array params = kvp.second.get<array>();
-                int n = std::min((int)params.size(), TalkParams::max_params);
-                dst.num_params = n;
-                for (int i = 0; i < n; ++i) {
-                    if (params[i].is<float>())
-                        dst.params[i] = params[i].get<float>();
+            if (kvp.second.is<object>()) {
+                for (auto& p : kvp.second.get<object>()) {
+                    if (p.second.is<float>()) {
+                        int idx = from_string<int>(p.first);
+                        if (idx >= 0 && idx < TalkParams::MaxParams)
+                            dst[from_string<int>(p.first)] = p.second.get<float>();
+                    }
                 }
             }
         }

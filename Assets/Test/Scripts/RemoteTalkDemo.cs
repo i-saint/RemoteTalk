@@ -26,7 +26,7 @@ public class RemoteTalkDemo : MonoBehaviour
 
     void Update()
     {
-        if (m_remoteTalk.isServerReady && !m_remoteTalk.isServerTalking && !m_remoteTalk.isPlaying && m_scriptPos < m_scripts.Count)
+        if (m_remoteTalk.isIdling && m_scriptPos < m_scripts.Count)
         {
             if (m_current != null)
             {

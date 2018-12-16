@@ -197,10 +197,9 @@ bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
     if (m_lv_casts)
         params.cast = m_lv_casts->SelectedIndex;
 
-    int n = std::min(m_sl_params->Count, rt::TalkParams::max_params);
-    params.num_params = n;
+    int n = std::min(m_sl_params->Count, rt::TalkParams::MaxParams);
     for (int i = 0; i < n; ++i)
-        params.params[i] = (float)m_sl_params[i]->Value;
+        params[i] = (float)m_sl_params[i]->Value;
     return true;
 }
 
@@ -217,9 +216,9 @@ bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
     if (m_lv_casts)
         setCast(params.cast);
 
-    for (int i = 0; i < params.num_params; ++i) {
-        if(i < m_sl_params->Count)
-            UpdateValue(m_sl_params[i], params.params[i]);
+    for (int i = 0; i < rt::TalkParams::MaxParams; ++i) {
+        if(params.isSet(i) && i < m_sl_params->Count)
+            UpdateValue(m_sl_params[i], params[i]);
     }
 
     return true;

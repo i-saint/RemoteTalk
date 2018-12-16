@@ -104,10 +104,12 @@ bool TalkClient::talk(const TalkParams& params, const std::string& text, const s
         uri.addQueryParameter("mute", to_string(params.mute));
         uri.addQueryParameter("force_mono", to_string(params.force_mono));
         uri.addQueryParameter("cast", to_string(params.cast));
-        for (int i = 0; i < params.num_params; ++i) {
-            char name[32];
-            sprintf(name, "param%d", i);
-            uri.addQueryParameter(name, to_string(params.params[i]));
+        for (int i = 0; i < TalkParams::MaxParams; ++i) {
+            if (params.isSet(i)) {
+                char name[128];
+                sprintf(name, "a%d", i);
+                uri.addQueryParameter(name, to_string((float)params[i]));
+            }
         }
         if (!text.empty())
             uri.addQueryParameter("text", text);
