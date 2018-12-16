@@ -21,7 +21,7 @@ HMODULE GetModuleByAddr(const void *p);
 std::string GetModuleDirectory(HMODULE module);
 std::string GetCurrentModuleDirectory();
 
-void* AllocExecutableForward(size_t size, void *location);
+void* AllocExecutable(size_t size, void *location);
 void* EmitJmpInstruction(void* from_, void* to_);
 void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void *&jump_table);
 void* OverrideIAT(HMODULE module, const char *target_module, const char *funcname, void *replacement);

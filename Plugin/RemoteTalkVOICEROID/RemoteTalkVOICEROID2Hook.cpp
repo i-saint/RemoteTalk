@@ -5,11 +5,10 @@
 #include "rtvrHookHandler.h"
 #include "rtvrTalkServer.h"
 
-
 rtvrITalkInterface* (*rtGetTalkInterface_)();
 static bool rtcvLoadManagedModule()
 {
-    auto path = rt::GetCurrentModuleDirectory() + "\\RemoteTalkVOICEROID2Managed.dll";
+    auto path = rt::GetCurrentModuleDirectory() + "\\" rtvr2ManagedDll;
     auto mod = ::LoadLibraryA(path.c_str());
     if (!mod)
         return false;

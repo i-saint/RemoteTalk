@@ -10,7 +10,7 @@ rtcvTalkInterface::rtcvTalkInterface()
 
 rtcvTalkInterface::~rtcvTalkInterface()
 {
-    auto mod = ::GetModuleHandleA("RemoteTalkVOICEROID2Hook.dll");
+    auto mod = ::GetModuleHandleA(rtcvHookDll);
     if (mod) {
         void(*proc)();
         (void*&)proc = ::GetProcAddress(mod, "rtOnManagedModuleUnload");
@@ -20,7 +20,7 @@ rtcvTalkInterface::~rtcvTalkInterface()
 }
 
 void rtcvTalkInterface::release() { /*do nothing*/ }
-const char* rtcvTalkInterface::getClientName() const { return "CeVIO CS6"; }
+const char* rtcvTalkInterface::getClientName() const { return rtcvHostName; }
 int rtcvTalkInterface::getPluginVersion() const { return rtPluginVersion; }
 int rtcvTalkInterface::getProtocolVersion() const { return rtProtocolVersion; }
 

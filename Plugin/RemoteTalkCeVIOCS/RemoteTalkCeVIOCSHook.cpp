@@ -7,7 +7,7 @@
 rtcvITalkInterface* (*rtGetTalkInterface_)();
 static bool rtcvLoadManagedModule()
 {
-    auto path = rt::GetCurrentModuleDirectory() + "\\RemoteTalkCeVIOCSManaged.dll";
+    auto path = rt::GetCurrentModuleDirectory() + "\\" rtcvManagedDll;
     auto mod = ::LoadLibraryA(path.c_str());
     if (!mod)
         return false;

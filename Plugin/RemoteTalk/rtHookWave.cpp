@@ -154,7 +154,7 @@ bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll, HookType ht)
 
     if (!waveOutOpen_orig) {
         if (ht == HookType::ATOverride) {
-            auto jumptable = AllocExecutableForward(1024, mod);
+            auto jumptable = AllocExecutable(1024, mod);
 #define Override(Name) (void*&)Name##_orig = OverrideEAT(mod, #Name, Name##_hook, jumptable)
             EachFunctions(Override);
 #undef Override

@@ -6,7 +6,7 @@
 
 namespace rt {
 
-void* AllocExecutableForward(size_t size, void *location)
+void* AllocExecutable(size_t size, void *location)
 {
     static size_t base = (size_t)location;
 

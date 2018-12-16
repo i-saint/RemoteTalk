@@ -1,6 +1,10 @@
 #pragma once
-#include <atomic>
 #include "RemoteTalk/RemoteTalk.h"
+
+#define rtcvHostName "CeVIO CS6"
+#define rtcvHookDll "RemoteTalkCeVIOCSHook.dll"
+#define rtcvManagedDll "RemoteTalkCeVIOCSManaged.dll"
+
 
 class rtcvITalkInterface : public rt::TalkInterface
 {

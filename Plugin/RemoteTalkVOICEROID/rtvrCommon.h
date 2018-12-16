@@ -1,6 +1,10 @@
 #pragma once
-#include <atomic>
 #include "RemoteTalk/RemoteTalk.h"
+
+#define rtvr2HostName "VOICEROID2"
+#define rtvr2HookDll "RemoteTalkVOICEROID2Hook.dll"
+#define rtvr2ManagedDll "RemoteTalkVOICEROID2Managed.dll"
+
 
 class rtvrITalkInterface : public rt::TalkInterface
 {

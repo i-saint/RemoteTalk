@@ -4,14 +4,13 @@
 #include "rtvr2Interface.h"
 
 
-
 rtvr2TalkInterface::rtvr2TalkInterface()
 {
 }
 
 rtvr2TalkInterface::~rtvr2TalkInterface()
 {
-    auto mod = ::GetModuleHandleA("RemoteTalkVOICEROID2Hook.dll");
+    auto mod = ::GetModuleHandleA(rtvr2HookDll);
     if (mod) {
         void(*proc)();
         (void*&)proc = ::GetProcAddress(mod, "rtOnManagedModuleUnload");
@@ -21,7 +20,7 @@ rtvr2TalkInterface::~rtvr2TalkInterface()
 }
 
 void rtvr2TalkInterface::release() { /*do nothing*/ }
-const char* rtvr2TalkInterface::getClientName() const { return "VOICEROID2"; }
+const char* rtvr2TalkInterface::getClientName() const { return rtvr2HostName; }
 int rtvr2TalkInterface::getPluginVersion() const { return rtPluginVersion; }
 int rtvr2TalkInterface::getProtocolVersion() const { return rtProtocolVersion; }
 

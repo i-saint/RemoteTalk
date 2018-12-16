@@ -6,19 +6,15 @@
 
 static bool InjectDLL(HANDLE hProcess, const std::string& dllname)
 {
+    auto remote_addr = ::VirtualAllocEx(hProcess, 0, 1024, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (remote_addr == nullptr)
+        return false;
+
     SIZE_T bytesRet = 0;
-    DWORD oldProtect = 0;
-    LPVOID remote_addr = nullptr;
-    HANDLE hThread = nullptr;
     size_t len = dllname.size() + 1;
-
-    remote_addr = ::VirtualAllocEx(hProcess, 0, 1024, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (remote_addr == nullptr) { return false; }
-    ::VirtualProtectEx(hProcess, remote_addr, len, PAGE_EXECUTE_READWRITE, &oldProtect);
     ::WriteProcessMemory(hProcess, remote_addr, dllname.c_str(), len, &bytesRet);
-    ::VirtualProtectEx(hProcess, remote_addr, len, oldProtect, &oldProtect);
 
-    hThread = ::CreateRemoteThread(hProcess, nullptr, 0, (LPTHREAD_START_ROUTINE)((void*)&LoadLibraryA), remote_addr, 0, nullptr);
+    auto hThread = ::CreateRemoteThread(hProcess, nullptr, 0, (LPTHREAD_START_ROUTINE)((void*)&LoadLibraryA), remote_addr, 0, nullptr);
     ::WaitForSingleObject(hThread, INFINITE);
     ::VirtualFreeEx(hProcess, remote_addr, 0, MEM_RELEASE);
     return true;

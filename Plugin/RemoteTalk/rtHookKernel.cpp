@@ -180,7 +180,7 @@ bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll, HookType ht
         s_first = false;
 
         if (ht == HookType::ATOverride) {
-            auto jumptable = AllocExecutableForward(1024, ole32);
+            auto jumptable = AllocExecutable(1024, ole32);
 #define Override(Name) OverrideEAT(ole32, #Name, Name##_hook, jumptable)
             EachFunctions(Override);
 #undef Override
@@ -260,7 +260,7 @@ bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll, H
         s_first = false;
 
         if (ht == HookType::ATOverride) {
-            auto jumptable = AllocExecutableForward(1024, mod);
+            auto jumptable = AllocExecutable(1024, mod);
 #define Override(Name) (void*&)Name##_orig = OverrideEAT(mod, #Name, Name##_hook, jumptable)
             EachFunctions(Override);
 #undef Override
