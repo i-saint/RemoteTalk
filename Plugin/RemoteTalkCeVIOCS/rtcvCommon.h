@@ -1,5 +1,6 @@
 #pragma once
-#include "RemoteTalk/rtTalkInterface.h"
+#include <atomic>
+#include "RemoteTalk/RemoteTalk.h"
 
 class rtcvITalkInterface : public rt::TalkInterface
 {
@@ -11,3 +12,5 @@ public:
     virtual bool onDebug() = 0;
 #endif
 };
+
+extern rtcvITalkInterface* (*rtGetTalkInterface_)();

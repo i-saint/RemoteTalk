@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "rtvrHookHandler.h"
-#include "rtvrServer.h"
+#include "rtvrTalkServer.h"
 
 void rtvrDSoundHandler::clearCallbacks()
 {

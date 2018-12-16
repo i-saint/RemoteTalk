@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "rtvrCommon.h"
 #include "rtvrHookHandler.h"
-#include "rtvrServer.h"
+#include "rtvrTalkServer.h"
 
 
 static void RequestUpdate()

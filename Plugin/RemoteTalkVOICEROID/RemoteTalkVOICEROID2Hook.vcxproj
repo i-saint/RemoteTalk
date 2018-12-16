@@ -22,7 +22,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="rtvrCommon.h" />
     <ClInclude Include="rtvrHookHandler.h" />
-    <ClInclude Include="rtvrServer.h" />
+    <ClInclude Include="rtvrTalkServer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -30,7 +30,7 @@
     </ClCompile>
     <ClCompile Include="RemoteTalkVOICEROID2Hook.cpp" />
     <ClCompile Include="rtvrHookHandler.cpp" />
-    <ClCompile Include="rtvrServer.cpp" />
+    <ClCompile Include="rtvrTalkServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)RemoteTalk\RemoteTalk.vcxproj">

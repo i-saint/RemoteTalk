@@ -1,9 +1,6 @@
 #pragma once
 #include <atomic>
-#include "RemoteTalk/rtFoundation.h"
-#include "RemoteTalk/rtAudioData.h"
-#include "RemoteTalk/rtTalkInterfaceImpl.h"
-#include "RemoteTalk/rtSerialization.h"
+#include "RemoteTalk/RemoteTalk.h"
 
 class rtvrITalkInterface : public rt::TalkInterface
 {

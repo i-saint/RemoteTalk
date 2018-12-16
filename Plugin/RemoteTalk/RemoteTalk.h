@@ -9,6 +9,6 @@
 #include "rtAudioData.h"
 #include "rtAudioFile.h"
 
-#include "rtTalkInterface.h"
+#include "rtTalkInterfaceImpl.h"
 #include "rtSerialization.h"
 

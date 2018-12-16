@@ -3,7 +3,7 @@
 #include "RemoteTalk/RemoteTalkNet.h"
 #include "rtvrCommon.h"
 #include "rtvrHookHandler.h"
-#include "rtvrServer.h"
+#include "rtvrTalkServer.h"
 
 
 rtvrITalkInterface* (*rtGetTalkInterface_)();
