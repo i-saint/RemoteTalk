@@ -188,11 +188,11 @@ double AudioData::resample(AudioData& dst, int new_frequency, int new_length, do
             }
         };
         switch (format) {
-        case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<unorm8n>()); break;
-        case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<snorm16>()); break;
-        case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<snorm24>()); break;
-        case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<snorm32>()); break;
-        case AudioFormat::F32: convert(dst.get<float>(), src.get<float>()); break;
+        case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<const unorm8n>()); break;
+        case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<const snorm16>()); break;
+        case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<const snorm24>()); break;
+        case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<const snorm32>()); break;
+        case AudioFormat::F32: convert(dst.get<float>(), src.get<const float>()); break;
         default: break;
         }
         return std::min(dst_len + pos, (double)src_len);
@@ -218,11 +218,11 @@ double AudioData::resample(AudioData& dst, int new_frequency, int new_length, do
             }
         };
         switch (format) {
-        case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<unorm8n>()); break;
-        case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<snorm16>()); break;
-        case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<snorm24>()); break;
-        case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<snorm32>()); break;
-        case AudioFormat::F32: convert(dst.get<float>(), src.get<float>()); break;
+        case AudioFormat::U8:  convert(dst.get<unorm8n>(), src.get<const unorm8n>()); break;
+        case AudioFormat::S16: convert(dst.get<snorm16>(), src.get<const snorm16>()); break;
+        case AudioFormat::S24: convert(dst.get<snorm24>(), src.get<const snorm24>()); break;
+        case AudioFormat::S32: convert(dst.get<snorm32>(), src.get<const snorm32>()); break;
+        case AudioFormat::F32: convert(dst.get<float>(), src.get<const float>()); break;
         default: break;
         }
         return std::min(step * dst_len + pos, (double)src_len);

@@ -28,7 +28,7 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_talkAudio"));
+            EditorGUILayout.PropertyField(so.FindProperty("m_talkAudio"), true);
 
             EditorGUILayout.Space();
 
@@ -80,10 +80,10 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.Space();
 
-            if (GUILayout.Button("Launch VOICEROID2"))
+            if (GUILayout.Button("Connect VOICEROID2"))
                 rtPlugin.LaunchVOICEROID2();
             EditorGUILayout.Space();
-            if (GUILayout.Button("Launch CeVIO CS"))
+            if (GUILayout.Button("Connect CeVIO CS"))
                 rtPlugin.LaunchCeVIOCS();
 
             EditorGUILayout.Space();

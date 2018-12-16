@@ -20,9 +20,9 @@ namespace IST.RemoteTalk
         #region Fields
         static List<RemoteTalkClient> s_instances = new List<RemoteTalkClient>();
 
-        [SerializeField] RemoteTalkAudio m_talkAudio;
+        [SerializeField] RemoteTalkAudio[] m_talkAudio = new RemoteTalkAudio[0];
 
-        [SerializeField] string m_serverAddress = "localhost";
+        [SerializeField] string m_serverAddress = "127.0.0.1";
         [SerializeField] int m_serverPort = 8081;
 
         [SerializeField] rtTalkParams m_talkParams = rtTalkParams.defaultValue;
@@ -47,6 +47,7 @@ namespace IST.RemoteTalk
         Cast[] m_casts = new Cast[0] { };
         bool m_isServerReady = false;
         bool m_isServerTalking = false;
+        bool m_wasPlaying = false;
 
         string m_cacheFileName;
 
@@ -86,10 +87,15 @@ namespace IST.RemoteTalk
             set { m_serverPort = value; ReleaseClient(); }
         }
 
-        public RemoteTalkAudio talkAudio
+        public RemoteTalkAudio[] talkAudio
         {
             get { return m_talkAudio; }
-            set { m_talkAudio = value; }
+            set
+            {
+                m_talkAudio = value;
+                if (m_talkAudio == null)
+                    m_talkAudio = new RemoteTalkAudio[0];
+            }
         }
 
         public int castID
@@ -126,7 +132,18 @@ namespace IST.RemoteTalk
         }
         public bool isPlaying
         {
-            get { return m_talkAudio != null && m_talkAudio.isPlaying; }
+            get {
+                bool ret = false;
+                foreach(var audio in m_talkAudio)
+                {
+                    if (audio && audio.isPlaying)
+                    {
+                        ret = true;
+                        break;
+                    }
+                }
+                return ret;
+            }
         }
         public bool isIdling
         {
@@ -173,8 +190,11 @@ namespace IST.RemoteTalk
                     var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
                     if (clip != null)
                     {
-                        if (m_talkAudio != null)
-                            m_talkAudio.Play(clip);
+                        foreach(var audio in m_talkAudio)
+                        {
+                            if (audio != null)
+                                audio.Play(clip);
+                        }
                         return;
                     }
                 }
@@ -219,7 +239,7 @@ namespace IST.RemoteTalk
             var client = new GameObject();
             client.name = "RemoteTalkClient";
             var rtc = client.AddComponent<RemoteTalkClient>();
-            rtc.talkAudio = rta;
+            rtc.talkAudio = new RemoteTalkAudio[1] { rta };
 
             Undo.RegisterCreatedObjectUndo(audio, "RemoteTalk");
             Undo.RegisterCreatedObjectUndo(client, "RemoteTalk");
@@ -279,15 +299,20 @@ namespace IST.RemoteTalk
                 Misc.ForceRepaint();
             }
 
+            var playing = isPlaying;
+
             if (m_asyncTalk)
             {
-                if(!isPlaying)
+                if(!playing)
                 {
                     var buf = m_client.SyncBuffers();
                     if (buf.sampleLength > m_sampleGranularity || m_asyncTalk.isFinished)
                     {
-                        if (m_talkAudio != null)
-                            m_talkAudio.Play(buf, SyncBuffers);
+                        foreach (var audio in m_talkAudio)
+                        {
+                            if (audio != null)
+                                audio.Play(buf, SyncBuffers);
+                        }
                     }
                 }
 
@@ -310,11 +335,12 @@ namespace IST.RemoteTalk
 #endif
                 }
             }
-            if (m_talkAudio != null && m_talkAudio.isFinished)
+
+            if(m_wasPlaying && !playing)
             {
-                m_talkAudio.Stop();
                 Misc.ForceRepaint();
             }
+            m_wasPlaying = playing;
 
             if (m_asyncStop && m_asyncStop.isFinished)
             {

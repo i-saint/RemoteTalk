@@ -64,7 +64,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
             if (SUCCEEDED(hr)) {
                 pServiceControl->StartHost(false);
-                auto proc = rt::FindProcess(TargetExeName);
+                proc = rt::FindProcess(TargetExeName);
             }
         }
         if (proc) {

@@ -185,10 +185,13 @@ namespace IST.RemoteTalk
         {
             get
             {
-                return new rtTalkParams {
-                    mute = 1,
-                    forceMono = 1,
-                };
+                var ret = default(rtTalkParams);
+                ret.mute = 1;
+                ret.forceMono = 1;
+                ret.numParams = maxParams;
+                for (int i = 0; i < maxParams; ++i)
+                    ret.paramValues[i] = 1.0f;
+                return ret;
             }
         }
     }

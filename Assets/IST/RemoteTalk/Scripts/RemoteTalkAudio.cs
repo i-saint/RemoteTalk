@@ -12,6 +12,8 @@ namespace IST.RemoteTalk
     {
         public delegate bool SyncBuffers();
 
+        [SerializeField] double m_delay = 0.0;
+
         AudioSource m_audioSource;
         AudioClip m_dummyClip;
         rtAudioData m_data;
@@ -19,16 +21,23 @@ namespace IST.RemoteTalk
         bool m_isPlaying;
         bool m_isFinished;
         int m_sampleRate;
+        double m_sampleDelay;
         double m_samplePos;
         SyncBuffers m_syncBuffers;
 
+        public double delay
+        {
+            get { return m_delay; }
+            set { m_delay = value; }
+        }
+
         public bool isPlaying
         {
-            get { return m_audioSource != null && m_audioSource.isPlaying; }
-        }
-        public bool isFinished
-        {
-            get { return m_isFinished; }
+            get
+            {
+                Update();
+                return m_audioSource != null && m_audioSource.isPlaying;
+            }
         }
 
         public void Play(rtAudioData data, SyncBuffers cb)
@@ -53,6 +62,7 @@ namespace IST.RemoteTalk
 
             m_sampleRate = AudioSettings.outputSampleRate;
             m_samplePos = 0.0;
+            m_sampleDelay = m_delay;
             m_isPlaying = true;
         }
 
@@ -92,6 +102,14 @@ namespace IST.RemoteTalk
         {
             if (!m_isPlaying)
                 return;
+
+            double len = (double)dst.Length / (double)channels / (double)m_sampleRate;
+            m_sampleDelay -= len;
+            if (m_sampleDelay >= 0.0)
+            {
+                rtAudioData.ClearSamples(dst);
+                return;
+            }
 
             bool eos = m_syncBuffers();
             m_samplePos = m_data.Resample(dst, m_sampleRate, channels, dst.Length, m_samplePos);
