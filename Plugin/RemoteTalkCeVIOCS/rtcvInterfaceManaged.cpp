@@ -20,6 +20,9 @@ rtcvInterfaceManaged::rtcvInterfaceManaged()
 {
 }
 
+static inline float to_f(uint32_t v) { return (float)v / 50.0f; }
+static inline uint32_t to_u(float v) { return (uint32_t)(v * 50.0f); }
+
 void rtcvInterfaceManaged::updateStats()
 {
     if (!m_casts) {
@@ -27,16 +30,18 @@ void rtcvInterfaceManaged::updateStats()
         auto list = TalkerAgent::AvailableCasts;
         for (int i = 0; i < list->Length; ++i) {
             auto info = gcnew CastInfo(i, list[i]);
-            info->params->Add(L"‘å‚«‚³");
-            info->params->Add(L"‘¬‚³");
-            info->params->Add(L"‚‚³");
-            info->params->Add(L"º¿");
-            info->params->Add(L"—}—g");
+            info->params->Add(gcnew ParamInfo{ L"‘å‚«‚³", 1.0f, 0.0f, 2.0f });
+            info->params->Add(gcnew ParamInfo{ L"‘¬‚³", 1.0f, 0.0f, 2.0f });
+            info->params->Add(gcnew ParamInfo{ L"‚‚³", 1.0f, 0.0f, 2.0f });
+            info->params->Add(gcnew ParamInfo{ L"º¿", 1.0f, 0.0f, 2.0f });
+            info->params->Add(gcnew ParamInfo{ L"—}—g", 1.0f, 0.0f, 2.0f });
 
             auto talker = gcnew Talker(list[i]);
             int n = talker->Components->Count;
-            for (int i = 0; i < n; ++i)
-                info->params->Add(talker->Components->At(i)->Name);
+            for (int i = 0; i < n; ++i) {
+                auto c = talker->Components->At(i);
+                info->params->Add(gcnew ParamInfo{ c->Name, to_f(c->Value), 0.0f, 1.0f });
+            }
 
             m_casts->Add(info);
         }
@@ -67,16 +72,13 @@ rt::CastList rtcvInterfaceManaged::getCastList()
             rt::CastInfo ci;
             ci.id = ti->id;
             ci.name = ToStdString(ti->name);
-            for each(auto pname in ti->params)
-                ci.params.push_back({ ToStdString(pname) });
+            for each(auto p in ti->params)
+                ci.params.push_back({ ToStdString(p->name), p->value, p->range_min, p->range_max });
             ret.push_back(std::move(ci));
         }
     }
     return ret;
 }
-
-static inline float to_f(uint32_t v) { return (float)v / 50.0f; }
-static inline uint32_t to_u(float v) { return (uint32_t)(v * 50.0f); }
 
 bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
 {

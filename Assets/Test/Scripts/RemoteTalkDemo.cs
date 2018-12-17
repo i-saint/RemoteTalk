@@ -62,8 +62,8 @@ public class RemoteTalkDemo : MonoBehaviour
             result += c.name + "\n";
             result += "  host: " + c.host + "\n";
             result += "  params:\n";
-            foreach (var pn in c.paramNames)
-                result += "    " + pn + "\n";
+            foreach (var pi in c.paramInfo)
+                result += "    " + pi.name + "\n";
             result += "\n";
         }
         Debug.Log(result);

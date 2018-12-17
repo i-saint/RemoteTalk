@@ -94,7 +94,7 @@ rt::CastList rtvr2InterfaceManaged::getCastList()
             ci.id = ti->id;
             ci.name = ToStdString(ti->name);
             for each(auto p in ti->params)
-                ci.params.push_back({ ToStdString(p) });
+                ci.params.push_back({ ToStdString(p->name), p->value, p->range_min, p->range_max });
             ret.push_back(std::move(ci));
         }
     }
@@ -212,8 +212,10 @@ bool rtvr2InterfaceManaged::setupControls()
 
                 if (!slider || !tblock || !slider->IsEnabled)
                     continue;
-                cast->params->Add(tblock->Text);
+
                 m_sl_params->Add(slider);
+                cast->params->Add(
+                    gcnew ParamInfo(tblock->Text, (float)slider->Value, (float)slider->Minimum, (float)slider->Maximum));
             }
         }
     }

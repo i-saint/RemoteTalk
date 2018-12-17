@@ -186,6 +186,7 @@ namespace IST.RemoteTalk
                 for (int i = 0; i < len; ++i)
                     m_talkParams.paramValues[i] = talk.param[i].value;
             }
+            m_talkText = talk.text;
             return Talk();
         }
 

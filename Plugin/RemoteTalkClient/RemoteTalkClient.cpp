@@ -233,6 +233,35 @@ rtExport bool rtAudioDataExportOgg(rtAudioData *self, const char *path, const rt
 #pragma endregion
 
 
+#pragma region rtTalkParamInfo
+using rtTalkParamInfo = rt::TalkParamInfo;
+rtExport const char* rtTalkParamInfoGetName(rtTalkParamInfo *self)
+{
+    if (!self)
+        return "";
+    return self->name.c_str();
+}
+rtExport float rtTalkParamInfoGetValue(rtTalkParamInfo *self)
+{
+    if (!self)
+        return 0;
+    return self->value;
+}
+rtExport float rtTalkParamInfoGetRangeMin(rtTalkParamInfo *self)
+{
+    if (!self)
+        return 0;
+    return self->range_min;
+}
+rtExport float rtTalkParamInfoGetRangeMax(rtTalkParamInfo *self)
+{
+    if (!self)
+        return 0;
+    return self->range_max;
+}
+#pragma endregion
+
+
 #pragma region rtCastInfo
 using rtCastInfo = rt::CastInfo;
 
@@ -254,11 +283,11 @@ rtExport int rtCastInfoGetNumParams(rtCastInfo *self)
         return 0;
     return (int)self->params.size();
 }
-rtExport const char* rtCastInfoGetParamName(rtCastInfo *self, int i)
+rtExport rtTalkParamInfo* rtCastInfoGetParamInfo(rtCastInfo *self, int i)
 {
     if (!self)
-        return "";
-    return self->params[i].name.c_str();
+        return nullptr;
+    return &self->params[i];
 }
 
 #pragma endregion

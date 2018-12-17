@@ -28,14 +28,23 @@ public:
 private:
     static rtcvInterfaceManaged s_instance;
 
+    ref class ParamInfo
+    {
+    public:
+        String^ name;
+        float value = 0.0f, range_min = 0.0f, range_max = 0.0f;
+
+        ParamInfo(String^ n, float v, float rn, float rx) : name(n), value(v), range_min(rn), range_max(rx) {}
+    };
+
     ref class CastInfo
     {
     public:
         int id;
         String^ name;
-        List<String^>^ params;
+        List<ParamInfo^>^ params;
 
-        CastInfo(int i, String^ n) : id(i), name(n), params(gcnew List<String^>()) {}
+        CastInfo(int i, String^ n) : id(i), name(n), params(gcnew List<ParamInfo^>()) {}
     };
     List<CastInfo^>^ m_casts;
     int m_cast = 0;

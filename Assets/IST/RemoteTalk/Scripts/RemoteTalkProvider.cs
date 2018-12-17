@@ -14,7 +14,7 @@ namespace IST.RemoteTalk
         public string host;
         public int id;
         public string name;
-        public string[] paramNames;
+        public TalkParam[] paramInfo;
     }
 
     [Serializable]

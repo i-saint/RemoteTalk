@@ -31,8 +31,10 @@ namespace IST.RemoteTalk
             var castName = property.FindPropertyRelative("castName");
             var param = property.FindPropertyRelative("param");
             int castIndex = castNames.FindIndex(a => a == castName.stringValue);
+            bool castMissing = false;
             if (castIndex < 0)
             {
+                castMissing = true;
                 castNames.Add("(Missing) " + castName.stringValue);
                 castIndex = castNames.Count - 1;
             }
@@ -44,18 +46,24 @@ namespace IST.RemoteTalk
 
                 // cast selector
                 EditorGUI.BeginChangeCheck();
+                if (castMissing)
+                    GUI.contentColor = Color.red;
                 castIndex = EditorGUI.Popup(position, "Cast", castIndex, castNames.ToArray());
+                GUI.contentColor = Color.white;
                 if (EditorGUI.EndChangeCheck())
                 {
                     var cast = RemoteTalkProvider.FindCast(castNames[castIndex]);
                     if (cast != null)
                     {
                         castName.stringValue = cast.name;
-                        param.arraySize = cast.paramNames.Length;
-                        for (int i = 0; i < cast.paramNames.Length; ++i)
+                        param.arraySize = cast.paramInfo.Length;
+                        for (int i = 0; i < cast.paramInfo.Length; ++i)
                         {
                             var e = param.GetArrayElementAtIndex(i);
-                            e.FindPropertyRelative("name").stringValue = cast.paramNames[i];
+                            e.FindPropertyRelative("name").stringValue = cast.paramInfo[i].name;
+                            e.FindPropertyRelative("value").floatValue = cast.paramInfo[i].value;
+                            e.FindPropertyRelative("rangeMin").floatValue = cast.paramInfo[i].rangeMin;
+                            e.FindPropertyRelative("rangeMax").floatValue = cast.paramInfo[i].rangeMax;
                         }
                     }
                 }

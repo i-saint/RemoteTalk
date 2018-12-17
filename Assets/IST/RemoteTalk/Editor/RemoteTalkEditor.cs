@@ -22,10 +22,10 @@ namespace IST.RemoteTalk
             {
                 var castInfo = casts[castID];
                 var paramValues = talkParamsProp.FindPropertyRelative("paramValues");
-                for (int pi = 0; pi < castInfo.paramNames.Length; ++pi)
+                for (int pi = 0; pi < castInfo.paramInfo.Length; ++pi)
                 {
                     var p = paramValues.GetFixedBufferElementAtIndex(pi);
-                    EditorGUILayout.PropertyField(p, new GUIContent(castInfo.paramNames[pi]));
+                    EditorGUILayout.PropertyField(p, new GUIContent(castInfo.paramInfo[pi].name));
                 }
             }
         }

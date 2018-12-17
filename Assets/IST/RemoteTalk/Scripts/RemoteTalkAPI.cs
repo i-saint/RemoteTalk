@@ -194,6 +194,23 @@ namespace IST.RemoteTalk
         }
     }
 
+    public struct rtTalkParamInfo
+    {
+        #region internal
+        public IntPtr self;
+        [DllImport("RemoteTalkClient")] static extern IntPtr rtTalkParamInfoGetName(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern float rtTalkParamInfoGetValue(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern float rtTalkParamInfoGetRangeMin(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern float rtTalkParamInfoGetRangeMax(IntPtr self);
+        #endregion
+
+        public string name { get { return Misc.S(rtTalkParamInfoGetName(self)); } }
+        public float value { get { return rtTalkParamInfoGetValue(self); } }
+        public float rangeMin { get { return rtTalkParamInfoGetRangeMin(self); } }
+        public float rangeMax { get { return rtTalkParamInfoGetRangeMax(self); } }
+    }
+
+
     public struct rtCastInfo
     {
 #region internal
@@ -201,18 +218,18 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetID(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetName(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetNumParams(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetParamName(IntPtr self, int i);
+        [DllImport("RemoteTalkClient")] static extern rtTalkParamInfo rtCastInfoGetParamInfo(IntPtr self, int i);
 #endregion
 
         public static implicit operator bool(rtCastInfo v) { return v.self != IntPtr.Zero; }
 
         public int id { get { return rtCastInfoGetID(self); } }
         public string name { get { return Misc.S(rtCastInfoGetName(self)); } }
-        public string[] paramNames {
+        public rtTalkParamInfo[] paramInfo {
             get {
-                var ret = new string[rtCastInfoGetNumParams(self)];
+                var ret = new rtTalkParamInfo[rtCastInfoGetNumParams(self)];
                 for (int i = 0; i < ret.Length; ++i)
-                    ret[i] = Misc.S(rtCastInfoGetParamName(self, i));
+                    ret[i] = rtCastInfoGetParamInfo(self, i);
                 return ret;
             }
         }
@@ -289,7 +306,21 @@ namespace IST.RemoteTalk
                 for (int i = 0; i < ret.Length; ++i)
                 {
                     var ai = rtHTTPClientGetCast(self, i);
-                    ret[i] = new Cast { id = ai.id, name = ai.name, paramNames = ai.paramNames };
+                    var cas = new Cast { id = ai.id, name = ai.name };
+
+                    var pis = ai.paramInfo;
+                    cas.paramInfo = new TalkParam[pis.Length];
+                    for (int pi = 0; pi < pis.Length; ++pi)
+                    {
+                        var p = pis[pi];
+                        cas.paramInfo[pi] = new TalkParam {
+                            name = p.name,
+                            value = p.value,
+                            rangeMin = p.rangeMin,
+                            rangeMax = p.rangeMax
+                        };
+                    }
+                    ret[i] = cas;
                 }
                 return ret;
             }
