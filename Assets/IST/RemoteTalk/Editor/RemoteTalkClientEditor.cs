@@ -84,6 +84,7 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.Space();
 
+#if UNITY_EDITOR_WIN
             if (GUILayout.Button("Connect VOICEROID2"))
                 rtPlugin.LaunchVOICEROID2();
             EditorGUILayout.Space();
@@ -94,6 +95,7 @@ namespace IST.RemoteTalk
 
             if (GUILayout.Button("Start SAPI Server"))
                 rtspTalkServer.StartServer();
+#endif
         }
     }
 }

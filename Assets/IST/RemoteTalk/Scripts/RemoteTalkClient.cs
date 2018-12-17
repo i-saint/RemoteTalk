@@ -15,6 +15,7 @@ namespace IST.RemoteTalk
     }
 
     [ExecuteInEditMode]
+    [AddComponentMenu("RemoteTalk/Client")]
     public class RemoteTalkClient : RemoteTalkProvider
     {
         #region Fields
@@ -179,8 +180,12 @@ namespace IST.RemoteTalk
         public override unsafe bool Talk(Talk talk)
         {
             m_talkParams.cast = GetCastID(talk.castName);
-            for (int i = 0; i < talk.param.Length; ++i)
-                m_talkParams.paramValues[i] = talk.param[i].value;
+            if (talk.param != null)
+            {
+                int len = Math.Min(talk.param.Length, rtTalkParams.MaxParams);
+                for (int i = 0; i < len; ++i)
+                    m_talkParams.paramValues[i] = talk.param[i].value;
+            }
             return Talk();
         }
 

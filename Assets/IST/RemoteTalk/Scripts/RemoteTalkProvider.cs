@@ -29,8 +29,8 @@ namespace IST.RemoteTalk
     public class Talk
     {
         public string castName = "";
+        public TalkParam[] param;
         public string text = "";
-        public TalkParam[] param = new TalkParam[rtTalkParams.MaxParams];
 
         public Cast cast
         {

@@ -8,6 +8,7 @@ namespace IST.RemoteTalk
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(AudioSource))]
+    [AddComponentMenu("RemoteTalk/Audio")]
     public class RemoteTalkAudio : MonoBehaviour
     {
         public delegate bool SyncBuffers();

@@ -9,6 +9,7 @@ using UnityEditor;
 namespace IST.RemoteTalk
 {
     [ExecuteInEditMode]
+    [AddComponentMenu("RemoteTalk/Script")]
     public class RemoteTalkScript : MonoBehaviour
     {
         [SerializeField] List<Talk> m_talks;
