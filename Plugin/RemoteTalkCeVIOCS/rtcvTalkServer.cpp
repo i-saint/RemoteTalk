@@ -28,14 +28,8 @@ rtcvTalkServer::Status rtcvTalkServer::onStats(StatsMessage& mes)
     ifs->getParams(stats.params);
     {
         int n = ifs->getNumCasts();
-        for (int i = 0; i < n; ++i) {
-            rt::CastInfo ci;
-            ifs->getCastInfo(i, &ci);
-
-            rt::CastInfoImpl cii;
-            cii.fromCastInfo(ci);
-            stats.casts.push_back(std::move(cii));
-        }
+        for (int i = 0; i < n; ++i)
+            stats.casts.push_back(*ifs->getCastInfo(i));
     }
     stats.host = ifs->getClientName();
     stats.plugin_version = ifs->getPluginVersion();
@@ -93,16 +87,15 @@ rtcvTalkServer::Status rtcvTalkServer::onDebug(DebugMessage& mes)
 }
 #endif
 
-void rtcvTalkServer::sampleCallbackS(const rt::TalkSample *data, void *userdata)
+void rtcvTalkServer::sampleCallbackS(const rt::AudioData& data, void *userdata)
 {
     auto _this = (rtcvTalkServer*)userdata;
     _this->sampleCallback(data);
 }
 
-void rtcvTalkServer::sampleCallback(const rt::TalkSample *data)
+void rtcvTalkServer::sampleCallback(const rt::AudioData& data)
 {
-    auto tmp = std::make_shared<rt::AudioData>();
-    rt::ToAudioData(*tmp, *data);
+    auto tmp = std::make_shared<rt::AudioData>(data);
     if (m_params.force_mono)
         tmp->convertToMono();
     {

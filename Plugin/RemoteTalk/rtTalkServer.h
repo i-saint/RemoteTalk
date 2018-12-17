@@ -6,7 +6,7 @@
 #include <mutex>
 #include <future>
 #include "rtAudioData.h"
-#include "rtTalkInterfaceImpl.h"
+#include "rtTalkInterface.h"
 
 namespace Poco {
     namespace Net {

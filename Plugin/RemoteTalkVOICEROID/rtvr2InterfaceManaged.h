@@ -38,9 +38,9 @@ private:
     public:
         int id;
         String^ name;
-        List<String^>^ param_names;
+        List<String^>^ params;
 
-        CastInfo(int i, String^ n) : id(i), name(n), param_names(gcnew List<String^>) {}
+        CastInfo(int i, String^ n) : id(i), name(n), params(gcnew List<String^>) {}
     };
     List<CastInfo^>^ m_casts;
 };

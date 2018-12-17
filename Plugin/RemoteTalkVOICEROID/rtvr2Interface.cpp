@@ -40,13 +40,11 @@ int rtvr2TalkInterface::getNumCasts() const
     return (int)m_casts.size();
 }
 
-bool rtvr2TalkInterface::getCastInfo(int i, rt::CastInfo *dst) const
+const rt::CastInfo* rtvr2TalkInterface::getCastInfo(int i) const
 {
-    if (i >= 0 && i < (int)m_casts.size()) {
-        *dst = m_casts[i].toCastInfo();
-        return true;
-    }
-    return false;
+    if (i >= 0 && i < (int)m_casts.size())
+        return &m_casts[i];
+    return nullptr;
 }
 
 bool rtvr2TalkInterface::setText(const char *text)
@@ -102,8 +100,7 @@ void rtvr2TalkInterface::onStop()
 {
     if (m_sample_cb && m_is_playing) {
         rt::AudioData dummy;
-        auto sd = rt::ToTalkSample(dummy);
-        m_sample_cb(&sd, m_sample_cb_userdata);
+        m_sample_cb(dummy, m_sample_cb_userdata);
     }
     m_is_playing = false;
 }
@@ -111,8 +108,7 @@ void rtvr2TalkInterface::onStop()
 void rtvr2TalkInterface::onUpdateBuffer(const rt::AudioData& ad)
 {
     if (m_sample_cb && m_is_playing) {
-        auto sd = rt::ToTalkSample(ad);
-        m_sample_cb(&sd, m_sample_cb_userdata);
+        m_sample_cb(ad, m_sample_cb_userdata);
     }
 }
 

@@ -17,8 +17,8 @@ public:
     Status onDebug(DebugMessage& mes) override;
 #endif
 
-    static void sampleCallbackS(const rt::TalkSample *data, void *userdata);
-    void sampleCallback(const rt::TalkSample *data);
+    static void sampleCallbackS(const rt::AudioData& data, void *userdata);
+    void sampleCallback(const rt::AudioData& data);
 
 private:
     std::mutex m_data_mutex;

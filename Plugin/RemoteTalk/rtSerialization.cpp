@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "rtSerialization.h"
-#include "rtTalkInterfaceImpl.h"
+#include "rtTalkInterface.h"
 #include "rtTalkServer.h"
 #include "picojson/picojson.h"
 
@@ -41,13 +41,13 @@ std::string ToUTF8(const char *src)
     // to UTF-16
     const int wsize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)src, -1, nullptr, 0);
     std::wstring ws;
-    ws.resize(wsize);
+    ws.resize(wsize-1);
     ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)src, -1, (LPWSTR)ws.data(), wsize);
 
     // to UTF-8
     const int u8size = ::WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)ws.data(), -1, nullptr, 0, nullptr, nullptr);
     std::string u8s;
-    u8s.resize(u8size);
+    u8s.resize(u8size-1);
     ::WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)ws.data(), -1, (LPSTR)u8s.data(), u8size, nullptr, nullptr);
     return u8s;
 #else
@@ -65,13 +65,13 @@ std::string ToANSI(const char *src)
     // to UTF-16
     const int wsize = ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)src, -1, nullptr, 0);
     std::wstring ws;
-    ws.resize(wsize);
+    ws.resize(wsize-1);
     ::MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)src, -1, (LPWSTR)ws.data(), wsize);
 
     // to ANSI
     const int u8size = ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.data(), -1, nullptr, 0, nullptr, nullptr);
     std::string u8s;
-    u8s.resize(u8size);
+    u8s.resize(u8size-1);
     ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.data(), -1, (LPSTR)u8s.data(), u8size, nullptr, nullptr);
     return u8s;
 #else
@@ -191,6 +191,7 @@ template<> bool from_json(std::string& dst, const picojson::value& v)
     return true;
 }
 
+
 template<> picojson::value to_json(const TalkParams& v)
 {
     using namespace picojson;
@@ -213,68 +214,93 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
     using namespace picojson;
     if (!v.is<object>())
         return false;
-    for (auto& kvp : v.get<object>()) {
-        if      (kvp.first == "mute") { dst.mute = (int)kvp.second.get<float>(); }
-        else if (kvp.first == "force_mono") { dst.force_mono = (int)kvp.second.get<float>(); }
-        else if (kvp.first == "cast") { dst.cast = (int)kvp.second.get<float>(); }
-        else if (kvp.first == "params") {
-            if (kvp.second.is<object>()) {
-                for (auto& p : kvp.second.get<object>()) {
-                    if (p.second.is<float>()) {
-                        int idx = from_string<int>(p.first);
-                        if (idx >= 0 && idx < TalkParams::MaxParams)
-                            dst[from_string<int>(p.first)] = p.second.get<float>();
+
+    const auto& o = v.get<object>();
+    int n = 0;
+    if (rt::from_json(dst.mute, v.get("mute"))) ++n;
+    if (rt::from_json(dst.force_mono, v.get("force_mono"))) ++n;
+    if (rt::from_json(dst.cast, v.get("cast"))) ++n;
+    {
+        auto it = o.find("params");
+        if (it != o.end() && it->second.is<object>()) {
+            for (auto& kvp : it->second.get<object>()) {
+                if (kvp.second.is<float>()) {
+                    int idx = from_string<int>(kvp.first);
+                    if (idx >= 0 && idx < TalkParams::MaxParams) {
+                        float val;
+                        if (rt::from_json(val, kvp.second))
+                            dst[idx] = val;
                     }
                 }
             }
         }
     }
-    return true;
+    return n >= 3;
 }
 
-template<> picojson::value to_json(const CastInfoImpl& v)
+template<> picojson::value to_json(const TalkParamInfo& v)
+{
+    using namespace picojson;
+    object o;
+    o["name"] = value(v.name);
+    o["value"] = value(v.value);
+    o["range_min"] = value(v.range_min);
+    o["range_max"] = value(v.range_max);
+    return value(std::move(o));
+}
+template<> bool from_json(TalkParamInfo& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<object>())
+        return false;
+
+    int n = 0;
+    if (rt::from_json(dst.name, v.get("name"))) ++n;
+    if (rt::from_json(dst.value, v.get("value"))) ++n;
+    if (rt::from_json(dst.range_min, v.get("range_min"))) ++n;
+    if (rt::from_json(dst.range_max, v.get("range_max"))) ++n;
+    return n >= 4;
+}
+
+template<> picojson::value to_json(const CastInfo& v)
 {
     using namespace picojson;
     object o;
     o["id"] = value((float)v.id);
     o["name"] = value(v.name);
 
-    if (!v.param_names.empty()) {
-        array exp;
-        for (auto& pname : v.param_names)
-            exp.push_back(value(pname));
-        o["param_names"] = value(exp);
+    if (!v.params.empty()) {
+        array params;
+        for (auto& p : v.params)
+            params.push_back(to_json(p));
+        o["params"] = value(params);
     }
 
     return value(std::move(o));
 }
-template<> bool from_json(CastInfoImpl& dst, const picojson::value& v)
+template<> bool from_json(CastInfo& dst, const picojson::value& v)
 {
     using namespace picojson;
     if (!v.is<object>())
         return false;
 
     auto& o = v.get<object>();
+    int n = 0;
+    if (rt::from_json(dst.id, v.get("id"))) ++n;
+    if (rt::from_json(dst.name, v.get("name"))) ++n;
     {
-        auto it = o.find("id");
-        if (it != o.end() && it->second.is<float>())
-            dst.id = (int)it->second.get<float>();
-    }
-    {
-        auto it = o.find("name");
-        if (it != o.end() && it->second.is<std::string>())
-            dst.name = it->second.get<std::string>();
-    }
-    {
-        auto it = o.find("param_names");
+        auto it = o.find("params");
         if (it != o.end() && it->second.is<array>()) {
-            auto& exp = it->second.get<array>();
-            dst.param_names.clear();
-            for (auto& pname : exp)
-                dst.param_names.push_back(pname.get<std::string>());
+            auto& params = it->second.get<array>();
+            dst.params.clear();
+            for (auto& p : params) {
+                TalkParamInfo tmp;
+                if (rt::from_json(tmp, p))
+                    dst.params.push_back(std::move(tmp));
+            }
         }
     }
-    return true;
+    return n >= 2;
 }
 
 template<> picojson::value to_json(const CastList& v)
@@ -292,7 +318,7 @@ template<> bool from_json(CastList& dst, const picojson::value& v)
         return false;
 
     for (auto& e : v.get<array>()) {
-        CastInfoImpl ai;
+        CastInfo ai;
         if(from_json(ai, e))
             dst.push_back(ai);
     }
@@ -314,18 +340,16 @@ template<> picojson::value to_json(const TalkServerStats& v)
 template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
 {
     using namespace picojson;
-    bool ret = false;
-    if (rt::from_json(dst.host, v.get("host")))
-        ret = true;
-    if (rt::from_json(dst.plugin_version, v.get("plugin_version")))
-        ret = true;
-    if (rt::from_json(dst.protocol_version, v.get("protocol_version")))
-        ret = true;
-    if (rt::from_json(dst.params, v.get("params")))
-        ret = true;
-    if (rt::from_json(dst.casts, v.get("casts")))
-        ret = true;
-    return ret;
+    if (!v.is<object>())
+        return false;
+
+    int n = 0;
+    if (rt::from_json(dst.host, v.get("host"))) ++n;
+    if (rt::from_json(dst.plugin_version, v.get("plugin_version"))) ++n;
+    if (rt::from_json(dst.protocol_version, v.get("protocol_version"))) ++n;
+    if (rt::from_json(dst.params, v.get("params"))) ++n;
+    if (rt::from_json(dst.casts, v.get("casts"))) ++n;
+    return n >= 5;
 }
 
 

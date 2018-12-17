@@ -15,7 +15,7 @@ public:
     bool getParams(rt::TalkParams& params) const override;
     bool setParams(const rt::TalkParams& params) override;
     int getNumCasts() const override;
-    bool getCastInfo(int i, rt::CastInfo *dst) const override;
+    const rt::CastInfo* getCastInfo(int i) const override;
     bool setText(const char *text) override;
 
     bool ready() const override;

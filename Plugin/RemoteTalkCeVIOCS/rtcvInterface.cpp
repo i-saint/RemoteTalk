@@ -42,13 +42,11 @@ int rtcvTalkInterface::getNumCasts() const
     return (int)m_casts.size();
 }
 
-bool rtcvTalkInterface::getCastInfo(int i, rt::CastInfo *dst) const
+rt::CastInfo* rtcvTalkInterface::getCastInfo(int i) const
 {
-    if (i < (int)m_casts.size()) {
-        *dst = m_casts[i].toCastInfo();
-        return true;
-    }
-    return false;
+    if (i >= 0 && i < (int)m_casts.size())
+        return &m_casts[i];
+    return nullptr;
 }
 
 bool rtcvTalkInterface::setText(const char *text)
@@ -81,8 +79,7 @@ bool rtcvTalkInterface::stop()
         m_is_playing = false;
         if (m_sample_cb) {
             rt::AudioData dummy;
-            auto sd = rt::ToTalkSample(dummy);
-            m_sample_cb(&sd, m_sample_cb_userdata);
+            m_sample_cb(dummy, m_sample_cb_userdata);
         }
         return true;
     }
@@ -97,8 +94,7 @@ bool rtcvTalkInterface::wait()
         m_is_playing = false;
         if (m_sample_cb) {
             rt::AudioData dummy;
-            auto sd = rt::ToTalkSample(dummy);
-            m_sample_cb(&sd, m_sample_cb_userdata);
+            m_sample_cb(dummy, m_sample_cb_userdata);
         }
         return true;
     }
@@ -111,8 +107,7 @@ bool rtcvTalkInterface::wait()
 void rtcvTalkInterface::onUpdateBuffer(rt::AudioData& ad)
 {
     if (m_is_playing && m_sample_cb && rtcvInterfaceManaged::getInstance()->isPlaying()) {
-        auto sd = rt::ToTalkSample(ad);
-        m_sample_cb(&sd, m_sample_cb_userdata);
+        m_sample_cb(ad, m_sample_cb_userdata);
     }
 }
 

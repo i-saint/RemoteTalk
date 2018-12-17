@@ -1,9 +1,24 @@
 #pragma once
 #include <cstdint>
+#include "rtAudioData.h"
 
 #define rtInterfaceFuncName "rtGetTalkInterface"
 
 namespace rt {
+
+struct TalkParamInfo
+{
+    std::string name;
+    float value = 0.0f, range_min = 0.0f, range_max = 0.0f;
+};
+
+struct CastInfo
+{
+    int id = 0;
+    std::string name;
+    std::vector<TalkParamInfo> params;
+};
+using CastList = std::vector<CastInfo>;
 
 struct TalkParams
 {
@@ -47,25 +62,8 @@ struct TalkParams
     }
 };
 
-struct CastInfo
-{
-    int id = 0;
-    int num_ex_params = 0;
-    const char *name = nullptr;
-    const char **ex_param_names = nullptr;
-};
-
-struct TalkSample
-{
-    const char *data = nullptr;
-    int size = 0; // in byte
-    int bits = 0;
-    int channels = 0;
-    int frequency = 0;
-};
-
 // one talk() will call this callback several times. last one has null data to notify end.
-using TalkSampleCallback = void(*)(const TalkSample *data, void *userdata);
+using TalkSampleCallback = void(*)(const AudioData& data, void *userdata);
 
 class TalkInterface
 {
@@ -79,7 +77,7 @@ public:
     virtual bool getParams(TalkParams& params) const = 0;
     virtual bool setParams(const TalkParams& params) = 0;
     virtual int getNumCasts() const = 0;
-    virtual bool getCastInfo(int i, CastInfo *dst) const = 0;
+    virtual const CastInfo* getCastInfo(int i) const = 0;
     virtual bool setText(const char *text) = 0;
 
     virtual bool ready() const = 0;

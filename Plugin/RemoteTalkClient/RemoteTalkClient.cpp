@@ -234,7 +234,7 @@ rtExport bool rtAudioDataExportOgg(rtAudioData *self, const char *path, const rt
 
 
 #pragma region rtCastInfo
-using rtCastInfo = rt::CastInfoImpl;
+using rtCastInfo = rt::CastInfo;
 
 rtExport int rtCastInfoGetID(rtCastInfo *self)
 {
@@ -252,13 +252,13 @@ rtExport int rtCastInfoGetNumParams(rtCastInfo *self)
 {
     if (!self)
         return 0;
-    return (int)self->param_names.size();
+    return (int)self->params.size();
 }
 rtExport const char* rtCastInfoGetParamName(rtCastInfo *self, int i)
 {
     if (!self)
         return "";
-    return self->param_names[i].c_str();
+    return self->params[i].name.c_str();
 }
 
 #pragma endregion

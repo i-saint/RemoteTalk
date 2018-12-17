@@ -90,11 +90,11 @@ rt::CastList rtvr2InterfaceManaged::getCastList()
     rt::CastList ret;
     if (m_casts) {
         for each(auto ti in m_casts) {
-            rt::CastInfoImpl ci;
+            rt::CastInfo ci;
             ci.id = ti->id;
             ci.name = ToStdString(ti->name);
-            for each(auto pname in ti->param_names)
-                ci.param_names.push_back(ToStdString(pname));
+            for each(auto p in ti->params)
+                ci.params.push_back({ ToStdString(p) });
             ret.push_back(std::move(ci));
         }
     }
@@ -188,7 +188,7 @@ bool rtvr2InterfaceManaged::setupControls()
         auto vpev = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetEditView", true);
         if (vpev->Count >= 1) {
             auto cast = m_casts[m_lv_casts->SelectedIndex];
-            cast->param_names->Clear();
+            cast->params->Clear();
             m_sl_params->Clear();
 
             auto lfs = SelectControlsByTypeName(vpev[0], "AI.Framework.Wpf.Controls.LinearFader", false);
@@ -212,7 +212,7 @@ bool rtvr2InterfaceManaged::setupControls()
 
                 if (!slider || !tblock || !slider->IsEnabled)
                     continue;
-                cast->param_names->Add(tblock->Text);
+                cast->params->Add(tblock->Text);
                 m_sl_params->Add(slider);
             }
         }

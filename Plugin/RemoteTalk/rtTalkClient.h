@@ -1,5 +1,5 @@
 #pragma once
-#include "rtTalkInterfaceImpl.h"
+#include "rtTalkInterface.h"
 #include "rtTalkServer.h"
 
 namespace rt {

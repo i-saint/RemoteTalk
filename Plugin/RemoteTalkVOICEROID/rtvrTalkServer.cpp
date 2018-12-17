@@ -38,14 +38,8 @@ rtvrTalkServer::Status rtvrTalkServer::onStats(StatsMessage& mes)
     }
     {
         int n = ifs->getNumCasts();
-        for (int i = 0; i < n; ++i) {
-            rt::CastInfo ci;
-            ifs->getCastInfo(i, &ci);
-
-            rt::CastInfoImpl cii;
-            cii.fromCastInfo(ci);
-            stats.casts.push_back(std::move(cii));
-        }
+        for (int i = 0; i < n; ++i)
+            stats.casts.push_back(*ifs->getCastInfo(i));
     }
     stats.host = ifs->getClientName();
     stats.plugin_version = ifs->getPluginVersion();
@@ -117,16 +111,15 @@ rtvrTalkServer::Status rtvrTalkServer::onDebug(DebugMessage& mes)
 #endif
 
 
-void rtvrTalkServer::sampleCallbackS(const rt::TalkSample *data, void *userdata)
+void rtvrTalkServer::sampleCallbackS(const rt::AudioData& data, void *userdata)
 {
     auto _this = (rtvrTalkServer*)userdata;
     _this->sampleCallback(data);
 }
 
-void rtvrTalkServer::sampleCallback(const rt::TalkSample *data)
+void rtvrTalkServer::sampleCallback(const rt::AudioData& data)
 {
-    auto tmp = std::make_shared<rt::AudioData>();
-    rt::ToAudioData(*tmp, *data);
+    auto tmp = std::make_shared<rt::AudioData>(data);
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.push_back(tmp);

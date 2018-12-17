@@ -35,9 +35,9 @@ rtspTalkServer::rtspTalkServer()
             auto desc = rt::ToMBS(str);
             m_voice_tokens.push_back(cpVoiceToken);
 
-            rt::CastInfoImpl cas{ id_seed++, desc };
-            cas.param_names.push_back("Volume");
-            cas.param_names.push_back("Rate");
+            rt::CastInfo cas{ id_seed++, desc };
+            cas.params.push_back({ "Volume", 1.0f, 0.0f, 1.0f });
+            cas.params.push_back({ "Rate", 1.0f, 0.0f, 2.0f });
             m_casts.push_back(std::move(cas));
         }
     }
@@ -73,8 +73,8 @@ rtspTalkServer::Status rtspTalkServer::onStats(StatsMessage& mes)
     long rate;
     m_voice->GetVolume(&volume);
     m_voice->GetRate(&rate);
-    mes.stats.params[0] = (float)volume / 100.0f;
-    mes.stats.params[1] = (float)(rate + 10) / 10.0f;
+    mes.stats.params[0] = (float)volume / 100.0f; // [0, 100] -> [0.0, 1.0]
+    mes.stats.params[1] = (float)(rate + 10) / 10.0f; // [-10, 10] -> [0.0, 2.0]
 
     mes.stats.host = "Windows SAPI";
     mes.stats.protocol_version = rtProtocolVersion;
