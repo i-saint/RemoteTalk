@@ -101,15 +101,21 @@ TestCase(rtAudioData)
     sum += *ads32;
     sum += *adf32;
 
-    rt::ExportWave(sum, "sum.wav");
+    rt::ExportWave(sum, "sum_s16.wav");
     {
-        rt::OggSettings ogg;
-        rt::ExportOgg(sum, "sum_vbr.ogg", ogg);
+        rt::AudioData fsum;
+        sum.convertFormat(fsum, rt::AudioFormat::F32);
+        rt::ExportWave(fsum, "sum_f32.wav");
     }
     {
         rt::OggSettings ogg;
         ogg.quality = 1.0f;
-        rt::ExportOgg(sum, "sum_cbr.ogg", ogg);
+        rt::ExportOgg(sum, "sum_vbr_high.ogg", ogg);
+    }
+    {
+        rt::OggSettings ogg;
+        ogg.quality = 0.0f;
+        rt::ExportOgg(sum, "sum_vbr_low.ogg", ogg);
     }
 }
 

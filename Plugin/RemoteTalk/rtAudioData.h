@@ -21,7 +21,7 @@ enum class AudioFormat
     RawFile = 100,
 };
 int SizeOf(AudioFormat f);
-int GetNumBits(AudioFormat f);
+int GetBitCount(AudioFormat f);
 
 
 class AudioData
@@ -51,6 +51,7 @@ public:
     size_t getSampleLength() const;
     double getDuration() const;
 
+    bool convertFormat(AudioData& dst, AudioFormat fmt) const;
     void convertToMono();
     void increaseChannels(int n); // must be mono before call
     double resample(AudioData& dst, int frequency, int length, double pos = 0.0) const;

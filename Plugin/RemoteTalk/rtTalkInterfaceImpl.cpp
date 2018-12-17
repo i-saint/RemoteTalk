@@ -10,7 +10,7 @@ TalkSample ToTalkSample(const AudioData& ad)
     TalkSample ret;
     ret.data = ad.data.data();
     ret.size = (int)ad.data.size();
-    ret.bits = rt::GetNumBits(ad.format);
+    ret.bits = rt::GetBitCount(ad.format);
     ret.channels = ad.channels;
     ret.frequency = ad.frequency;
     return ret;

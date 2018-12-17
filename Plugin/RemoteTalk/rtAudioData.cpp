@@ -20,7 +20,7 @@ int SizeOf(AudioFormat f)
     }
     return ret;
 }
-int GetNumBits(AudioFormat f)
+int GetBitCount(AudioFormat f)
 {
     return SizeOf(f) * 8;
 }
@@ -93,6 +93,19 @@ size_t AudioData::getSampleLength() const
 double AudioData::getDuration() const
 {
     return (double)getSampleLength() / (frequency * channels);
+}
+
+bool AudioData::convertFormat(AudioData& dst, AudioFormat fmt) const
+{
+    if (format == AudioFormat::Unknown || format == AudioFormat::RawFile || fmt == AudioFormat::Unknown || fmt == AudioFormat::RawFile)
+        return false;
+
+    dst.format = fmt;
+    dst.channels = channels;
+    dst.frequency = frequency;
+    dst.data.clear();
+    dst += *this;
+    return true;
 }
 
 void AudioData::convertToMono()
@@ -273,7 +286,7 @@ double AudioData::resampleFloat(float *dst, int new_frequency, int new_channels,
 
 AudioData& AudioData::operator+=(const AudioData& v)
 {
-    if (format == AudioFormat::RawFile || v.data.empty() || v.format == AudioFormat::Unknown || v.format == AudioFormat::RawFile)
+    if (format == AudioFormat::RawFile || v.format == AudioFormat::RawFile || v.format == AudioFormat::Unknown || v.data.empty())
         return *this;
 
     if (format == AudioFormat::Unknown) {

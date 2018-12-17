@@ -1,5 +1,5 @@
 file(GLOB sources *.cpp *.h)
-set(plugins_dir "${CMAKE_SOURCE_DIR}/../RemoteTalk/Assets/IST/RemoteTalk/Plugins/x86_64")
+set(plugins_dir "${CMAKE_SOURCE_DIR}/../Assets/IST/RemoteTalk/Plugins/x86_64")
 add_plugin(RemoteTalkClient SOURCES ${sources} PLUGINS_DIR ${plugins_dir})
 
 add_dependencies(RemoteTalkClient RemoteTalk)

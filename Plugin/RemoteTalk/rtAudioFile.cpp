@@ -32,15 +32,16 @@ struct WaveHeader
 
 bool ExportWave(const AudioData& ad, std::ostream& os)
 {
-    if (ad.channels == 0 || ad.format == AudioFormat::RawFile || ad.format == AudioFormat::F32)
+    if (ad.channels == 0 || ad.format == AudioFormat::RawFile)
         return false;
 
     WaveHeader header;
     header.nSampleRate = ad.frequency;
     header.shCh = (int16_t)ad.channels;
-    header.shBitPerSample = (int16_t)SizeOf(ad.format) * 8;
-    header.nBytePerSec = header.nSampleRate * header.shBitPerSample * header.shCh / 8;
-    header.shBlockSize = header.shBitPerSample * header.shCh / 8;
+    header.shBitPerSample = (int16_t)GetBitCount(ad.format);
+    header.shBlockSize = (int16_t)(SizeOf(ad.format) * ad.channels);
+    header.nBytePerSec = ad.frequency * header.shBlockSize;
+    header.shFmtID = ad.format == AudioFormat::F32 ? 3 : 1;
     os.write((char*)&header, sizeof(header));
     os.write(ad.data.data(), ad.data.size());
 
