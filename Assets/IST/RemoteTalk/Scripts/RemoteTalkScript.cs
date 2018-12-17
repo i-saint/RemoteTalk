@@ -12,7 +12,7 @@ namespace IST.RemoteTalk
     [AddComponentMenu("RemoteTalk/Script")]
     public class RemoteTalkScript : MonoBehaviour
     {
-        [SerializeField] List<Talk> m_talks;
+        [SerializeField] List<Talk> m_talks = new List<Talk>();
         [SerializeField] bool m_isPlaying;
         [SerializeField] public int m_talkPos = 0;
 
@@ -45,7 +45,7 @@ namespace IST.RemoteTalk
                 m_current = m_talks[m_talkPos++];
                 if (m_current != null)
                 {
-                    var provider = RemoteTalkProvider.FindByCast(m_current.castName);
+                    var provider = m_current.provider;
                     if (provider != null)
                         provider.Talk(m_current);
                     m_prevProvider = provider;

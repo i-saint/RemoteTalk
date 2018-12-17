@@ -21,8 +21,7 @@ namespace IST.RemoteTalk
     public class TalkParam
     {
         public string name;
-        public float value;
-        public float rangeMin = 0.0f, rangeMax = 1.0f;
+        public float value, rangeMin, rangeMax;
     }
 
     [Serializable]

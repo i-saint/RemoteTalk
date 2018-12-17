@@ -369,7 +369,7 @@ namespace IST.RemoteTalk
 
         void Reset()
         {
-            m_serverPort = 8081 + instances.Count;
+            m_serverPort = 8080 + instances.Count;
         }
 #endif
 
