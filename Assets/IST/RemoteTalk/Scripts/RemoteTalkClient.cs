@@ -125,7 +125,7 @@ namespace IST.RemoteTalk
                 return ret;
             }
         }
-        public bool isIdling
+        public override bool isIdling
         {
             get { return isServerReady && !isServerTalking && !isPlaying; }
         }
@@ -141,12 +141,13 @@ namespace IST.RemoteTalk
 
         #region Public Methods
 
-        public void Talk()
+        public bool Talk()
         {
             MakeClient();
 
-            if (m_casts.Length > 0)
-                m_talkParams.cast = Mathf.Clamp(m_talkParams.cast, 0, m_casts.Length - 1);
+            if (m_talkParams.cast < 0 || m_talkParams.cast >= m_casts.Length)
+                return false;
+
             m_talkParams.mute = 1;
             m_talkParams.flags = 0xFFF;
 
@@ -165,7 +166,7 @@ namespace IST.RemoteTalk
                             if (audio != null)
                                 audio.Play(clip);
                         }
-                        return;
+                        return true;
                     }
                 }
 #endif
@@ -173,11 +174,27 @@ namespace IST.RemoteTalk
 
             m_isServerTalking = true;
             m_asyncTalk = m_client.Talk(ref m_talkParams, m_talkText);
+            return true;
+        }
+        public override unsafe bool Talk(Talk talk)
+        {
+            m_talkParams.cast = GetCastID(talk.castName);
+            for (int i = 0; i < talk.param.Length; ++i)
+                m_talkParams.paramValues[i] = talk.param[i].value;
+            return Talk();
         }
 
-        public void Stop()
+        public override void Stop()
         {
             m_asyncStop = m_client.Stop();
+        }
+
+        public int GetCastID(string castName)
+        {
+            for (int i = 0; i < m_casts.Length; ++i)
+                if (m_casts[i].name == castName)
+                    return i;
+            return -1;
         }
 
         public AudioClip GetCache(ref rtTalkParams tp)

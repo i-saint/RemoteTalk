@@ -341,31 +341,4 @@ namespace IST.RemoteTalk
 
         public static rtspTalkServer StartServer(int port = 8083) { return rtspStartServer(port); }
     }
-
-
-    [Serializable]
-    public class Cast
-    {
-        public string host;
-        public int id;
-        public string name;
-        public string[] paramNames;
-    }
-
-    [Serializable]
-    public class TalkData
-    {
-        public string castName = "";
-        public float[] param = new float[rtTalkParams.MaxParams];
-        public string text = "";
-
-        public Cast cast
-        {
-            get { return RemoteTalkProvider.FindCast(castName); }
-        }
-        public RemoteTalkProvider provider
-        {
-            get { return RemoteTalkProvider.FindByCast(castName); }
-        }
-    }
 }

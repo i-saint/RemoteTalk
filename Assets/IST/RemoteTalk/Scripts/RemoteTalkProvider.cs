@@ -8,6 +8,41 @@ using UnityEditor;
 
 namespace IST.RemoteTalk
 {
+    [Serializable]
+    public class Cast
+    {
+        public string host;
+        public int id;
+        public string name;
+        public string[] paramNames;
+    }
+
+    [Serializable]
+    public class TalkParam
+    {
+        public string name;
+        public float value;
+        public float rangeMin = 0.0f, rangeMax = 1.0f;
+    }
+
+    [Serializable]
+    public class Talk
+    {
+        public string castName = "";
+        public string text = "";
+        public TalkParam[] param = new TalkParam[rtTalkParams.MaxParams];
+
+        public Cast cast
+        {
+            get { return RemoteTalkProvider.FindCast(castName); }
+        }
+        public RemoteTalkProvider provider
+        {
+            get { return RemoteTalkProvider.FindByCast(castName); }
+        }
+    }
+
+
     public abstract class RemoteTalkProvider : MonoBehaviour
     {
         public static List<RemoteTalkProvider> instances { get; } = new List<RemoteTalkProvider>();
@@ -56,6 +91,10 @@ namespace IST.RemoteTalk
 
         public abstract string host { get; }
         public abstract Cast[] casts { get; }
+        public abstract bool isIdling { get; }
+
+        public abstract bool Talk(Talk talk);
+        public abstract void Stop();
 
 
         protected virtual void OnEnable()
