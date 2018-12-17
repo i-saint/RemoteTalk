@@ -6,7 +6,7 @@
 #include "rtvrTalkServer.h"
 
 rtvrITalkInterface* (*rtGetTalkInterface_)();
-static bool rtcvLoadManagedModule()
+static bool rtvr2LoadManagedModule()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\" rtvr2ManagedDll;
     auto mod = ::LoadLibraryA(path.c_str());
@@ -18,20 +18,23 @@ static bool rtcvLoadManagedModule()
 }
 
 
-
-
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
-        if (rtcvLoadManagedModule()) {
-            rt::AddWindowMessageHandler(&rtvrWindowMessageHandler::getInstance(), true, rt::HookType::Hotpatch);
+        if (rtvr2LoadManagedModule()) {
+            rt::InstallWindowMessageHook(rt::HookType::Hotpatch);
+            rt::AddWindowMessageHandler(&rtvrWindowMessageHandler::getInstance());
 
-            auto& dsound = rtvrDSoundHandler::getInstance();
-            if (!rt::AddDSoundHandler(&dsound, true, rt::HookType::Hotpatch))
-                rt::AddDSoundHandler(&dsound, true, rt::HookType::ATOverride);
-            dsound.onPlay = []() { rtGetTalkInterface_()->onPlay(); };
-            dsound.onStop = []() { rtGetTalkInterface_()->onStop(); };
-            dsound.onUpdate = [](const rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
+            bool ds_hooked = rt::InstallDSoundHook(rt::HookType::Hotpatch, false);
+            if (!ds_hooked)
+                ds_hooked = rt::InstallDSoundHook(rt::HookType::ATOverride);
+            if (ds_hooked) {
+                auto& dsound = rtvrDSoundHandler::getInstance();
+                rt::AddDSoundHandler(&dsound);
+                dsound.onPlay = []() { rtGetTalkInterface_()->onPlay(); };
+                dsound.onStop = []() { rtGetTalkInterface_()->onStop(); };
+                dsound.onUpdate = [](const rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
+            }
         }
     }
     return TRUE;

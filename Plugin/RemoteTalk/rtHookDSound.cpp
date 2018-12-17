@@ -222,10 +222,15 @@ static const GUID CLSID_DirectSound8_ = { 0x3901cc3f, 0x84b5, 0x4fa4, 0xba, 0x35
 static const GUID IID_IDirectSound8_ = { 0xC50A7E93, 0xF395, 0x4834, 0x9E, 0xF6, 0x7F, 0xA9, 0x9D, 0xE5, 0x09, 0x66 };
 
 
-static bool SetupHooks()
+static bool InstallVTableHooks(HMODULE mod)
 {
+    HRESULT (WINAPI *_DirectSoundCreate8)(LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS8, LPUNKNOWN pUnkOuter);
+    (void*&)_DirectSoundCreate8 = ::GetProcAddress(mod, "DirectSoundCreate8");
+    if (!_DirectSoundCreate8)
+        return false;
+
     IDirectSound8 *ds8 = nullptr;
-    auto hr = ::CoCreateInstance(CLSID_DirectSound8_, nullptr, 0, IID_IDirectSound8_, (LPVOID*)&ds8);
+    auto hr = _DirectSoundCreate8(nullptr, &ds8, nullptr);
     if (SUCCEEDED(hr)) {
         WAVEFORMATEX wh{};
         wh.cbSize = sizeof(WAVEFORMATEX);
@@ -302,36 +307,43 @@ public:
     }
 };
 
-bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll, HookType ht)
+bool InstallDSoundHook(HookType ht, bool load_dll)
 {
-    // setup hooks
-    auto mod = load_dll ? ::LoadLibraryA(DSound_DLL) : ::GetModuleHandleA(DSound_DLL);
+    auto mod = ::GetModuleHandleA(DSound_DLL);
+    if (!mod && load_dll)
+        mod = ::LoadLibraryA(DSound_DLL);
     if (!mod)
         return false;
 
-    if (!DirectSoundEnumerateA_orig) {
-        if (ht == HookType::ATOverride) {
-            auto jumptable = AllocExecutable(1024, mod);
-#define Override(Name) (void*&)Name##_orig = OverrideEAT(mod, #Name, Name##_hook, jumptable)
-            EachFunctions(Override);
+    void *tmp;
+    if (ht == HookType::ATOverride) {
+        auto jumptable = AllocExecutable(1024, mod);
+#define Override(Name) tmp=OverrideEAT(mod, #Name, Name##_hook, jumptable); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
 #undef Override
 
-            AddLoadLibraryHandler(&LoadLibraryHandler_DSound::getInstance());
-            AddCoCreateHandler(&CoCreateHandler_DSound::getInstance());
-            EnumerateModules([](HMODULE mod) { LoadLibraryHandler_DSound::hook(mod); });
-        }
-        if (ht == HookType::Hotpatch) {
-            if (!SetupHooks())
-                return false;
+        InstallLoadLibraryHook(HookType::ATOverride);
+        AddLoadLibraryHandler(&LoadLibraryHandler_DSound::getInstance());
 
-#define Override(Name) (void*&)Name##_orig = Hotpatch(::GetProcAddress(mod, #Name), Name##_hook)
-            EachFunctions(Override);
-#undef Override
-        }
+        InstallCoCreateHook(HookType::ATOverride);
+        AddCoCreateHandler(&CoCreateHandler_DSound::getInstance());
+
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_DSound::hook(mod); });
     }
+    if (ht == HookType::Hotpatch) {
+        if (!InstallVTableHooks(mod))
+            return false;
 
-    g_dsoundhandlers.push_back(handler);
+#define Override(Name) tmp=Hotpatch(::GetProcAddress(mod, #Name), Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
+#undef Override
+    }
     return true;
+}
+
+void AddDSoundHandler(DSoundHandlerBase *handler)
+{
+    g_dsoundhandlers.push_back(handler);
 }
 
 } // namespace rt

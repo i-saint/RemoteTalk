@@ -145,47 +145,49 @@ public:
     }
 };
 
-bool AddWaveOutHandler(WaveOutHandlerBase *handler, bool load_dll, HookType ht)
+bool InstallWaveOutHook(HookType ht, bool load_dll)
 {
-    // setup hooks
-    auto mod = load_dll ? ::LoadLibraryA(WinMM_DLL) : ::GetModuleHandleA(WinMM_DLL);
+    auto mod = ::GetModuleHandleA(WinMM_DLL);
+    if (!mod && load_dll)
+        mod = ::LoadLibraryA(WinMM_DLL);
     if (!mod)
         return false;
 
-    if (!waveOutOpen_orig) {
-        if (ht == HookType::ATOverride) {
-            auto jumptable = AllocExecutable(1024, mod);
-#define Override(Name) (void*&)Name##_orig = OverrideEAT(mod, #Name, Name##_hook, jumptable)
-            EachFunctions(Override);
+    void *tmp;
+    if (ht == HookType::ATOverride) {
+        auto jumptable = AllocExecutable(1024, mod);
+#define Override(Name) tmp=OverrideEAT(mod, #Name, Name##_hook, jumptable); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
 #undef Override
 
-            AddLoadLibraryHandler(&LoadLibraryHandler_WaveOut::getInstance());
-            EnumerateModules([](HMODULE mod) { LoadLibraryHandler_WaveOut::hook(mod); });
-        }
-        else if (ht == HookType::Hotpatch) {
-#define Override(Name) (void*&)Name##_orig = Hotpatch(::GetProcAddress(mod, #Name), Name##_hook)
-            EachFunctions(Override);
-#undef Override
-        }
+        InstallLoadLibraryHook(HookType::ATOverride);
+        AddLoadLibraryHandler(&LoadLibraryHandler_WaveOut::getInstance());
+
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_WaveOut::hook(mod); });
     }
-
-    g_waveouthandlers.push_back(handler);
-    return true;
-}
-
-bool OverrideWaveOutIAT(WaveOutHandlerBase *handler, HMODULE mod)
-{
-    if (!handler || !mod)
-        return false;
-
-    if (!waveOutOpen_orig) {
-#define Override(Name) (void*&)Name##_orig = OverrideIAT(mod, WinMM_DLL, #Name, Name##_hook)
+    else if (ht == HookType::Hotpatch) {
+#define Override(Name) tmp=Hotpatch(::GetProcAddress(mod, #Name), Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
         EachFunctions(Override);
 #undef Override
     }
-
-    g_waveouthandlers.push_back(handler);
     return true;
+}
+
+bool OverrideWaveOutIAT(HMODULE mod)
+{
+    if (!mod)
+        return false;
+
+    void *tmp;
+#define Override(Name) tmp=OverrideIAT(mod, WinMM_DLL, #Name, Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+    EachFunctions(Override);
+#undef Override
+    return true;
+}
+
+void AddWaveOutHandler(WaveOutHandlerBase *handler)
+{
+    g_waveouthandlers.push_back(handler);
 }
 
 } // namespace rt

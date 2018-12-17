@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using IST.RemoteTalk;
 
 public class RemoteTalkDemo : MonoBehaviour
@@ -30,7 +33,7 @@ public class RemoteTalkDemo : MonoBehaviour
         {
             if (m_current != null)
             {
-                if(m_delay < m_current.delay)
+                if (m_delay < m_current.delay)
                 {
                     ++m_delay;
                     return;
@@ -49,4 +52,22 @@ public class RemoteTalkDemo : MonoBehaviour
             m_remoteTalk.Talk();
         }
     }
+
+#if UNITY_EDITOR
+    [MenuItem("Debug/Remote Talk/List All Casts", false, 10)]
+    public static void ListAllCasts(MenuCommand menuCommand)
+    {
+        string result = "";
+        foreach(var c in RemoteTalkProvider.allCasts) {
+            result += c.name + "\n";
+            result += "  host: " + c.host + "\n";
+            result += "  params:\n";
+            foreach (var pn in c.paramNames)
+                result += "    " + pn + "\n";
+            result += "\n";
+        }
+        Debug.Log(result);
+    }
+#endif
+
 }

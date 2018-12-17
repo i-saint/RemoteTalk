@@ -10,8 +10,9 @@ rtspTalkServer::rtspTalkServer()
         return;
     }
 
+    rt::OverrideWaveOutIAT(::GetModuleHandleA("sapi.dll"));
     auto& wo = rtspWaveOutHandler::getInstance();
-    rt::OverrideWaveOutIAT(&wo, ::GetModuleHandleA("sapi.dll"));
+    rt::AddWaveOutHandler(&wo);
     wo.onUpdate = [](rt::AudioData& ad) { rtspTalkServer::getInstance().onUpdateBuffer(ad); };
 
 

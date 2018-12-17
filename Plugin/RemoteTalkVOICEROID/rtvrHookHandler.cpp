@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "rtvrCommon.h"
 #include "rtvrHookHandler.h"
 #include "rtvrTalkServer.h"
 

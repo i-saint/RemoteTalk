@@ -84,29 +84,32 @@ static void OverrideLoadLibrary(HMODULE mod)
 #undef Override
 }
 
-bool AddLoadLibraryHandler(LoadLibraryHandlerBase *handler, HookType ht)
+bool InstallLoadLibraryHook(HookType ht)
 {
-    static bool s_first = true;
-    if (s_first) {
-        s_first = false;
+    auto mod = ::GetModuleHandleA(Kernel32_Dll);
+    if (!mod)
+        mod = ::LoadLibraryA(Kernel32_Dll);
+    if (!mod)
+        return false;
 
-        auto mod = GetModuleHandleA(Kernel32_Dll);
-        if (ht == HookType::ATOverride) {
-#define GetProc(Name) (void*&)Name##_orig = GetProcAddress(mod, #Name)
-            EachFunctions(GetProc);
+    void *tmp;
+    if (ht == HookType::ATOverride) {
+#define GetProc(Name) if(!Name##_orig){ (void*&)Name##_orig=::GetProcAddress(mod, #Name); }
+        EachFunctions(GetProc);
 #undef GetProc
-            EnumerateModules([](HMODULE mod) { OverrideLoadLibrary(mod); });
-        }
-        else if (ht == HookType::Hotpatch)
-        {
-#define Override(Name) (void*&)Name##_orig = Hotpatch(::GetProcAddress(mod, #Name), Name##_hook)
-            EachFunctions(Override);
-#undef Override
-        }
+        EnumerateModules([](HMODULE mod) { OverrideLoadLibrary(mod); });
     }
-
-    g_loadlibrary_handlers.push_back(handler);
+    else if (ht == HookType::Hotpatch) {
+#define Override(Name) tmp=Hotpatch(::GetProcAddress(mod, #Name), Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
+#undef Override
+    }
     return true;
+}
+
+void AddLoadLibraryHandler(LoadLibraryHandlerBase *handler)
+{
+    g_loadlibrary_handlers.push_back(handler);
 }
 
 #undef EachFunctions
@@ -167,33 +170,34 @@ public:
     }
 };
 
-
-bool AddCoCreateHandler(CoCreateHandlerBase *handler, bool load_dll, HookType ht)
+bool InstallCoCreateHook(HookType ht, bool load_dll)
 {
-    // setup hooks
-    auto ole32 = load_dll ? ::LoadLibraryA(OLE32_Dll) : ::GetModuleHandleA(OLE32_Dll);
-    if (!ole32)
+    auto mod = ::GetModuleHandleA(OLE32_Dll);
+    if (!mod && load_dll)
+        mod = ::LoadLibraryA(OLE32_Dll);
+    if (!mod)
         return false;
 
-    static bool s_first = true;
-    if (s_first) {
-        s_first = false;
-
-        if (ht == HookType::ATOverride) {
-            auto jumptable = AllocExecutable(1024, ole32);
-#define Override(Name) OverrideEAT(ole32, #Name, Name##_hook, jumptable)
-            EachFunctions(Override);
+    if (ht == HookType::ATOverride) {
+        auto jumptable = AllocExecutable(1024, mod);
+#define Override(Name) OverrideEAT(mod, #Name, Name##_hook, jumptable)
+        EachFunctions(Override);
 #undef Override
 
-            AddLoadLibraryHandler(&LoadLibraryHandler_OLE32::getInstance());
-            EnumerateModules([](HMODULE mod) { LoadLibraryHandler_OLE32::hook(mod); });
-        }
-        else if (ht == HookType::Hotpatch) {
-        }
-    }
+        InstallLoadLibraryHook(HookType::ATOverride);
+        AddLoadLibraryHandler(&LoadLibraryHandler_OLE32::getInstance());
 
-    g_cocreate_handlers.push_back(handler);
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_OLE32::hook(mod); });
+    }
+    else if (ht == HookType::Hotpatch) {
+        // ole32 seems incompatible with hotpatch...
+    }
     return true;
+}
+
+void AddCoCreateHandler(CoCreateHandlerBase *handler)
+{
+    g_cocreate_handlers.push_back(handler);
 }
 
 #undef EachFunctions
@@ -248,35 +252,37 @@ public:
     }
 };
 
-bool AddWindowMessageHandler(WindowMessageHandlerBase *handler, bool load_dll, HookType ht)
+bool InstallWindowMessageHook(HookType ht, bool load_dll)
 {
-    // setup hooks
-    auto mod = load_dll ? ::LoadLibraryA(User32_Dll) : ::GetModuleHandleA(User32_Dll);
+    auto mod = ::GetModuleHandleA(User32_Dll);
+    if (!mod && load_dll)
+        mod = ::LoadLibraryA(User32_Dll);
     if (!mod)
         return false;
 
-    static bool s_first = true;
-    if (s_first) {
-        s_first = false;
-
-        if (ht == HookType::ATOverride) {
-            auto jumptable = AllocExecutable(1024, mod);
-#define Override(Name) (void*&)Name##_orig = OverrideEAT(mod, #Name, Name##_hook, jumptable)
-            EachFunctions(Override);
+    void *tmp;
+    if (ht == HookType::ATOverride) {
+        auto jumptable = AllocExecutable(1024, mod);
+#define Override(Name) tmp=OverrideEAT(mod, #Name, Name##_hook, jumptable); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
 #undef Override
 
-            AddLoadLibraryHandler(&LoadLibraryHandler_User32::getInstance());
-            EnumerateModules([](HMODULE mod) { LoadLibraryHandler_User32::hook(mod); });
-        }
-        else if (ht == HookType::Hotpatch) {
-#define Override(Name) (void*&)Name##_orig = Hotpatch(::GetProcAddress(mod, #Name), Name##_hook)
-            EachFunctions(Override);
-#undef Override
-        }
+        InstallLoadLibraryHook(HookType::ATOverride);
+        AddLoadLibraryHandler(&LoadLibraryHandler_User32::getInstance());
+
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_User32::hook(mod); });
     }
-
-    g_windowmessage_handlers.push_back(handler);
+    else if (ht == HookType::Hotpatch) {
+#define Override(Name) tmp=Hotpatch(::GetProcAddress(mod, #Name), Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
+#undef Override
+    }
     return true;
+}
+
+void AddWindowMessageHandler(WindowMessageHandlerBase *handler)
+{
+    g_windowmessage_handlers.push_back(handler);
 }
 
 #undef EachFunctions

@@ -36,7 +36,8 @@ public:
 };
 #pragma warning(pop)
 
-bool AddDSoundHandler(DSoundHandlerBase *handler, bool load_dll = true, HookType ht = HookType::ATOverride);
+bool InstallDSoundHook(HookType ht, bool load_dll = true);
+void AddDSoundHandler(DSoundHandlerBase *handler);
 
 } // namespace rt
 #endif // _WIN32

@@ -10,9 +10,7 @@ namespace IST.RemoteTalk
 {
     public abstract class RemoteTalkProvider : MonoBehaviour
     {
-        static List<RemoteTalkProvider> s_instances = new List<RemoteTalkProvider>();
-
-        public static List<RemoteTalkProvider> instances { get { return s_instances; } }
+        public static List<RemoteTalkProvider> instances { get; } = new List<RemoteTalkProvider>();
 
         public static IEnumerable<Cast> allCasts
         {
