@@ -40,7 +40,7 @@ void rtcvInterfaceManaged::updateStats()
             int n = talker->Components->Count;
             for (int i = 0; i < n; ++i) {
                 auto c = talker->Components->At(i);
-                info->params->Add(gcnew ParamInfo{ c->Name, to_f(c->Value), 0.0f, 1.0f });
+                info->params->Add(gcnew ParamInfo{ c->Name, to_f(c->Value), 0.0f, 2.0f });
             }
 
             m_casts->Add(info);

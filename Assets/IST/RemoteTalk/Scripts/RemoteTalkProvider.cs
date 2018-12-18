@@ -35,6 +35,9 @@ namespace IST.RemoteTalk
         public string castName = "";
         public TalkParam[] param;
         public string text = "";
+#if UNITY_EDITOR
+        public bool foldParams;
+#endif
 
         public Cast cast
         {
