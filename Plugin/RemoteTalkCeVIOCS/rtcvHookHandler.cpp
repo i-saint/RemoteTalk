@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <mmdeviceapi.h>
+#include <atlcomcli.h>
 #include "rtcvCommon.h"
 #include "rtcvHookHandler.h"
 #include "rtcvTalkServer.h"
@@ -47,40 +48,57 @@ void rtcvWaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
     rec.is_opened = false;
 }
 
+static bool GetSystemSoundSettings(rt::AudioData& dst)
+{
+    HRESULT hr;
+    CComPtr<IMMDevice> pDevice;
+    CComPtr<IMMDeviceEnumerator> pEnumerator;
+    CComPtr<IPropertyStore> store;
+
+    hr = CoInitialize(nullptr);
+    if (FAILED(hr))
+        return false;
+
+    hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (LPVOID*)&pEnumerator);
+    if (FAILED(hr))
+        return false;
+
+    hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &pDevice);
+    if (FAILED(hr))
+        return false;
+
+    hr = pDevice->OpenPropertyStore(STGM_READ, &store);
+    if (FAILED(hr))
+        return false;
+
+    const PROPERTYKEY _PKEY_AudioEngine_DeviceFormat = { 0xf19f064d, 0x82c, 0x4e27, 0xbc, 0x73, 0x68, 0x82, 0xa1, 0xbb, 0x8e, 0x4c, 0 };
+    PROPVARIANT prop;
+    hr = store->GetValue(_PKEY_AudioEngine_DeviceFormat, &prop);
+    if (FAILED(hr))
+        return false;
+
+    auto wf = (PWAVEFORMATEX)prop.blob.pBlobData;
+    dst.frequency = wf->nSamplesPerSec;
+    dst.channels = std::min((int)wf->nChannels, 2); // ???
+    switch (wf->wBitsPerSample) {
+    case 8: dst.format = rt::AudioFormat::U8; break;
+    case 16: dst.format = rt::AudioFormat::S16; break;
+    case 24: dst.format = rt::AudioFormat::S24; break;
+    case 32: dst.format = rt::AudioFormat::S32; break;
+    }
+    return true;
+}
+
 void rtcvWaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end()) {
-        // get system sound output settings
-        HRESULT hr;
-        IMMDevice * pDevice = nullptr;
-        IMMDeviceEnumerator *pEnumerator = nullptr;
-        IPropertyStore* store = nullptr;
-        CoInitialize(nullptr);
-        hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (LPVOID *)&pEnumerator);
-        hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &pDevice);
-        hr = pDevice->OpenPropertyStore(STGM_READ, &store);
-        if (SUCCEEDED(hr)) {
-            const PROPERTYKEY _PKEY_AudioEngine_DeviceFormat = { 0xf19f064d, 0x82c, 0x4e27, 0xbc, 0x73, 0x68, 0x82, 0xa1, 0xbb, 0x8e, 0x4c, 0 };
-            PROPVARIANT prop;
-            hr = store->GetValue(_PKEY_AudioEngine_DeviceFormat, &prop);
-            if (SUCCEEDED(hr)) {
-                auto wf = (PWAVEFORMATEX)prop.blob.pBlobData;
-                Record tmp;
-                tmp.data.frequency = wf->nSamplesPerSec;
-                tmp.data.channels = std::min((int)wf->nChannels, 2); // ???
-                switch (wf->wBitsPerSample) {
-                case 8: tmp.data.format = rt::AudioFormat::U8; break;
-                case 16: tmp.data.format = rt::AudioFormat::S16; break;
-                case 24: tmp.data.format = rt::AudioFormat::S24; break;
-                case 32: tmp.data.format = rt::AudioFormat::S32; break;
-                }
-                m_records[hwo] = tmp;
-            }
+        Record tmp;
+        if (GetSystemSoundSettings(tmp.data)) {
+            m_records[hwo] = tmp;
+            it = m_records.find(hwo);
         }
-
-        it = m_records.find(hwo);
-        if (it == m_records.end())
+        else
             return;
     }
 
