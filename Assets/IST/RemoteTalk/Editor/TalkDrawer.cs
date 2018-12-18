@@ -22,7 +22,7 @@ namespace IST.RemoteTalk
                 totalHeight += param.arraySize * lineHeight; // params
 
             totalHeight += TextHeight; // text
-            totalHeight += 4.0f; // margin
+            totalHeight += 8.0f; // margin
             return totalHeight;
         }
 

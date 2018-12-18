@@ -153,7 +153,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 619654038}
+  m_audioClip: {fileID: 1276478675}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -322,6 +322,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!83 &521672562
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Dummy
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 44000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &531982279
 GameObject:
   m_ObjectHideFlags: 0
@@ -795,7 +823,7 @@ AudioChorusFilter:
   m_Delay: 52.42
   m_Rate: 20
   m_Depth: 0.4
---- !u!83 &619654038
+--- !u!83 &1276478675
 AudioClip:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -833,6 +861,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1476112018}
   - component: {fileID: 1476112017}
+  - component: {fileID: 1476112019}
   m_Layer: 0
   m_Name: RemoteTalkClient
   m_TagString: Untagged
@@ -860,13 +889,14 @@ MonoBehaviour:
   m_talkParams:
     mute: 1
     forceMono: 1
-    cast: 0
+    cast: 1
     flags: 4095
     paramValues:
     - 1
     - 1
     - 1
     - 1
+    - 1
     - 0
     - 0
     - 0
@@ -874,15 +904,13 @@ MonoBehaviour:
     - 0
     - 0
     - 0
-    - 0
-  m_talkText: "\u5973\u306E\u5B50\u3092\u597D\u304D\u306A\u5973\u306E\u5B50\u304C\u5927\u597D\u304D\u306A\u8471"
+  m_talkText: "\u304B\u304D\u304F\u3051\u3053"
   m_sampleGranularity: 6144
   m_exportAudio: 1
   m_exportDir: RemoteTalkAssets
   m_exportFileFormat: 1
   m_oggSettings:
-    bitrateMode: 1
-    targetBitrate: 128000
+    quality: 1
   m_useCache: 0
   m_logging: 0
 --- !u!4 &1476112018
@@ -899,6 +927,50 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1476112019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476112016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8176c32a82d5a740b2a9fe9035a92f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_talkAudio:
+  - {fileID: 1865400491}
+  - {fileID: 166210423}
+  m_serverAddress: 127.0.0.1
+  m_serverPort: 8082
+  m_talkParams:
+    mute: 1
+    forceMono: 1
+    cast: 0
+    flags: 4095
+    paramValues:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    - 2
+    - 0
+    - 0
+    - 0
+    - 1
+    - 1
+    - 1
+  m_talkText: "\u304B\u304D\u304F\u3051\u3053"
+  m_sampleGranularity: 8192
+  m_exportAudio: 1
+  m_exportDir: RemoteTalkAssets
+  m_exportFileFormat: 1
+  m_oggSettings:
+    quality: 1
+  m_useCache: 0
+  m_logging: 0
 --- !u!1 &1865400490
 GameObject:
   m_ObjectHideFlags: 0
@@ -941,7 +1013,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 619654038}
+  m_audioClip: {fileID: 521672562}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1061,3 +1133,173 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!1 &1924301224
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1924301226}
+  - component: {fileID: 1924301225}
+  m_Layer: 0
+  m_Name: RemoteTalkScript
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1924301225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924301224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8931dd9a288fef24dbdc02b3500bc774, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_talks:
+  - castName: "\u7D50\u6708\u3086\u304B\u308A"
+    param:
+    - name: "\u97F3\u91CF"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u8A71\u901F"
+      value: 1
+      rangeMin: 0.5
+      rangeMax: 4
+    - name: "\u9AD8\u3055"
+      value: 1
+      rangeMin: 0.5
+      rangeMax: 2
+    - name: "\u6291\u63DA"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u559C\u3073"
+      value: 1
+      rangeMin: 0
+      rangeMax: 1
+    - name: "\u6012\u308A"
+      value: 0
+      rangeMin: 0
+      rangeMax: 1
+    - name: "\u60B2\u3057\u307F"
+      value: 0
+      rangeMin: 0
+      rangeMax: 1
+    text: "\u3042\u3044\u3046\u3048\u304A"
+    foldParams: 1
+  - castName: "\u3059\u305A\u304D\u3064\u3065\u307F"
+    param:
+    - name: "\u5927\u304D\u3055"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u901F\u3055"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u9AD8\u3055"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u58F0\u8CEA"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u6291\u63DA"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u30AF\u30FC\u30EB"
+      value: 2
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u7167\u308C"
+      value: 0
+      rangeMin: 0
+      rangeMax: 2
+    text: "\u304B\u304D\u304F\u3051\u3053"
+    foldParams: 1
+  - castName: "\u7D32\u661F\u3042\u304B\u308A"
+    param:
+    - name: "\u97F3\u91CF"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u8A71\u901F"
+      value: 1
+      rangeMin: 0.5
+      rangeMax: 4
+    - name: "\u9AD8\u3055"
+      value: 1
+      rangeMin: 0.5
+      rangeMax: 2
+    - name: "\u6291\u63DA"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    text: "\u304B\u304D\u304F\u3051\u3053"
+    foldParams: 1
+  - castName: "\u3055\u3068\u3046\u3055\u3055\u3089"
+    param:
+    - name: "\u5927\u304D\u3055"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u901F\u3055"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u9AD8\u3055"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u58F0\u8CEA"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u6291\u63DA"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u5143\u6C17"
+      value: 2
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u666E\u901A"
+      value: 0
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u6012\u308A"
+      value: 0
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u54C0\u3057\u307F"
+      value: 0
+      rangeMin: 0
+      rangeMax: 2
+    text: "\u304B\u304D\u304F\u3051\u3053"
+    foldParams: 1
+  m_playOnStart: 0
+  m_startPos: 0
+--- !u!4 &1924301226
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924301224}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.091777325, y: -0.09293938, z: 0.906116}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

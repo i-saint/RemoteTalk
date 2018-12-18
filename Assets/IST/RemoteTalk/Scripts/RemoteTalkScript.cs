@@ -13,15 +13,34 @@ namespace IST.RemoteTalk
     public class RemoteTalkScript : MonoBehaviour
     {
         [SerializeField] List<Talk> m_talks = new List<Talk>();
-        [SerializeField] bool m_isPlaying;
-        [SerializeField] public int m_talkPos = 0;
-
+        [SerializeField] bool m_playOnStart;
+        [SerializeField] int m_startPos;
+        bool m_isPlaying;
+        int m_talkPos = 0;
         Talk m_current;
         RemoteTalkProvider m_prevProvider;
+
+
+        public bool playOnStart
+        {
+            get { return m_playOnStart; }
+            set { m_playOnStart = value; }
+        }
+        public int startPos
+        {
+            get { return m_startPos; }
+            set { m_startPos = value; }
+        }
+        public bool isPlaying
+        {
+            get { return m_isPlaying; }
+        }
+
 
         public void Play()
         {
             m_isPlaying = true;
+            m_talkPos = m_startPos;
         }
 
         public void Stop()
@@ -31,26 +50,42 @@ namespace IST.RemoteTalk
                 if (m_prevProvider != null)
                     m_prevProvider.Stop();
                 m_isPlaying = false;
+                m_current = null;
+                m_prevProvider = null;
             }
         }
 
 
         void UpdateTalk()
         {
-            if (!m_isPlaying)
+            if (!m_isPlaying || !isActiveAndEnabled)
                 return;
 
-            if ((m_prevProvider == null || m_prevProvider.isIdling) && m_talkPos < m_talks.Count)
+            if (m_prevProvider == null || m_prevProvider.isIdling)
             {
-                m_current = m_talks[m_talkPos++];
-                if (m_current != null)
+                if(m_talkPos >= m_talks.Count)
                 {
-                    var provider = m_current.provider;
-                    if (provider != null)
-                        provider.Talk(m_current);
-                    m_prevProvider = provider;
+                    m_isPlaying = false;
+                }
+                else
+                {
+                    m_current = m_talks[m_talkPos++];
+                    if (m_current != null)
+                    {
+                        var provider = m_current.provider;
+                        if (provider != null)
+                            provider.Talk(m_current);
+                        m_prevProvider = provider;
+                    }
                 }
             }
+        }
+
+
+        void Start()
+        {
+            if (m_playOnStart)
+                Start();
         }
 
         void Update()
