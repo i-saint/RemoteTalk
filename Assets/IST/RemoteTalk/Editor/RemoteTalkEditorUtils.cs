@@ -6,7 +6,7 @@ using UnityEditorInternal;
 
 namespace IST.RemoteTalk
 {
-    public static class RemoteTalkEditor
+    public static class RemoteTalkEditorUtils
     {
         public static void DrawTalkParams(int castID, SerializedProperty talkParamsProp, RemoteTalkClient client)
         {
@@ -56,6 +56,24 @@ namespace IST.RemoteTalk
             };
             return ret;
         }
+
+#if UNITY_EDITOR
+        [MenuItem("Debug/Remote Talk/List All Casts", false, 10)]
+        public static void ListAllCasts(MenuCommand menuCommand)
+        {
+            string result = "";
+            foreach (var c in RemoteTalkProvider.allCasts)
+            {
+                result += c.name + "\n";
+                result += "  host: " + c.hostName + "\n";
+                result += "  params:\n";
+                foreach (var pi in c.paramInfo)
+                    result += "    " + pi.name + "\n";
+                result += "\n";
+            }
+            Debug.Log(result);
+        }
+#endif
     }
 }
 #endif

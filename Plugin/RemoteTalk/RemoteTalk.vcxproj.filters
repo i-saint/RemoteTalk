@@ -12,6 +12,7 @@
     <ClCompile Include="rtTalkServer.cpp" />
     <ClCompile Include="rtSerialization.cpp" />
     <ClCompile Include="rtAudioFile.cpp" />
+    <ClCompile Include="rtTalkInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RemoteTalkNet.h" />

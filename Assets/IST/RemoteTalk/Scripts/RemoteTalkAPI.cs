@@ -179,6 +179,8 @@ namespace IST.RemoteTalk
         public int flags;
         public fixed float paramValues[MaxParams];
 
+        public uint hash { get { return rtTalkParamsGetHash(ref this); } }
+
         public static rtTalkParams defaultValue
         {
             get
@@ -192,6 +194,10 @@ namespace IST.RemoteTalk
                 return ret;
             }
         }
+
+        #region internal
+        [DllImport("RemoteTalkClient")] static extern uint rtTalkParamsGetHash(ref rtTalkParams self);
+        #endregion
     }
 
     public struct rtTalkParamInfo

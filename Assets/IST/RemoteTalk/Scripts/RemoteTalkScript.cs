@@ -26,10 +26,15 @@ namespace IST.RemoteTalk
             get { return m_playOnStart; }
             set { m_playOnStart = value; }
         }
-        public int startPos
+        public int startPosition
         {
             get { return m_startPos; }
             set { m_startPos = value; }
+        }
+        public int playPosition
+        {
+            get { return Mathf.Clamp(m_talkPos - 1, 0, m_talks.Count); }
+            set { m_talkPos = value; }
         }
         public bool isPlaying
         {

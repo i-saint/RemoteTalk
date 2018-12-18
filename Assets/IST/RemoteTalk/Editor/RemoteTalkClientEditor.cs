@@ -37,7 +37,7 @@ namespace IST.RemoteTalk
             if(t.isServerReady)
             {
                 var talkParams = so.FindProperty("m_talkParams");
-                RemoteTalkEditor.DrawTalkParams(t.castID, talkParams, t);
+                RemoteTalkEditorUtils.DrawTalkParams(t.castID, talkParams, t);
 
                 var text = so.FindProperty("m_talkText");
                 EditorGUI.BeginChangeCheck();

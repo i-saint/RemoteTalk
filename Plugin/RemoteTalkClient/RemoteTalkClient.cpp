@@ -239,6 +239,8 @@ rtExport bool rtAudioDataExportOgg(rtAudioData *self, const char *path, const rt
 
 #pragma region rtTalkParamInfo
 using rtTalkParamInfo = rt::TalkParamInfo;
+using rtTalkParams = rt::TalkParams;
+
 rtExport const char* rtTalkParamInfoGetName(rtTalkParamInfo *self)
 {
     if (!self)
@@ -262,6 +264,13 @@ rtExport float rtTalkParamInfoGetRangeMax(rtTalkParamInfo *self)
     if (!self)
         return 0;
     return self->range_max;
+}
+
+rtExport uint32_t rtTalkParamsGetHash(rtTalkParams *self)
+{
+    if (!self)
+        return 0;
+    return self->hash();
 }
 #pragma endregion
 

@@ -151,7 +151,7 @@ namespace IST.RemoteTalk
                 return false;
 
             m_talkParams.mute = 1;
-            m_talkParams.flags = 0xFFF;
+            m_talkParams.flags = (1 << m_casts[m_talkParams.cast].paramInfo.Length) - 1;
 
             if (m_exportAudio || m_useCache)
             {
@@ -266,8 +266,13 @@ namespace IST.RemoteTalk
             var name = castName;
             if (name != null)
             {
-                string ext = m_exportFileFormat == rtFileFormat.Ogg ? ".ogg" : ".wav";
-                return Misc.SanitizeFileName(name + "-" + m_talkText.Substring(0, Math.Min(32, m_talkText.Length)) + ext);
+                string filename = name;
+                filename += "_";
+                filename += m_talkText.Substring(0, Math.Min(32, m_talkText.Length));
+                filename += "_";
+                filename += m_talkParams.hash.ToString("X8");
+                filename += m_exportFileFormat == rtFileFormat.Ogg ? ".ogg" : ".wav";
+                return Misc.SanitizeFileName(filename);
             }
             else
                 return null;

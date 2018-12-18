@@ -50,6 +50,7 @@
     </ClCompile>
     <ClCompile Include="rtSerialization.cpp" />
     <ClCompile Include="rtTalkClient.cpp" />
+    <ClCompile Include="rtTalkInterface.cpp" />
     <ClCompile Include="rtTalkReceiver.cpp" />
     <ClCompile Include="rtTalkServer.cpp" />
   </ItemGroup>
