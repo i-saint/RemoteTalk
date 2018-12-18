@@ -34,8 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
     }
     std::string hook_path = module_path + "\\" + rtcvHookDll;
 
-    if (__argc > 1) {
-        std::string exe_path = __argv[1];
+    auto try_launch = [&hook_path](const std::string& exe_path) -> bool {
         STARTUPINFOA si;
         PROCESS_INFORMATION pi;
         ::ZeroMemory(&si, sizeof(si));
@@ -47,24 +46,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             rtDebugSleep(7000); // for debug
             InjectDLL(pi.hProcess, hook_path);
             ::ResumeThread(pi.hThread);
-            return 0;
+            return true;
         }
+        return false;
+    };
+
+    auto try_inject = [&hook_path]() {
+        auto proc = rt::FindProcess(rtcvHostExe);
+        if (proc) {
+            if (InjectDLL(proc, hook_path)) {
+                ::CloseHandle(proc);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if (__argc > 1) {
+        std::string exe_path = __argv[1];
+        if (try_launch(exe_path))
+            return 0;
     }
     else {
-        auto proc = rt::FindProcess(rtcvHostExe);
-        if (!proc) {
+        if (try_inject())
+            return 0;
+
+        {
+            std::string exe_path = ::getenv("ProgramFiles(x86)");
+            exe_path += "\\CeVIO\\CeVIO Creative Studio\\" rtcvHostExe;
+            if (try_launch(exe_path))
+                return 0;
+        }
+        {
             ::CoInitialize(NULL);
             CeVIO::IServiceControl *pServiceControl;
             HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
             if (SUCCEEDED(hr)) {
                 pServiceControl->StartHost(false);
-                proc = rt::FindProcess(rtcvHostExe);
+                if (try_inject())
+                    return 0;
             }
-        }
-        if (proc) {
-            InjectDLL(proc, hook_path);
-            ::CloseHandle(proc);
-            return 0;
         }
     }
 

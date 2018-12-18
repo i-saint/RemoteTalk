@@ -41,7 +41,7 @@ namespace IST.RemoteTalk
         rtAsync m_asyncStop;
         rtAsync m_asyncExport;
 
-        string m_host;
+        string m_hostName;
         rtTalkParams m_serverParams;
         Cast[] m_casts = new Cast[0] { };
         bool m_isServerReady = false;
@@ -131,7 +131,7 @@ namespace IST.RemoteTalk
             get { return isServerReady && !isServerTalking && !isPlaying; }
         }
 
-        public override string host { get { return m_host; } }
+        public override string hostName { get { return m_hostName; } }
         public override Cast[] casts { get { return m_casts; } }
         public rtTalkParams serverParams { get { return m_serverParams; } }
 
@@ -146,7 +146,8 @@ namespace IST.RemoteTalk
         {
             MakeClient();
 
-            if (m_talkParams.cast < 0 || m_talkParams.cast >= m_casts.Length)
+            if ((m_talkParams.cast < 0 || m_talkParams.cast >= m_casts.Length) ||
+                (m_talkText == null || m_talkText.Length == 0))
                 return false;
 
             m_talkParams.mute = 1;
@@ -177,6 +178,7 @@ namespace IST.RemoteTalk
             m_asyncTalk = m_client.Talk(ref m_talkParams, m_talkText);
             return true;
         }
+
         public override unsafe bool Talk(Talk talk)
         {
             m_talkParams.cast = GetCastID(talk.castName);
@@ -256,7 +258,7 @@ namespace IST.RemoteTalk
             m_asyncTalk.Release();
             m_asyncStop.Release();
             m_client.Release();
-            m_host = "";
+            m_hostName = "";
         }
 
         string GenCacheFileName()
@@ -277,18 +279,18 @@ namespace IST.RemoteTalk
             return !m_isServerTalking;
         }
 
-        void UpdateSamples()
+        void UpdateState()
         {
             if (m_asyncStats && m_asyncStats.isFinished)
             {
-                m_host = m_client.host;
+                m_hostName = m_client.host;
                 m_serverParams = m_client.serverParams;
                 m_casts = m_client.casts;
                 foreach (var c in m_casts)
-                    c.host = m_host;
+                    c.hostName = m_hostName;
 
                 m_asyncStats.Release();
-                m_isServerReady = m_host != "Server Not Found";
+                m_isServerReady = m_hostName != "Server Not Found";
                 Misc.ForceRepaint();
             }
 
@@ -299,7 +301,8 @@ namespace IST.RemoteTalk
                 if(!playing)
                 {
                     var buf = m_client.SyncBuffers();
-                    if (buf.sampleLength > m_sampleGranularity || (m_asyncTalk.isValid && m_asyncTalk.isFinished && m_asyncTalk.boolValue))
+                    if (buf.sampleLength > m_sampleGranularity ||
+                        (buf.sampleLength > 0 && m_asyncTalk.isValid && m_asyncTalk.isFinished && m_asyncTalk.boolValue))
                     {
                         foreach (var audio in m_talkAudio)
                         {
@@ -309,10 +312,10 @@ namespace IST.RemoteTalk
                     }
                 }
 
-                if (m_asyncTalk.isFinished)
+                if (m_asyncTalk.isValid && m_asyncTalk.isFinished)
                 {
                     m_client.SyncBuffers();
-                    bool result = m_asyncTalk.isValid && m_asyncTalk.boolValue;
+                    bool result = m_asyncTalk.boolValue;
                     m_asyncTalk.Release();
                     m_isServerTalking = false;
 #if UNITY_EDITOR
@@ -336,8 +339,9 @@ namespace IST.RemoteTalk
             }
             m_wasPlaying = playing;
 
-            if (m_asyncStop && m_asyncStop.isFinished)
+            if (m_asyncStop && m_asyncStop.isValid && m_asyncStop.isFinished)
             {
+                m_isServerTalking = false;
                 m_asyncStop.Release();
                 Misc.ForceRepaint();
             }
@@ -378,7 +382,7 @@ namespace IST.RemoteTalk
         {
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
-                EditorApplication.update += UpdateSamples;
+                EditorApplication.update += UpdateState;
 #endif
             MakeClient();
             base.OnEnable();
@@ -389,7 +393,7 @@ namespace IST.RemoteTalk
             base.OnDisable();
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying)
-                EditorApplication.update -= UpdateSamples;
+                EditorApplication.update -= UpdateState;
 
             if (m_exportAudio)
             {
@@ -408,7 +412,7 @@ namespace IST.RemoteTalk
 
         void Update()
         {
-            UpdateSamples();
+            UpdateState();
         }
         #endregion
     }

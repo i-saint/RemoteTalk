@@ -137,10 +137,14 @@ rtExport void rtAsyncWait(rtAsyncBase *self)
         return;
     self->wait();
 }
-rtExport bool rtAsyncGetBool(rtAsyncBase *self)
+rtExport bool rtAsyncGetBool(rtAsyncBase *self, bool *dst)
 {
-    if (auto b = dynamic_cast<rtAsync<bool>*>(self))
-        return b->get();
+    if (auto b = dynamic_cast<rtAsync<bool>*>(self)) {
+        if (b->isValid()) {
+            *dst = b->get();
+            return true;
+        }
+    }
     return false;
 }
 #pragma endregion

@@ -59,10 +59,13 @@ bool rtcvTalkInterface::ready() const
     return !rtcvInterfaceManaged::getInstance()->isPlaying();
 }
 
-bool rtcvTalkInterface::talk(rt::TalkSampleCallback cb, void *userdata)
+bool rtcvTalkInterface::isPlaying() const
 {
-    m_sample_cb = cb;
-    m_sample_cb_userdata = userdata;
+    return rtcvInterfaceManaged::getInstance()->isPlaying();
+}
+
+bool rtcvTalkInterface::talk()
+{
     m_is_playing = true;
     if (rtcvInterfaceManaged::getInstance()->talk()) {
         return true;
@@ -77,10 +80,6 @@ bool rtcvTalkInterface::stop()
 {
     if (rtcvInterfaceManaged::getInstance()->stop()) {
         m_is_playing = false;
-        if (m_sample_cb) {
-            rt::AudioData dummy;
-            m_sample_cb(dummy, m_sample_cb_userdata);
-        }
         return true;
     }
     else {
@@ -92,25 +91,12 @@ bool rtcvTalkInterface::wait()
 {
     if (rtcvInterfaceManaged::getInstance()->wait()) {
         m_is_playing = false;
-        if (m_sample_cb) {
-            rt::AudioData dummy;
-            m_sample_cb(dummy, m_sample_cb_userdata);
-        }
         return true;
     }
     else {
         return false;
     }
 }
-
-
-void rtcvTalkInterface::onUpdateBuffer(rt::AudioData& ad)
-{
-    if (m_is_playing && m_sample_cb && rtcvInterfaceManaged::getInstance()->isPlaying()) {
-        m_sample_cb(ad, m_sample_cb_userdata);
-    }
-}
-
 
 #ifdef rtDebug
 bool rtcvTalkInterface::onDebug()

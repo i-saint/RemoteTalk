@@ -19,7 +19,8 @@ public:
     bool setText(const char *text) override;
 
     bool ready() const override;
-    bool talk(rt::TalkSampleCallback cb, void *userdata) override;
+    bool isPlaying() const override;
+    bool talk() override;
     bool stop() override;
 
 
@@ -28,7 +29,6 @@ public:
     bool prepareUI() override;
     void onPlay() override;
     void onStop() override;
-    void onUpdateBuffer(const rt::AudioData& ad) override;
 
 #ifdef rtDebug
     bool onDebug() override;
@@ -37,7 +37,5 @@ public:
 private:
     mutable rt::CastList m_casts;
     std::atomic_bool m_is_playing{ false };
-    rt::TalkSampleCallback m_sample_cb = nullptr;
-    void *m_sample_cb_userdata = nullptr;
 };
 

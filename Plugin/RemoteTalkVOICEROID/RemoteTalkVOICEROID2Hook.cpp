@@ -31,9 +31,16 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             if (ds_hooked) {
                 auto& dsound = rtvrDSoundHandler::getInstance();
                 rt::AddDSoundHandler(&dsound);
-                dsound.onPlay = []() { rtGetTalkInterface_()->onPlay(); };
-                dsound.onStop = []() { rtGetTalkInterface_()->onStop(); };
-                dsound.onUpdate = [](const rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
+                dsound.onPlay = []() {
+                    rtGetTalkInterface_()->onPlay();
+                };
+                dsound.onStop = []() {
+                    rtvrTalkServer::getInstance().onStop();
+                    rtGetTalkInterface_()->onStop();
+                };
+                dsound.onUpdate = [](const rt::AudioData& ad) {
+                    rtvrTalkServer::getInstance().onUpdateSample(ad);
+                };
             }
         }
     }

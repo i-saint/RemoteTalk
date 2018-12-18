@@ -26,7 +26,6 @@ protected:
 private:
     struct Record
     {
-        WAVEFORMATEX wave_format;
         rt::AudioData data;
         bool is_opened = false;
         bool is_playing = false;

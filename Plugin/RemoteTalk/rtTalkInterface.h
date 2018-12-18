@@ -12,6 +12,7 @@ struct TalkParamInfo
     float value = 0.0f, range_min = 0.0f, range_max = 0.0f;
 };
 
+
 struct CastInfo
 {
     int id = 0;
@@ -19,6 +20,7 @@ struct CastInfo
     std::vector<TalkParamInfo> params;
 };
 using CastList = std::vector<CastInfo>;
+
 
 struct TalkParams
 {
@@ -81,7 +83,8 @@ public:
     virtual bool setText(const char *text) = 0;
 
     virtual bool ready() const = 0;
-    virtual bool talk(TalkSampleCallback cb, void *userdata) = 0;
+    virtual bool isPlaying() const = 0;
+    virtual bool talk() = 0;
     virtual bool stop() = 0;
 };
 

@@ -57,13 +57,16 @@ bool rtvr2TalkInterface::ready() const
     return !m_is_playing;
 }
 
-bool rtvr2TalkInterface::talk(rt::TalkSampleCallback cb, void *userdata)
+bool rtvr2TalkInterface::isPlaying() const
+{
+    return m_is_playing;
+}
+
+bool rtvr2TalkInterface::talk()
 {
     if (m_is_playing)
         return false;
 
-    m_sample_cb = cb;
-    m_sample_cb_userdata = userdata;
     if (rtvr2InterfaceManaged::getInstance()->talk()) {
         m_is_playing = true;
         return true;
@@ -98,18 +101,7 @@ void rtvr2TalkInterface::onPlay()
 
 void rtvr2TalkInterface::onStop()
 {
-    if (m_sample_cb && m_is_playing) {
-        rt::AudioData dummy;
-        m_sample_cb(dummy, m_sample_cb_userdata);
-    }
     m_is_playing = false;
-}
-
-void rtvr2TalkInterface::onUpdateBuffer(const rt::AudioData& ad)
-{
-    if (m_sample_cb && m_is_playing) {
-        m_sample_cb(ad, m_sample_cb_userdata);
-    }
 }
 
 

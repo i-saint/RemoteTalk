@@ -39,18 +39,27 @@ rtcvTalkServer::Status rtcvTalkServer::onStats(StatsMessage& mes)
 
 rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
 {
+    if (m_task_talk.valid())
+        m_task_talk.wait();
+
     m_params = mes.params;
     rtcvWaveOutHandler::getInstance().mute = m_params.mute;
 
     auto ifs = rtGetTalkInterface_();
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
-    if (!ifs->talk(&sampleCallbackS, this))
+    if (!ifs->talk())
         Status::Failed;
 
     m_task_talk = std::async(std::launch::async, [this, ifs]() {
         ifs->wait();
-        });
+        rtcvWaveOutHandler::getInstance().mute = false;
+        {
+            auto terminator = std::make_shared<rt::AudioData>();
+            std::unique_lock<std::mutex> lock(m_data_mutex);
+            m_data_queue.push_back(terminator);
+        }
+    });
 
     mes.task = std::async(std::launch::async, [this, &mes]() {
         std::vector<rt::AudioDataPtr> tmp;
@@ -87,14 +96,12 @@ rtcvTalkServer::Status rtcvTalkServer::onDebug(DebugMessage& mes)
 }
 #endif
 
-void rtcvTalkServer::sampleCallbackS(const rt::AudioData& data, void *userdata)
+void rtcvTalkServer::onUpdateBuffer(const rt::AudioData& data)
 {
-    auto _this = (rtcvTalkServer*)userdata;
-    _this->sampleCallback(data);
-}
+    auto ifs = rtGetTalkInterface_();
+    if (!ifs->isPlaying())
+        return;
 
-void rtcvTalkServer::sampleCallback(const rt::AudioData& data)
-{
     auto tmp = std::make_shared<rt::AudioData>(data);
     if (m_params.force_mono)
         tmp->convertToMono();

@@ -57,5 +57,22 @@ namespace IST.RemoteTalk
         {
             UpdateTalk();
         }
+
+        void OnEnable()
+        {
+#if UNITY_EDITOR
+            if (!EditorApplication.isPlaying)
+                EditorApplication.update += UpdateTalk;
+#endif
+        }
+
+        void OnDisable()
+        {
+#if UNITY_EDITOR
+            if (!EditorApplication.isPlaying)
+                EditorApplication.update -= UpdateTalk;
+#endif
+        }
+
     }
 }

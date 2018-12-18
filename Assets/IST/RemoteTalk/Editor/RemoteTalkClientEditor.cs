@@ -32,7 +32,7 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Host: " + t.host);
+            EditorGUILayout.LabelField("Host: " + t.hostName);
 
             if(t.isServerReady)
             {

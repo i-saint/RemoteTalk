@@ -19,11 +19,11 @@ public:
     bool setText(const char *text) override;
 
     bool ready() const override;
-    bool talk(rt::TalkSampleCallback cb, void *userdata) override;
+    bool isPlaying() const override;
+    bool talk() override;
     bool stop() override;
     bool wait() override;
 
-    void onUpdateBuffer(rt::AudioData& ad) override;
 #ifdef rtDebug
     bool onDebug() override;
 #endif
@@ -32,7 +32,4 @@ private:
     mutable rt::CastList m_casts;
     rt::TalkParams m_params;
     std::atomic_bool m_is_playing{ false };
-
-    rt::TalkSampleCallback m_sample_cb = nullptr;
-    void *m_sample_cb_userdata = nullptr;
 };

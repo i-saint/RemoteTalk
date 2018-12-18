@@ -9,19 +9,24 @@ using UnityEditor;
 namespace IST.RemoteTalk
 {
     [Serializable]
-    public class Cast
-    {
-        public string host;
-        public int id;
-        public string name;
-        public TalkParam[] paramInfo;
-    }
-
-    [Serializable]
     public class TalkParam
     {
         public string name;
         public float value, rangeMin, rangeMax;
+    }
+
+    [Serializable]
+    public class Cast
+    {
+        public string hostName;
+        public int id;
+        public string name;
+        public TalkParam[] paramInfo;
+
+        public RemoteTalkProvider provider
+        {
+            get { return RemoteTalkProvider.FindByHost(hostName); }
+        }
     }
 
     [Serializable]
@@ -60,35 +65,35 @@ namespace IST.RemoteTalk
             }
         }
 
-        public static Cast FindCast(string name)
+        public static Cast FindCast(string castName)
         {
             foreach (var c in allCasts)
-                if (c.name == name)
+                if (c.name == castName)
                     return c;
             return null;
         }
 
-        public static RemoteTalkProvider FindByHost(string host)
+        public static RemoteTalkProvider FindByHost(string hostName)
         {
             foreach (var c in instances)
             {
-                if (c.host == host)
+                if (c.hostName == hostName)
                     return c;
             }
             return null;
         }
 
-        public static RemoteTalkProvider FindByCast(string cast)
+        public static RemoteTalkProvider FindByCast(string castName)
         {
             foreach (var p in instances)
                 foreach (var c in p.casts)
-                    if (c.name == cast)
+                    if (c.name == castName)
                         return p;
             return null;
         }
 
 
-        public abstract string host { get; }
+        public abstract string hostName { get; }
         public abstract Cast[] casts { get; }
         public abstract bool isIdling { get; }
 

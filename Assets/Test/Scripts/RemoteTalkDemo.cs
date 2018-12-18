@@ -60,7 +60,7 @@ public class RemoteTalkDemo : MonoBehaviour
         string result = "";
         foreach(var c in RemoteTalkProvider.allCasts) {
             result += c.name + "\n";
-            result += "  host: " + c.host + "\n";
+            result += "  host: " + c.hostName + "\n";
             result += "  params:\n";
             foreach (var pi in c.paramInfo)
                 result += "    " + pi.name + "\n";

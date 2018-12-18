@@ -26,7 +26,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             if (rt::InstallWaveOutHook(rt::HookType::Hotpatch)) {
                 auto& wo = rtcvWaveOutHandler::getInstance();
                 rt::AddWaveOutHandler(&wo);
-                wo.onUpdate = [](rt::AudioData& ad) { rtGetTalkInterface_()->onUpdateBuffer(ad); };
+                wo.onUpdate = [](rt::AudioData& ad) {
+                    rtcvTalkServer::getInstance().onUpdateBuffer(ad);
+                };
             }
         }
     }

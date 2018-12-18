@@ -67,7 +67,7 @@ rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.clear();
     }
-    if (!ifs->talk(&sampleCallbackS, this))
+    if (!ifs->talk())
         return Status::Failed;
 
     mes.task = std::async(std::launch::async, [this, &mes]() {
@@ -111,17 +111,26 @@ rtvrTalkServer::Status rtvrTalkServer::onDebug(DebugMessage& mes)
 #endif
 
 
-void rtvrTalkServer::sampleCallbackS(const rt::AudioData& data, void *userdata)
+void rtvrTalkServer::onUpdateSample(const rt::AudioData& data)
 {
-    auto _this = (rtvrTalkServer*)userdata;
-    _this->sampleCallback(data);
-}
+    if (!rtGetTalkInterface_()->isPlaying())
+        return;
 
-void rtvrTalkServer::sampleCallback(const rt::AudioData& data)
-{
     auto tmp = std::make_shared<rt::AudioData>(data);
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.push_back(tmp);
+    }
+}
+
+void rtvrTalkServer::onStop()
+{
+    if (!rtGetTalkInterface_()->isPlaying())
+        return;
+
+    auto terminator = std::make_shared<rt::AudioData>();
+    {
+        std::unique_lock<std::mutex> lock(m_data_mutex);
+        m_data_queue.push_back(terminator);
     }
 }
