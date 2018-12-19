@@ -39,9 +39,10 @@ obj/
 TestLocal/
 TestLocal.meta
 
-Assembly-CSharp.csproj
+Assembly-CSharp*
 RemoteTalk.csproj
 RemoteTalk.sln
 Assets/RemoteTalkAssets/
+Assets/DefaultPlayables*
 
 Plugin/dist/

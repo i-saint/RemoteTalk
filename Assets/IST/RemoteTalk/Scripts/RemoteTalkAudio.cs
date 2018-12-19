@@ -56,6 +56,7 @@ namespace IST.RemoteTalk
                 for (int i = 0; i < SampleRate; ++i)
                     samples[i] = 1.0f;
                 m_dummyClip.SetData(samples, 0);
+                m_dummyClip.hideFlags = HideFlags.DontSave;
             }
             m_audioSource.clip = m_dummyClip;
             m_audioSource.loop = true;
@@ -94,6 +95,7 @@ namespace IST.RemoteTalk
             if (m_isFinished)
             {
                 m_audioSource.Stop();
+                m_audioSource.clip = null;
                 m_isPlaying = false;
                 m_isFinished = false;
             }

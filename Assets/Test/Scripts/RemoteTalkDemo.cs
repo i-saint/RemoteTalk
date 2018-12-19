@@ -46,7 +46,7 @@ public class RemoteTalkDemo : MonoBehaviour
             if (m_echo != null)
                 m_echo.enabled = m_current.echo;
 
-            m_remoteTalk.Talk(m_current.talk);
+            m_remoteTalk.Play(m_current.talk);
         }
     }
 }

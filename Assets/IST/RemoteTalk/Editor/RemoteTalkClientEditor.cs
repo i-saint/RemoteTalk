@@ -63,8 +63,8 @@ namespace IST.RemoteTalk
 
                         if (t.isIdling)
                         {
-                            if (GUILayout.Button("Talk"))
-                                t.Talk();
+                            if (GUILayout.Button("Play"))
+                                t.Play();
                         }
                         else
                         {

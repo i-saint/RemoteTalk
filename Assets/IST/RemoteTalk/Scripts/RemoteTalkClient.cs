@@ -150,10 +150,12 @@ namespace IST.RemoteTalk
 
         #region Public Methods
 
-        public bool Talk()
+        public bool Play()
         {
             MakeClient();
 
+            if (m_asyncTalk.isValid && !m_asyncTalk.isFinished)
+                return false;
             if ((m_castID < 0 || m_castID >= m_casts.Length) ||
                 (m_talkText == null || m_talkText.Length == 0))
                 return false;
@@ -183,12 +185,15 @@ namespace IST.RemoteTalk
             return true;
         }
 
-        public override bool Talk(Talk talk)
+        public override bool Play(Talk talk)
         {
+            if (m_asyncTalk.isValid && !m_asyncTalk.isFinished)
+                return false;
+
             m_castID = GetCastID(talk.castName);
             m_talkParams = talk.param;
             m_talkText = talk.text;
-            return Talk();
+            return Play();
         }
 
         public override void Stop()

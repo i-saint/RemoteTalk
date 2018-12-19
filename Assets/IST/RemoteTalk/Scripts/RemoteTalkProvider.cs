@@ -48,7 +48,7 @@ namespace IST.RemoteTalk
             get { return RemoteTalkProvider.FindByCastName(castName); }
         }
 
-        public bool DoTalk()
+        public bool Play()
         {
             //cast?.provider?.Talk(this);
             var c = cast;
@@ -56,9 +56,20 @@ namespace IST.RemoteTalk
             {
                 var prov = c.provider;
                 if (prov != null)
-                    return prov.Talk(this);
+                    return prov.Play(this);
             }
             return false;
+        }
+
+        public void Stop()
+        {
+            var c = cast;
+            if (c != null)
+            {
+                var prov = c.provider;
+                if (prov != null)
+                    prov.Stop();
+            }
         }
     }
 
@@ -113,7 +124,7 @@ namespace IST.RemoteTalk
         public abstract Cast[] casts { get; }
         public abstract bool isIdling { get; }
 
-        public abstract bool Talk(Talk talk);
+        public abstract bool Play(Talk talk);
         public abstract void Stop();
 
 

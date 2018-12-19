@@ -79,7 +79,7 @@ namespace IST.RemoteTalk
                     {
                         var provider = m_current.provider;
                         if (provider != null)
-                            provider.Talk(m_current);
+                            provider.Play(m_current);
                         m_prevProvider = provider;
                     }
                 }
