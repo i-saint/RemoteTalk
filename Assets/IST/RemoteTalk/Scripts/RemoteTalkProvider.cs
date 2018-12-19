@@ -25,7 +25,7 @@ namespace IST.RemoteTalk
 
         public RemoteTalkProvider provider
         {
-            get { return RemoteTalkProvider.FindByHost(hostName); }
+            get { return RemoteTalkProvider.FindByHostName(hostName); }
         }
     }
 
@@ -45,7 +45,7 @@ namespace IST.RemoteTalk
         }
         public RemoteTalkProvider provider
         {
-            get { return RemoteTalkProvider.FindByCast(castName); }
+            get { return RemoteTalkProvider.FindByCastName(castName); }
         }
 
         public bool DoTalk()
@@ -89,7 +89,7 @@ namespace IST.RemoteTalk
             return null;
         }
 
-        public static RemoteTalkProvider FindByHost(string hostName)
+        public static RemoteTalkProvider FindByHostName(string hostName)
         {
             foreach (var c in instances)
             {
@@ -99,7 +99,7 @@ namespace IST.RemoteTalk
             return null;
         }
 
-        public static RemoteTalkProvider FindByCast(string castName)
+        public static RemoteTalkProvider FindByCastName(string castName)
         {
             foreach (var p in instances)
                 foreach (var c in p.casts)

@@ -12,8 +12,7 @@ public class RemoteTalkDemo : MonoBehaviour
     [Serializable]
     public class Script
     {
-        public rtTalkParams talkParams = rtTalkParams.defaultValue;
-        public string text;
+        public Talk talk = new Talk();
         public int delay = 0;
         public bool reverb;
         public bool echo;
@@ -47,9 +46,7 @@ public class RemoteTalkDemo : MonoBehaviour
             if (m_echo != null)
                 m_echo.enabled = m_current.echo;
 
-            //m_remoteTalk.talkParams = m_current.talkParams;
-            m_remoteTalk.talkText = m_current.text;
-            m_remoteTalk.Talk();
+            m_remoteTalk.Talk(m_current.talk);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace IST.RemoteTalk
     public class RemoteTalkClient : RemoteTalkProvider
     {
         #region Fields
-        [SerializeField] RemoteTalkAudio[] m_audioSources = new RemoteTalkAudio[0];
+        [SerializeField] AudioSource[] m_audioSources = new AudioSource[0];
 
         [SerializeField] string m_serverAddress = "127.0.0.1";
         [SerializeField] int m_serverPort = 8081;
@@ -52,9 +52,9 @@ namespace IST.RemoteTalk
         string m_cacheFileName;
 
 #if UNITY_EDITOR
-        [SerializeField] bool m_foldVoice = true;
-        [SerializeField] bool m_foldAudio = true;
-        [SerializeField] bool m_foldTools = true;
+        public bool m_foldVoice = true;
+        public bool m_foldAudio = true;
+        public bool m_foldTools = true;
         List<string> m_exportedFiles = new List<string>();
 #endif
         #endregion
@@ -72,14 +72,14 @@ namespace IST.RemoteTalk
             set { m_serverPort = value; ReleaseClient(); }
         }
 
-        public RemoteTalkAudio[] audioSources
+        public AudioSource[] audioSources
         {
             get { return m_audioSources; }
             set
             {
                 m_audioSources = value;
                 if (m_audioSources == null)
-                    m_audioSources = new RemoteTalkAudio[0];
+                    m_audioSources = new AudioSource[0];
             }
         }
 
@@ -126,14 +126,11 @@ namespace IST.RemoteTalk
         {
             get {
                 bool ret = false;
-                foreach(var audio in m_audioSources)
+                EachAudio(audio =>
                 {
-                    if (audio && audio.isPlaying)
-                    {
+                    if (audio.isPlaying)
                         ret = true;
-                        break;
-                    }
-                }
+                });
                 return ret;
             }
         }
@@ -171,11 +168,7 @@ namespace IST.RemoteTalk
                     var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
                     if (clip != null)
                     {
-                        foreach(var audio in m_audioSources)
-                        {
-                            if (audio != null)
-                                audio.Play(clip);
-                        }
+                        EachAudio(audio => { audio.Play(clip); });
                         return true;
                     }
                 }
@@ -184,12 +177,13 @@ namespace IST.RemoteTalk
 
             m_isServerTalking = true;
             var tparam = rtTalkParams.defaultValue;
+            tparam.cast = m_castID;
             tparam.Assign(m_talkParams);
             m_asyncTalk = m_client.Talk(ref tparam, m_talkText);
             return true;
         }
 
-        public override unsafe bool Talk(Talk talk)
+        public override bool Talk(Talk talk)
         {
             m_castID = GetCastID(talk.castName);
             m_talkParams = talk.param;
@@ -204,13 +198,10 @@ namespace IST.RemoteTalk
 
         public int GetCastID(string castName)
         {
-            for (int i = 0; i < m_casts.Length; ++i)
-                if (m_casts[i].name == castName)
-                    return i;
-            return -1;
+            return Array.FindIndex(m_casts, c => c.name == castName);
         }
 
-        public AudioClip GetCache(ref rtTalkParams tp)
+        public AudioClip FindClip(ref rtTalkParams tp)
         {
 #if UNITY_EDITOR
             // todo
@@ -227,24 +218,17 @@ namespace IST.RemoteTalk
 
 
         #region Impl
-#if UNITY_EDITOR
-        [MenuItem("GameObject/RemoteTalk/Create Client", false, 10)]
-        public static void CreateRemoteTalkClient(MenuCommand menuCommand)
+        void EachAudio(Action<RemoteTalkAudio> act)
         {
-            var audio = new GameObject();
-            audio.name = "RemoteTalkAudio";
-            audio.AddComponent<AudioSource>();
-            var rta = audio.AddComponent<RemoteTalkAudio>();
-
-            var client = new GameObject();
-            client.name = "RemoteTalkClient";
-            var rtc = client.AddComponent<RemoteTalkClient>();
-            rtc.audioSources = new RemoteTalkAudio[1] { rta };
-
-            Undo.RegisterCreatedObjectUndo(audio, "RemoteTalk");
-            Undo.RegisterCreatedObjectUndo(client, "RemoteTalk");
+            if (m_audioSources == null)
+                return;
+            foreach(var source in m_audioSources)
+            {
+                var rta = source != null ? Misc.GetOrAddComponent<RemoteTalkAudio>(source.gameObject) : null;
+                if (rta != null)
+                    act(rta);
+            }
         }
-#endif
 
         void MakeClient()
         {
@@ -317,11 +301,7 @@ namespace IST.RemoteTalk
                     if (buf.sampleLength > m_sampleGranularity ||
                         (buf.sampleLength > 0 && m_asyncTalk.isValid && m_asyncTalk.isFinished && m_asyncTalk.boolValue))
                     {
-                        foreach (var audio in m_audioSources)
-                        {
-                            if (audio != null)
-                                audio.Play(buf, SyncBuffers);
-                        }
+                        EachAudio(audio => { audio.Play(buf, SyncBuffers); });
                     }
                 }
 

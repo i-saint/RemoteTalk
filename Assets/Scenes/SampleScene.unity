@@ -153,7 +153,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 1276478675}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -322,34 +322,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!83 &521672562
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Dummy
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 44000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &531982279
 GameObject:
   m_ObjectHideFlags: 0
@@ -360,6 +332,8 @@ GameObject:
   m_Component:
   - component: {fileID: 531982281}
   - component: {fileID: 531982280}
+  - component: {fileID: 531982283}
+  - component: {fileID: 531982282}
   m_Layer: 0
   m_Name: Demo
   m_TagString: Untagged
@@ -383,245 +357,327 @@ MonoBehaviour:
   m_reverb: {fileID: 534669906}
   m_echo: {fileID: 534669909}
   m_scripts:
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 0
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u3053\u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u306F\u3001\u30DC\u30A4\u30B9\u30ED\u30A4\u30C9\u3092\u9060\u9694\u64CD\u4F5C\u3057\u3066\u30E6\u30CB\u30C6\u30A3\u30FC\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u3068\u3057\u3066\u4F7F\u3048\u308B\u3088\u3046\u306B\u3057\u307E\u3059\u3002"
+  - talk:
+      castName: "\u7D50\u6708\u3086\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u559C\u3073"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u6012\u308A"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u60B2\u3057\u307F"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      text: "\u3053\u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u306F\u3001\u30DC\u30A4\u30B9\u30ED\u30A4\u30C9\u3092\u9060\u9694\u64CD\u4F5C\u3057\u3066\u30E6\u30CB\u30C6\u30A3\u30FC\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u3068\u3057\u3066\u4F7F\u3048\u308B\u3088\u3046\u306B\u3057\u307E\u3059\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 0
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u30C6\u30AD\u30B9\u30C8\u306E\u5165\u529B\u3084\u5404\u7A2E\u30D1\u30E9\u30E1\u30FC\u30BF\u306E\u8A2D\u5B9A\u3082\u3001\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u304B\u3089\u884C\u3046\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
+  - talk:
+      castName: "\u7D50\u6708\u3086\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u559C\u3073"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u6012\u308A"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u60B2\u3057\u307F"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      text: "\u30C6\u30AD\u30B9\u30C8\u306E\u5165\u529B\u3084\u5404\u7A2E\u30D1\u30E9\u30E1\u30FC\u30BF\u306E\u8A2D\u5B9A\u3082\u3001\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u304B\u3089\u884C\u3046\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 0
-      flags: 4095
-      paramValues:
-      - 1
-      - 1.5
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u4F8B\u3048\u3070\u901F\u5EA6\u306E\u5909\u66F4\u3002"
+  - talk:
+      castName: "\u7D50\u6708\u3086\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 2
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u559C\u3073"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u6012\u308A"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u60B2\u3057\u307F"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      text: "\u4F8B\u3048\u3070\u901F\u5EA6\u306E\u5909\u66F4\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 0
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1.5
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u3053\u308C\u306F\u9AD8\u3055\u306E\u5909\u66F4\u3067\u3059\u3002"
+  - talk:
+      castName: "\u7D50\u6708\u3086\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1.5
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u559C\u3073"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u6012\u308A"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u60B2\u3057\u307F"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      text: "\u3053\u308C\u306F\u9AD8\u3055\u306E\u5909\u66F4\u3067\u3059\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 1
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u3082\u3061\u308D\u3093\u3001\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u306E\u5909\u66F4\u3082\u53EF\u80FD\u3067\u3059\u3002"
+  - talk:
+      castName: "\u7D32\u661F\u3042\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      text: "\u3082\u3061\u308D\u3093\u3001\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u306E\u5909\u66F4\u3082\u53EF\u80FD\u3067\u3059\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 1
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u3067\u306F\u672C\u5F53\u306B\u305F\u3060\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u306A\u306E\u3067\u3001\u97F3\u306B\u5BFE\u3057\u3066\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u306B\u52A0\u5DE5\u3084\u89E3\u6790\u3092\u65BD\u3059\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002"
+  - talk:
+      castName: "\u7D32\u661F\u3042\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      text: "\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u3067\u306F\u672C\u5F53\u306B\u305F\u3060\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u306A\u306E\u3067\u3001\u97F3\u306B\u5BFE\u3057\u3066\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u306B\u52A0\u5DE5\u3084\u89E3\u6790\u3092\u65BD\u3059\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 1
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u4F8B\u3048\u3070\u3001\u3053\u308C\u306F\u30AA\u30FC\u30C7\u30A3\u30AA\u30D5\u30A3\u30EB\u30BF\u3001\u30EA\u30D0\u30FC\u30D6\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
+  - talk:
+      castName: "\u7D32\u661F\u3042\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      text: "\u4F8B\u3048\u3070\u3001\u3053\u308C\u306F\u30AA\u30FC\u30C7\u30A3\u30AA\u30D5\u30A3\u30EB\u30BF\u3001\u30EA\u30D0\u30FC\u30D6\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
+      foldParams: 0
     delay: 0
     reverb: 1
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 1
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u3053\u308C\u306F\u30A8\u30B3\u30FC\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
+  - talk:
+      castName: "\u7D32\u661F\u3042\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      text: "\u3053\u308C\u306F\u30A8\u30B3\u30FC\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002"
+      foldParams: 0
     delay: 100
     reverb: 0
     echo: 1
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 0
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "3D\u97F3\u97FF\u52B9\u679C\u3082\u3082\u3061\u308D\u3093\u304B\u304B\u308A\u307E\u3059\u3002\u5148\u7A0B\u304B\u3089\u97F3\u6E90\u304C\u56DE\u3063\u3066\u3044\u308B\u306E\u306F\u305D\u306E\u78BA\u8A8D\u7528\u3067\u3059\u3002"
+  - talk:
+      castName: "\u7D32\u661F\u3042\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      text: "3D\u97F3\u97FF\u52B9\u679C\u3082\u3082\u3061\u308D\u3093\u304B\u304B\u308A\u307E\u3059\u3002\u5148\u7A0B\u304B\u3089\u97F3\u6E90\u304C\u56DE\u3063\u3066\u3044\u308B\u306E\u306F\u305D\u306E\u78BA\u8A8D\u7528\u3067\u3059\u3002"
+      foldParams: 0
     delay: 0
     reverb: 1
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 0
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "CeVIO\u306B\u3082\u5BFE\u5FDC\u3057\u305F\u3089\u30EA\u30EA\u30FC\u30B9\u3059\u308B\u4E88\u5B9A\u3067\u3059\u3002\u4ECA\u6708\u4E2D\u306B\u3067\u304D\u305F\u3089\u3044\u3044\u306A\u3042\u3002"
+  - talk:
+      castName: "\u7D50\u6708\u3086\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u559C\u3073"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u6012\u308A"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      - name: "\u60B2\u3057\u307F"
+        value: 0
+        rangeMin: 0
+        rangeMax: 1
+      text: "CeVIO\u306B\u3082\u5BFE\u5FDC\u3057\u305F\u3089\u30EA\u30EA\u30FC\u30B9\u3059\u308B\u4E88\u5B9A\u3067\u3059\u3002\u4ECA\u6708\u4E2D\u306B\u3067\u304D\u305F\u3089\u3044\u3044\u306A\u3042\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
-  - talkParams:
-      mute: 0
-      forceMono: 1
-      cast: 1
-      flags: 4095
-      paramValues:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    text: "\u4ECA\u56DE\u306F\u4EE5\u4E0A\u306B\u306A\u308A\u307E\u3059\u3002\u3054\u8996\u8074\u3042\u308A\u304C\u3068\u3046\u3054\u3056\u3044\u307E\u3057\u305F\u3002"
+  - talk:
+      castName: "\u7D32\u661F\u3042\u304B\u308A"
+      param:
+      - name: "\u97F3\u91CF"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      - name: "\u8A71\u901F"
+        value: 1.3
+        rangeMin: 0.5
+        rangeMax: 4
+      - name: "\u9AD8\u3055"
+        value: 1
+        rangeMin: 0.5
+        rangeMax: 2
+      - name: "\u6291\u63DA"
+        value: 1
+        rangeMin: 0
+        rangeMax: 2
+      text: "\u4ECA\u56DE\u306F\u4EE5\u4E0A\u306B\u306A\u308A\u307E\u3059\u3002\u3054\u8996\u8074\u3042\u308A\u304C\u3068\u3046\u3054\u3056\u3044\u307E\u3057\u305F\u3002"
+      foldParams: 0
     delay: 0
     reverb: 0
     echo: 0
@@ -641,6 +697,44 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &531982282
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531982279}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!320 &531982283
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531982279}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 114959244549994012, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+    value: {fileID: 531982282}
+  m_ExposedReferences:
+    m_References: []
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -823,34 +917,6 @@ AudioChorusFilter:
   m_Delay: 52.42
   m_Rate: 20
   m_Depth: 0.4
---- !u!83 &1276478675
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Dummy
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 44000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &1476112016
 GameObject:
   m_ObjectHideFlags: 0
@@ -881,38 +947,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8176c32a82d5a740b2a9fe9035a92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_talkAudio:
-  - {fileID: 1865400491}
-  - {fileID: 166210423}
+  m_audioSources:
+  - {fileID: 1865400492}
+  - {fileID: 166210425}
   m_serverAddress: 127.0.0.1
   m_serverPort: 8081
+  m_castID: 0
   m_talkParams:
-    mute: 1
-    forceMono: 1
-    cast: 1
-    flags: 4095
-    paramValues:
-    - 1
-    - 1
-    - 1
-    - 1
-    - 1
-    - 0
-    - 0
-    - 0
-    - 0
-    - 0
-    - 0
-    - 0
-  m_talkText: "\u304B\u304D\u304F\u3051\u3053"
+  - name: "\u97F3\u91CF"
+    value: 1
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u8A71\u901F"
+    value: 1
+    rangeMin: 0.5
+    rangeMax: 4
+  - name: "\u9AD8\u3055"
+    value: 1
+    rangeMin: 0.5
+    rangeMax: 2
+  - name: "\u6291\u63DA"
+    value: 1
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u559C\u3073"
+    value: 0
+    rangeMin: 0
+    rangeMax: 1
+  - name: "\u6012\u308A"
+    value: 0
+    rangeMin: 0
+    rangeMax: 1
+  - name: "\u60B2\u3057\u307F"
+    value: 0
+    rangeMin: 0
+    rangeMax: 1
+  m_talkText: "\u3042\u3044\u3046\u3048\u304A"
   m_sampleGranularity: 6144
   m_exportAudio: 1
   m_exportDir: RemoteTalkAssets
   m_exportFileFormat: 1
   m_oggSettings:
     quality: 1
-  m_useCache: 0
+  m_useExportedClips: 0
   m_logging: 0
+  m_foldVoice: 1
+  m_foldAudio: 1
+  m_foldTools: 0
 --- !u!4 &1476112018
 Transform:
   m_ObjectHideFlags: 0
@@ -939,29 +1020,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8176c32a82d5a740b2a9fe9035a92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_talkAudio:
-  - {fileID: 1865400491}
-  - {fileID: 166210423}
+  m_audioSources:
+  - {fileID: 1865400492}
+  - {fileID: 166210425}
   m_serverAddress: 127.0.0.1
   m_serverPort: 8082
+  m_castID: 1
   m_talkParams:
-    mute: 1
-    forceMono: 1
-    cast: 0
-    flags: 4095
-    paramValues:
-    - 1
-    - 1
-    - 1
-    - 1
-    - 1
-    - 2
-    - 0
-    - 0
-    - 0
-    - 1
-    - 1
-    - 1
+  - name: "\u5927\u304D\u3055"
+    value: 1
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u901F\u3055"
+    value: 1
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u9AD8\u3055"
+    value: 1
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u58F0\u8CEA"
+    value: 1
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u6291\u63DA"
+    value: 1
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u30AF\u30FC\u30EB"
+    value: 2
+    rangeMin: 0
+    rangeMax: 2
+  - name: "\u7167\u308C"
+    value: 0
+    rangeMin: 0
+    rangeMax: 2
   m_talkText: "\u304B\u304D\u304F\u3051\u3053"
   m_sampleGranularity: 8192
   m_exportAudio: 1
@@ -969,8 +1062,11 @@ MonoBehaviour:
   m_exportFileFormat: 1
   m_oggSettings:
     quality: 1
-  m_useCache: 0
+  m_useExportedClips: 0
   m_logging: 0
+  m_foldVoice: 1
+  m_foldAudio: 1
+  m_foldTools: 0
 --- !u!1 &1865400490
 GameObject:
   m_ObjectHideFlags: 0
@@ -981,8 +1077,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1865400493}
   - component: {fileID: 1865400492}
-  - component: {fileID: 1865400491}
   - component: {fileID: 1865400494}
+  - component: {fileID: 1865400491}
   m_Layer: 0
   m_Name: RemoteTalkAudio1
   m_TagString: Untagged
@@ -1013,7 +1109,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 521672562}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1226,7 +1322,7 @@ MonoBehaviour:
       rangeMin: 0
       rangeMax: 2
     text: "\u304B\u304D\u304F\u3051\u3053"
-    foldParams: 1
+    foldParams: 0
   - castName: "\u7D32\u661F\u3042\u304B\u308A"
     param:
     - name: "\u97F3\u91CF"
@@ -1246,7 +1342,7 @@ MonoBehaviour:
       rangeMin: 0
       rangeMax: 2
     text: "\u304B\u304D\u304F\u3051\u3053"
-    foldParams: 1
+    foldParams: 0
   - castName: "\u3055\u3068\u3046\u3055\u3055\u3089"
     param:
     - name: "\u5927\u304D\u3055"
@@ -1286,7 +1382,7 @@ MonoBehaviour:
       rangeMin: 0
       rangeMax: 2
     text: "\u304B\u304D\u304F\u3051\u3053"
-    foldParams: 1
+    foldParams: 0
   m_playOnStart: 0
   m_startPos: 0
 --- !u!4 &1924301226

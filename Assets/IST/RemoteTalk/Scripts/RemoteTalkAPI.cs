@@ -43,6 +43,8 @@ namespace IST.RemoteTalk
 
         public static T GetOrAddComponent<T>(GameObject go) where T : Component
         {
+            if (go == null)
+                return null;
             var ret = go.GetComponent<T>();
             if (ret == null)
                 ret = go.AddComponent<T>();
@@ -169,7 +171,7 @@ namespace IST.RemoteTalk
 
 
     [Serializable]
-    public unsafe struct rtTalkParams
+    public struct rtTalkParams
     {
         public const int MaxParams = 12;
 
@@ -177,7 +179,7 @@ namespace IST.RemoteTalk
         public int forceMono;
         public int cast;
         public int flags;
-        public fixed float paramValues[MaxParams];
+        public float p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11;
 
         public uint hash { get { return rtTalkParamsGetHash(ref this); } }
 
@@ -188,9 +190,6 @@ namespace IST.RemoteTalk
                 var ret = default(rtTalkParams);
                 ret.mute = 1;
                 ret.forceMono = 1;
-                ret.flags = 0xFFF;
-                for (int i = 0; i < MaxParams; ++i)
-                    ret.paramValues[i] = 1.0f;
                 return ret;
             }
         }
@@ -200,9 +199,26 @@ namespace IST.RemoteTalk
             flags = 0;
             if (src == null)
                 return;
-            for (int i = 0; i < src.Length; ++i)
+            int n = Mathf.Clamp(src.Length, 0, MaxParams);
+            for (int i = 0; i < n; ++i)
             {
-                paramValues[i] = src[i].value;
+                if (src[i] == null)
+                    continue;
+                switch (i)
+                {
+                    case 0: p0 = src[0].value; break;
+                    case 1: p1 = src[1].value; break;
+                    case 2: p2 = src[2].value; break;
+                    case 3: p3 = src[3].value; break;
+                    case 4: p4 = src[4].value; break;
+                    case 5: p5 = src[5].value; break;
+                    case 6: p6 = src[6].value; break;
+                    case 7: p7 = src[7].value; break;
+                    case 8: p8 = src[8].value; break;
+                    case 9: p9 = src[9].value; break;
+                    case 10: p10 = src[10].value; break;
+                    case 11: p11 = src[11].value; break;
+                }
                 flags |= (1 << i);
             }
         }

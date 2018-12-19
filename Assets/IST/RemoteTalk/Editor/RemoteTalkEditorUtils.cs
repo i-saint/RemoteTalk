@@ -35,6 +35,23 @@ namespace IST.RemoteTalk
         }
 
 #if UNITY_EDITOR
+        [MenuItem("GameObject/RemoteTalk/Create Client", false, 10)]
+        public static void CreateRemoteTalkClient(MenuCommand menuCommand)
+        {
+            var audio = new GameObject();
+            audio.name = "RemoteTalkAudio";
+            var source = audio.AddComponent<AudioSource>();
+            audio.AddComponent<RemoteTalkAudio>();
+
+            var client = new GameObject();
+            client.name = "RemoteTalkClient";
+            var rtc = client.AddComponent<RemoteTalkClient>();
+            rtc.audioSources = new AudioSource[1] { source };
+
+            Undo.RegisterCreatedObjectUndo(audio, "RemoteTalk");
+            Undo.RegisterCreatedObjectUndo(client, "RemoteTalk");
+        }
+
         [MenuItem("Debug/Remote Talk/List All Casts", false, 10)]
         public static void ListAllCasts(MenuCommand menuCommand)
         {
