@@ -54,6 +54,15 @@ namespace IST.RemoteTalk
                 var prov = provider;
                 if (prov != null)
                     return prov.FindClip(this);
+                else
+                {
+                    foreach (var p in RemoteTalkProvider.instances)
+                    {
+                        var clip = p.FindClip(this);
+                        if (clip != null)
+                            return clip;
+                    }
+                }
                 return null;
             }
         }

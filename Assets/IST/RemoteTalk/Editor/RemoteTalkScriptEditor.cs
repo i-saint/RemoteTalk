@@ -56,6 +56,15 @@ namespace IST.RemoteTalk
                 if (GUILayout.Button("Play"))
                     t.Play();
             }
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Import"))
+                t.ImportFile(EditorUtility.OpenFilePanel("Import Script", ".", "txt"));
+            if (GUILayout.Button("Export"))
+                t.ExportFile(EditorUtility.SaveFilePanel("Export Script", ".", t.name, "txt"));
+            EditorGUILayout.EndHorizontal();
         }
     }
 }

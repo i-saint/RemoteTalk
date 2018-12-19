@@ -279,10 +279,9 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern byte rtAsyncGetBool(IntPtr self, ref byte dst);
         #endregion
 
-        public static implicit operator bool(rtAsync v) { return v.self != IntPtr.Zero; }
+        public static implicit operator bool(rtAsync v) { return rtAsyncIsValid(v.self) != 0; }
         public void Release() { self = IntPtr.Zero; }
 
-        public bool isValid { get { return rtAsyncIsValid(self) != 0; } }
         public bool isFinished { get { return rtAsyncIsFinished(self) != 0; } }
         public void Wait() { rtAsyncWait(self); }
 

@@ -12,6 +12,7 @@ namespace IST.RemoteTalk
         public Talk talk = new Talk();
         public ExposedReference<AudioSource> audioSource;
         public ExposedReference<AudioClip> audioClip;
+        public ExposedReference<RemoteTalkProvider> remoteTalk;
 
 
         public ClipCaps clipCaps
@@ -27,15 +28,22 @@ namespace IST.RemoteTalk
             clone.talk = talk;
             clone.audioSource = audioSource.Resolve(graph.GetResolver());
             clone.audioClip = audioClip.Resolve(graph.GetResolver());
+            clone.remoteTalk = remoteTalk.Resolve(graph.GetResolver());
             return playable;
         }
 
 
-        public bool AssignAudioClip()
+        public bool UpdateCachedAsset()
         {
-            var ac = talk.audioClip;
-            audioClip.defaultValue = ac;
-            return ac != null;
+            var provider = talk.provider;
+            if (provider != null)
+            {
+                var ac = provider.FindClip(talk);
+                audioClip.defaultValue = ac;
+                remoteTalk.defaultValue = provider;
+                return ac != null;
+            }
+            return false;
         }
 
         public override double duration

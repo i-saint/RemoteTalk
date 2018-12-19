@@ -13,21 +13,25 @@ namespace IST.RemoteTalk
         public Talk talk = new Talk();
         public AudioSource audioSource;
         public AudioClip audioClip;
+        public RemoteTalkProvider remoteTalk;
 
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
-            var provider = talk.provider;
-            if (provider == null)
-                return;
-            if (audioClip != null)
-                provider.Play(audioClip);
+            if (remoteTalk != null && audioClip != null)
+                remoteTalk.Play(audioClip);
             else
-                provider.Play(talk);
+                talk.Play();
         }
 
         public override void OnBehaviourPause(Playable playable, FrameData info)
         {
-            talk.Stop();
+            if (remoteTalk != null && audioClip != null)
+                remoteTalk.Stop();
+            else
+            {
+                talk.Stop();
+                clip.UpdateCachedAsset();
+            }
         }
     }
 }

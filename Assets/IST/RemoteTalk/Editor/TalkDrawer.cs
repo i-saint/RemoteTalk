@@ -89,7 +89,9 @@ namespace IST.RemoteTalk
                 // text box
                 position.height = TextHeight;
                 var text = property.FindPropertyRelative("text");
-                text.stringValue = EditorGUI.TextArea(position, text.stringValue);
+                var textStyle = EditorStyles.textField;
+                textStyle.wordWrap = true;
+                text.stringValue = EditorGUI.TextArea(position, text.stringValue, textStyle);
 
             }
         }

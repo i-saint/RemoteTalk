@@ -118,11 +118,11 @@ const rt::AudioData& rtHTTPClient::getBuffer()
 
 
 
-#pragma region rtAudioData
+#pragma region rtAsync
 rtExport bool rtAsyncIsValid(rtAsyncBase *self)
 {
     if (!self)
-        return true;
+        return false;
     return self->isValid();
 }
 rtExport bool rtAsyncIsFinished(rtAsyncBase *self)

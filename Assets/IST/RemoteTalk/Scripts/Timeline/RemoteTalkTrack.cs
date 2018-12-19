@@ -18,7 +18,7 @@ namespace IST.RemoteTalk
                 var clip = (RemoteTalkClip)c.asset;
                 c.displayName = clip.talk.text + "_" + clip.talk.castName;
 
-                if(clip.AssignAudioClip())
+                if(clip.UpdateCachedAsset())
                 {
                     if (autoAdjustDuration)
                         c.duration = clip.duration;
