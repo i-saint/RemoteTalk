@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace IST.RemoteTalk
 {
-    public enum rtFileFormat
+    public enum AudioFileFormat
     {
         Wave,
         Ogg
@@ -19,20 +19,21 @@ namespace IST.RemoteTalk
     public class RemoteTalkClient : RemoteTalkProvider
     {
         #region Fields
-        [SerializeField] RemoteTalkAudio[] m_talkAudio = new RemoteTalkAudio[0];
+        [SerializeField] RemoteTalkAudio[] m_audioSources = new RemoteTalkAudio[0];
 
         [SerializeField] string m_serverAddress = "127.0.0.1";
         [SerializeField] int m_serverPort = 8081;
 
-        [SerializeField] rtTalkParams m_talkParams = rtTalkParams.defaultValue;
+        [SerializeField] int m_castID;
+        [SerializeField] TalkParam[] m_talkParams;
         [SerializeField] string m_talkText;
 
-        [SerializeField] int m_sampleGranularity = 8192;
+        [SerializeField] [Range(1024, 65536)] int m_sampleGranularity = 8192;
         [SerializeField] bool m_exportAudio = false;
         [SerializeField] string m_exportDir = "RemoteTalkAssets";
-        [SerializeField] rtFileFormat m_exportFileFormat = rtFileFormat.Ogg;
+        [SerializeField] AudioFileFormat m_exportFileFormat = AudioFileFormat.Ogg;
         [SerializeField] rtOggSettings m_oggSettings = rtOggSettings.defaultValue;
-        [SerializeField] bool m_useCache = true;
+        [SerializeField] bool m_useExportedClips = true;
         [SerializeField] bool m_logging = false;
 
         rtHTTPClient m_client;
@@ -51,6 +52,9 @@ namespace IST.RemoteTalk
         string m_cacheFileName;
 
 #if UNITY_EDITOR
+        [SerializeField] bool m_foldVoice = true;
+        [SerializeField] bool m_foldAudio = true;
+        [SerializeField] bool m_foldTools = true;
         List<string> m_exportedFiles = new List<string>();
 #endif
         #endregion
@@ -68,34 +72,41 @@ namespace IST.RemoteTalk
             set { m_serverPort = value; ReleaseClient(); }
         }
 
-        public RemoteTalkAudio[] talkAudio
+        public RemoteTalkAudio[] audioSources
         {
-            get { return m_talkAudio; }
+            get { return m_audioSources; }
             set
             {
-                m_talkAudio = value;
-                if (m_talkAudio == null)
-                    m_talkAudio = new RemoteTalkAudio[0];
+                m_audioSources = value;
+                if (m_audioSources == null)
+                    m_audioSources = new RemoteTalkAudio[0];
             }
         }
 
         public int castID
         {
-            get { return m_talkParams.cast; }
+            get { return m_castID; }
+            set
+            {
+                m_castID = value;
+                if (m_castID >= 0 || m_castID < m_casts.Length)
+                {
+                    m_talkParams = (TalkParam[])m_casts[m_castID].paramInfo.Clone();
+                }
+            }
         }
         public string castName
         {
             get {
-                if (m_talkParams.cast >= 0 && m_talkParams.cast < m_casts.Length)
-                    return m_casts[m_talkParams.cast].name;
+                if (m_castID >= 0 && m_castID < m_casts.Length)
+                    return m_casts[m_castID].name;
                 else
                     return null;
             }
         }
-        public rtTalkParams talkParams
+        public TalkParam[] talkParams
         {
             get { return m_talkParams; }
-            set { m_talkParams = value; }
         }
         public string talkText
         {
@@ -115,7 +126,7 @@ namespace IST.RemoteTalk
         {
             get {
                 bool ret = false;
-                foreach(var audio in m_talkAudio)
+                foreach(var audio in m_audioSources)
                 {
                     if (audio && audio.isPlaying)
                     {
@@ -146,24 +157,21 @@ namespace IST.RemoteTalk
         {
             MakeClient();
 
-            if ((m_talkParams.cast < 0 || m_talkParams.cast >= m_casts.Length) ||
+            if ((m_castID < 0 || m_castID >= m_casts.Length) ||
                 (m_talkText == null || m_talkText.Length == 0))
                 return false;
 
-            m_talkParams.mute = 1;
-            m_talkParams.flags = (1 << m_casts[m_talkParams.cast].paramInfo.Length) - 1;
-
-            if (m_exportAudio || m_useCache)
+            if (m_exportAudio || m_useExportedClips)
             {
                 m_cacheFileName = GenCacheFileName();
 #if UNITY_EDITOR
-                if (m_useCache)
+                if (m_useExportedClips)
                 {
                     var dstPath = assetPath + "/" + m_cacheFileName;
                     var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
                     if (clip != null)
                     {
-                        foreach(var audio in m_talkAudio)
+                        foreach(var audio in m_audioSources)
                         {
                             if (audio != null)
                                 audio.Play(clip);
@@ -175,19 +183,16 @@ namespace IST.RemoteTalk
             }
 
             m_isServerTalking = true;
-            m_asyncTalk = m_client.Talk(ref m_talkParams, m_talkText);
+            var tparam = rtTalkParams.defaultValue;
+            tparam.Assign(m_talkParams);
+            m_asyncTalk = m_client.Talk(ref tparam, m_talkText);
             return true;
         }
 
         public override unsafe bool Talk(Talk talk)
         {
-            m_talkParams.cast = GetCastID(talk.castName);
-            if (talk.param != null)
-            {
-                int len = Math.Min(talk.param.Length, rtTalkParams.MaxParams);
-                for (int i = 0; i < len; ++i)
-                    m_talkParams.paramValues[i] = talk.param[i].value;
-            }
+            m_castID = GetCastID(talk.castName);
+            m_talkParams = talk.param;
             m_talkText = talk.text;
             return Talk();
         }
@@ -234,7 +239,7 @@ namespace IST.RemoteTalk
             var client = new GameObject();
             client.name = "RemoteTalkClient";
             var rtc = client.AddComponent<RemoteTalkClient>();
-            rtc.talkAudio = new RemoteTalkAudio[1] { rta };
+            rtc.audioSources = new RemoteTalkAudio[1] { rta };
 
             Undo.RegisterCreatedObjectUndo(audio, "RemoteTalk");
             Undo.RegisterCreatedObjectUndo(client, "RemoteTalk");
@@ -266,12 +271,15 @@ namespace IST.RemoteTalk
             var name = castName;
             if (name != null)
             {
+                var tparam = rtTalkParams.defaultValue;
+                tparam.Assign(m_talkParams);
+
                 string filename = name;
                 filename += "_";
                 filename += m_talkText.Substring(0, Math.Min(32, m_talkText.Length));
                 filename += "_";
-                filename += m_talkParams.hash.ToString("X8");
-                filename += m_exportFileFormat == rtFileFormat.Ogg ? ".ogg" : ".wav";
+                filename += tparam.hash.ToString("X8");
+                filename += m_exportFileFormat == AudioFileFormat.Ogg ? ".ogg" : ".wav";
                 return Misc.SanitizeFileName(filename);
             }
             else
@@ -309,7 +317,7 @@ namespace IST.RemoteTalk
                     if (buf.sampleLength > m_sampleGranularity ||
                         (buf.sampleLength > 0 && m_asyncTalk.isValid && m_asyncTalk.isFinished && m_asyncTalk.boolValue))
                     {
-                        foreach (var audio in m_talkAudio)
+                        foreach (var audio in m_audioSources)
                         {
                             if (audio != null)
                                 audio.Play(buf, SyncBuffers);
@@ -328,7 +336,7 @@ namespace IST.RemoteTalk
                     {
                         MakeSureAssetDirectoryExists();
                         var dstPath = assetPath + "/" + m_cacheFileName;
-                        if (m_exportFileFormat == rtFileFormat.Ogg)
+                        if (m_exportFileFormat == AudioFileFormat.Ogg)
                             m_asyncExport = m_client.ExportOgg(dstPath, ref m_oggSettings);
                         else
                             m_asyncExport = m_client.ExportWave(dstPath);

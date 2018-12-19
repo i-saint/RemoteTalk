@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
@@ -28,33 +29,60 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_talkAudio"), true);
-
-            EditorGUILayout.Space();
-
             EditorGUILayout.LabelField("Host: " + t.hostName);
 
             if(t.isServerReady)
             {
-                var talkParams = so.FindProperty("m_talkParams");
-                RemoteTalkEditorUtils.DrawTalkParams(t.castID, talkParams, t);
-
-                var text = so.FindProperty("m_talkText");
-                EditorGUI.BeginChangeCheck();
-                text.stringValue = EditorGUILayout.TextArea(text.stringValue, GUILayout.Height(100));
-                if (EditorGUI.EndChangeCheck())
-                    so.ApplyModifiedProperties();
-
-                if (t.isIdling)
+                var foldVoice = so.FindProperty("m_foldVoice");
+                foldVoice.boolValue = EditorGUILayout.Foldout(foldVoice.boolValue, "Voice Settings");
+                if (foldVoice.boolValue)
                 {
-                    if (GUILayout.Button("Talk"))
-                        t.Talk();
+                    EditorGUI.indentLevel++;
+                    var casts = t.casts;
+                    if (casts.Length > 0)
+                    {
+                        var castID = so.FindProperty("m_castID");
+                        var castNames = casts.Select(a => a.name).ToArray();
+                        EditorGUI.BeginChangeCheck();
+                        castID.intValue = EditorGUILayout.Popup("Cast", castID.intValue, castNames);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            t.castID = castID.intValue;
+                            so.Update();
+                        }
+
+                        var talkParams = so.FindProperty("m_talkParams");
+                        for (int i = 0; i < talkParams.arraySize; ++i)
+                            EditorGUILayout.PropertyField(talkParams.GetArrayElementAtIndex(i));
+
+                        var text = so.FindProperty("m_talkText");
+                        EditorGUI.BeginChangeCheck();
+                        text.stringValue = EditorGUILayout.TextArea(text.stringValue, GUILayout.Height(100));
+                        if (EditorGUI.EndChangeCheck())
+                            so.ApplyModifiedProperties();
+
+                        if (t.isIdling)
+                        {
+                            if (GUILayout.Button("Talk"))
+                                t.Talk();
+                        }
+                        else
+                        {
+                            if (GUILayout.Button("Stop"))
+                                t.Stop();
+                        }
+                    }
+                    EditorGUI.indentLevel--;
                 }
-                else
-                {
-                    if (GUILayout.Button("Stop"))
-                        t.Stop();
-                }
+                EditorGUILayout.Space();
+            }
+
+            var foldAudio = so.FindProperty("m_foldAudio");
+            foldAudio.boolValue = EditorGUILayout.Foldout(foldAudio.boolValue, "Audio Settings");
+            if (foldAudio.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(so.FindProperty("m_audioSources"), true);
 
                 EditorGUILayout.Space();
 
@@ -67,35 +95,41 @@ namespace IST.RemoteTalk
 
                     var exportFileFormat = so.FindProperty("m_exportFileFormat");
                     EditorGUILayout.PropertyField(exportFileFormat);
-                    if (exportFileFormat.intValue == (int)rtFileFormat.Ogg)
+                    if (exportFileFormat.intValue == (int)AudioFileFormat.Ogg)
                     {
                         EditorGUILayout.PropertyField(so.FindProperty("m_oggSettings"), true);
                     }
                     EditorGUI.indentLevel--;
                 }
-
-                EditorGUILayout.PropertyField(so.FindProperty("m_useCache"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_useExportedClips"));
+                EditorGUILayout.Space();
                 EditorGUILayout.PropertyField(so.FindProperty("m_sampleGranularity"));
                 EditorGUILayout.PropertyField(so.FindProperty("m_logging"));
+                EditorGUI.indentLevel--;
             }
-
-            if (GUI.changed)
-                so.ApplyModifiedProperties();
 
             EditorGUILayout.Space();
 
 #if UNITY_EDITOR_WIN
-            if (GUILayout.Button("Connect VOICEROID2"))
-                rtPlugin.LaunchVOICEROID2();
-            EditorGUILayout.Space();
-            if (GUILayout.Button("Connect CeVIO CS"))
-                rtPlugin.LaunchCeVIOCS();
+            var foldNetwork = so.FindProperty("m_foldTools");
+            foldNetwork.boolValue = EditorGUILayout.Foldout(foldNetwork.boolValue, "Connection");
+            if (foldNetwork.boolValue)
+            {
+                if (GUILayout.Button("Connect VOICEROID2"))
+                    rtPlugin.LaunchVOICEROID2();
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Connect CeVIO CS"))
+                    rtPlugin.LaunchCeVIOCS();
 
-            EditorGUILayout.Space();
+                EditorGUILayout.Space();
 
-            if (GUILayout.Button("Start SAPI Server"))
-                rtspTalkServer.StartServer();
+                if (GUILayout.Button("Start SAPI Server"))
+                    rtspTalkServer.StartServer();
+            }
 #endif
+
+            if (GUI.changed)
+                so.ApplyModifiedProperties();
         }
     }
 }

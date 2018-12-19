@@ -47,7 +47,7 @@ public class RemoteTalkDemo : MonoBehaviour
             if (m_echo != null)
                 m_echo.enabled = m_current.echo;
 
-            m_remoteTalk.talkParams = m_current.talkParams;
+            //m_remoteTalk.talkParams = m_current.talkParams;
             m_remoteTalk.talkText = m_current.text;
             m_remoteTalk.Talk();
         }

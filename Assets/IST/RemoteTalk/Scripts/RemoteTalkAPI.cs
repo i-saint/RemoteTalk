@@ -195,6 +195,18 @@ namespace IST.RemoteTalk
             }
         }
 
+        public void Assign(TalkParam[] src)
+        {
+            flags = 0;
+            if (src == null)
+                return;
+            for (int i = 0; i < src.Length; ++i)
+            {
+                paramValues[i] = src[i].value;
+                flags |= (1 << i);
+            }
+        }
+
         #region internal
         [DllImport("RemoteTalkClient")] static extern uint rtTalkParamsGetHash(ref rtTalkParams self);
         #endregion
@@ -219,13 +231,13 @@ namespace IST.RemoteTalk
 
     public struct rtCastInfo
     {
-#region internal
+        #region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetID(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern IntPtr rtCastInfoGetName(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtCastInfoGetNumParams(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtTalkParamInfo rtCastInfoGetParamInfo(IntPtr self, int i);
-#endregion
+        #endregion
 
         public static implicit operator bool(rtCastInfo v) { return v.self != IntPtr.Zero; }
 
@@ -243,7 +255,7 @@ namespace IST.RemoteTalk
 
     public struct rtAsync
     {
-#region internal
+        #region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern byte rtAsyncIsValid(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtAsyncIsFinished(IntPtr self);
@@ -275,7 +287,7 @@ namespace IST.RemoteTalk
 
     public struct rtHTTPClient
     {
-#region internal
+        #region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate(string server, int port);
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientRelease(IntPtr self);
@@ -293,7 +305,7 @@ namespace IST.RemoteTalk
         [DllImport("RemoteTalkClient")] static extern rtAudioData rtHTTPClientGetBuffer(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientExportWave(IntPtr self, string path);
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientExportOgg(IntPtr self, string path, ref rtOggSettings settings);
-#endregion
+        #endregion
 
         public static implicit operator bool(rtHTTPClient v) { return v.self != IntPtr.Zero; }
 
@@ -365,12 +377,12 @@ namespace IST.RemoteTalk
 
     public struct rtHTTPReceiver
     {
-#region internal
+        #region internal
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern rtHTTPReceiver rtHTTPReceiverCreate();
         [DllImport("RemoteTalkClient")] static extern void rtHTTPReceiverRelease(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern int rtHTTPReceiverConsumeAudioData(IntPtr self, rtAudioDataCallback cb);
-#endregion
+        #endregion
 
         public static implicit operator bool(rtHTTPReceiver v) { return v.self != IntPtr.Zero; }
 
@@ -381,10 +393,10 @@ namespace IST.RemoteTalk
 
     public struct rtspTalkServer
     {
-#region internal
+        #region internal
         public IntPtr self;
         [DllImport("RemoteTalkSAPI")] static extern rtspTalkServer rtspStartServer(int port);
-#endregion
+        #endregion
 
         public static rtspTalkServer StartServer(int port = 8083) { return rtspStartServer(port); }
     }

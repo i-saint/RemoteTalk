@@ -47,6 +47,19 @@ namespace IST.RemoteTalk
         {
             get { return RemoteTalkProvider.FindByCast(castName); }
         }
+
+        public bool DoTalk()
+        {
+            //cast?.provider?.Talk(this);
+            var c = cast;
+            if (c != null)
+            {
+                var prov = c.provider;
+                if (prov != null)
+                    return prov.Talk(this);
+            }
+            return false;
+        }
     }
 
 
