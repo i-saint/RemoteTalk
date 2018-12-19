@@ -47,6 +47,16 @@ namespace IST.RemoteTalk
         {
             get { return RemoteTalkProvider.FindByCastName(castName); }
         }
+        public AudioClip audioClip
+        {
+            get
+            {
+                var prov = provider;
+                if (prov != null)
+                    return prov.FindClip(this);
+                return null;
+            }
+        }
 
         public bool Play()
         {
@@ -125,7 +135,10 @@ namespace IST.RemoteTalk
         public abstract bool isIdling { get; }
 
         public abstract bool Play(Talk talk);
+        public abstract bool Play(AudioClip clip);
         public abstract void Stop();
+
+        public abstract AudioClip FindClip(Talk talk);
 
 
         protected virtual void OnEnable()

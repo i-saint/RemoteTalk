@@ -8,7 +8,7 @@ namespace IST.RemoteTalk
     [TrackClipType(typeof(RemoteTalkClip))]
     public class RemoteTalkTrack : TrackAsset
     {
-        public bool m_autoAdjustDuration = true;
+        public bool autoAdjustDuration = true;
 
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
@@ -16,7 +16,13 @@ namespace IST.RemoteTalk
             foreach (var c in GetClips())
             {
                 var clip = (RemoteTalkClip)c.asset;
-                c.displayName = clip.talk.castName + "_" + clip.talk.text;
+                c.displayName = clip.talk.text + "_" + clip.talk.castName;
+
+                if(clip.AssignAudioClip())
+                {
+                    if (autoAdjustDuration)
+                        c.duration = clip.duration;
+                }
             }
 #endif
             var ret = ScriptPlayable<RemoteTalkMixerBehaviour>.Create(graph, inputCount);

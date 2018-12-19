@@ -154,7 +154,7 @@ namespace IST.RemoteTalk
         {
             MakeClient();
 
-            if (m_asyncTalk.isValid && !m_asyncTalk.isFinished)
+            if (isPlaying || (m_asyncTalk.isValid && !m_asyncTalk.isFinished))
                 return false;
             if ((m_castID < 0 || m_castID >= m_casts.Length) ||
                 (m_talkText == null || m_talkText.Length == 0))
@@ -196,9 +196,18 @@ namespace IST.RemoteTalk
             return Play();
         }
 
+        public override bool Play(AudioClip clip)
+        {
+            if (isPlaying || (m_asyncTalk.isValid && !m_asyncTalk.isFinished))
+                return false;
+            EachAudio(audio => { audio.Play(clip); });
+            return true;
+        }
+
         public override void Stop()
         {
             m_asyncStop = m_client.Stop();
+            EachAudio(audio => { audio.Stop(); });
         }
 
         public int GetCastID(string castName)
@@ -206,12 +215,14 @@ namespace IST.RemoteTalk
             return Array.FindIndex(m_casts, c => c.name == castName);
         }
 
-        public AudioClip FindClip(ref rtTalkParams tp)
+        public override AudioClip FindClip(Talk talk)
         {
 #if UNITY_EDITOR
-            // todo
-#endif
+            var path = assetPath + "/" + GenCacheFileName(talk.text, talk.param);
+            return AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+#else
             return null;
+#endif
         }
 
         public void RefreshClient()
@@ -255,17 +266,17 @@ namespace IST.RemoteTalk
             m_hostName = "";
         }
 
-        string GenCacheFileName()
+        string GenCacheFileName(string text, TalkParam[] param)
         {
             var name = castName;
             if (name != null)
             {
                 var tparam = rtTalkParams.defaultValue;
-                tparam.Assign(m_talkParams);
+                tparam.Assign(param);
 
                 string filename = name;
                 filename += "_";
-                filename += m_talkText.Substring(0, Math.Min(32, m_talkText.Length));
+                filename += text.Substring(0, Math.Min(32, text.Length));
                 filename += "_";
                 filename += tparam.hash.ToString("X8");
                 filename += m_exportFileFormat == AudioFileFormat.Ogg ? ".ogg" : ".wav";
@@ -274,6 +285,11 @@ namespace IST.RemoteTalk
             else
                 return null;
         }
+        string GenCacheFileName()
+        {
+            return GenCacheFileName(m_talkText, m_talkParams);
+        }
+
 
         bool SyncBuffers()
         {

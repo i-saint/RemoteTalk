@@ -23,10 +23,30 @@ namespace IST.RemoteTalk
         {
             var playable = ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);
             var clone = playable.GetBehaviour();
+            clone.clip = this;
             clone.talk = talk;
             clone.audioSource = audioSource.Resolve(graph.GetResolver());
             clone.audioClip = audioClip.Resolve(graph.GetResolver());
             return playable;
+        }
+
+
+        public bool AssignAudioClip()
+        {
+            var ac = talk.audioClip;
+            audioClip.defaultValue = ac;
+            return ac != null;
+        }
+
+        public override double duration
+        {
+            get
+            {
+                var ac = audioClip.defaultValue as AudioClip;
+                if (audioClip.defaultValue == null)
+                    return base.duration;
+                return (double)ac.samples / (double)ac.frequency;
+            }
         }
     }
 }
