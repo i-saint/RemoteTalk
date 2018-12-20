@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <Commctrl.h>
 #include "rtvrexCommon.h"
 #include "rtvrexHookHandler.h"
 #include "rtvrexTalkServer.h"
@@ -25,19 +26,30 @@ bool rtvrexTalkServer::isReady()
 rtvrexTalkServer::Status rtvrexTalkServer::onStats(StatsMessage& mes)
 {
     auto& stats = mes.stats;
-    stats.host = rtvrexHostName;
+    stats.host = rt::ToMBS(m_host);
     stats.plugin_version = rtPluginVersion;
     stats.protocol_version = rtProtocolVersion;
+
+    setupControls();
+    mes.stats.casts.push_back(m_cast);
+
     return Status::Succeeded;
 }
 
 rtvrexTalkServer::Status rtvrexTalkServer::onTalk(TalkMessage& mes)
 {
+    setupControls();
+
     rtvrDSoundHandler::getInstance().mute = mes.params.mute;
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.clear();
     }
+
+    if (!doSetText(rt::ToWCS(rt::ToUTF8(mes.text))))
+        return Status::Failed;
+    if (!doPlay())
+        return Status::Failed;
 
     mes.task = std::async(std::launch::async, [this, &mes]() {
         std::vector<rt::AudioDataPtr> tmp;
@@ -63,17 +75,51 @@ rtvrexTalkServer::Status rtvrexTalkServer::onTalk(TalkMessage& mes)
 
 rtvrexTalkServer::Status rtvrexTalkServer::onStop(StopMessage& mes)
 {
+    setupControls();
+    doStop();
     return Status::Succeeded;
 }
 
 #ifdef rtDebug
-
-std::wstring m_host;
-HWND m_ctrl_play, m_ctrl_stop, m_ctrl_text, m_tab_voice;
-
-static void PrintWindows()
+rtvrexTalkServer::Status rtvrexTalkServer::onDebug(DebugMessage& mes)
 {
-    rt::EnumerateAllWindows([](HWND hwnd) {
+    setupControls();
+    return Status::Succeeded;
+}
+#endif
+
+void rtvrexTalkServer::onSoundPlay()
+{
+
+}
+
+void rtvrexTalkServer::onSoundStop()
+{
+    m_is_playing = false;
+    auto terminator = std::make_shared<rt::AudioData>();
+    {
+        std::unique_lock<std::mutex> lock(m_data_mutex);
+        m_data_queue.push_back(terminator);
+    }
+}
+
+void rtvrexTalkServer::onUpdateSample(const rt::AudioData& data)
+{
+    if (!m_is_playing)
+        return;
+
+    auto tmp = std::make_shared<rt::AudioData>(data);
+    {
+        std::unique_lock<std::mutex> lock(m_data_mutex);
+        m_data_queue.push_back(tmp);
+    }
+}
+
+
+void rtvrexTalkServer::setupControls()
+{
+    int nth_edit = 0;
+    rt::EnumerateAllWindows([this, &nth_edit](HWND hwnd) {
         wchar_t text[256];
         auto n = ::GetWindowTextW(hwnd, text, 256);
 
@@ -95,40 +141,50 @@ static void PrintWindows()
             if (!m_ctrl_text)
                 m_ctrl_text = hwnd;
         }
-
-
-        wchar_t buf[512];
-        swprintf(buf, L"%p [%s] %s\n", hwnd, wclass, text);
-        ::OutputDebugStringW(buf);
+        else if (wcsstr(wclass, L"WindowsForms10.EDIT") && !m_ctrl_volume) {
+            switch (nth_edit++) {
+            case 0: m_ctrl_intonation = hwnd; break;
+            case 1: m_ctrl_pitch = hwnd; break;
+            case 2: m_ctrl_speed = hwnd; break;
+            case 3: m_ctrl_volume = hwnd; break;
+            default: break;
+            }
+        }
     });
 
-    static const char* text = "éÑÅAêÊîyÇÃÇ±Ç∆çDÇ´Ç≈Ç∑ÇÊÅH";
-    ::SendMessageA(m_ctrl_text, WM_SETTEXT, 0, (LPARAM)text);
-    ::SendMessageA(m_ctrl_play, BM_CLICK, 0, 0);
-}
-
-rtvrexTalkServer::Status rtvrexTalkServer::onDebug(DebugMessage& mes)
-{
-    PrintWindows();
-    return Status::Succeeded;
-}
-#endif
-
-
-void rtvrexTalkServer::onUpdateSample(const rt::AudioData& data)
-{
-    auto tmp = std::make_shared<rt::AudioData>(data);
-    {
-        std::unique_lock<std::mutex> lock(m_data_mutex);
-        m_data_queue.push_back(tmp);
+    if (m_cast.name.empty()) {
+        m_cast.name = rt::ToMBS(m_host);
+        m_cast.params.push_back({ rt::ToUTF8("âπó "), 1.0f, 0.0f, 2.0f });
+        m_cast.params.push_back({ rt::ToUTF8("òbë¨"), 1.0f, 0.5f, 4.0f });
+        m_cast.params.push_back({ rt::ToUTF8("çÇÇ≥"), 1.0f, 0.5f, 2.0f });
+        m_cast.params.push_back({ rt::ToUTF8("ó}óg"), 1.0f, 0.0f, 2.0f });
     }
 }
 
-void rtvrexTalkServer::onStop()
+bool rtvrexTalkServer::doPlay()
 {
-    auto terminator = std::make_shared<rt::AudioData>();
-    {
-        std::unique_lock<std::mutex> lock(m_data_mutex);
-        m_data_queue.push_back(terminator);
+    if (m_ctrl_play) {
+        m_is_playing = true;
+        ::SendMessageW(m_ctrl_play, BM_CLICK, 0, 0);
+        return true;
     }
+    return false;
+}
+
+bool rtvrexTalkServer::doStop()
+{
+    if (m_ctrl_stop) {
+        ::SendMessageW(m_ctrl_stop, BM_CLICK, 0, 0);
+        return true;
+    }
+    return false;
+}
+
+bool rtvrexTalkServer::doSetText(const std::wstring& text)
+{
+    if (m_ctrl_text) {
+        ::SendMessageW(m_ctrl_text, WM_SETTEXT, 0, (LPARAM)text.c_str());
+        return true;
+    }
+    return false;
 }

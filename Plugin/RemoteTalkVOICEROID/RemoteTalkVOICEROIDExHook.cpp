@@ -16,18 +16,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         bool ds_hooked = rt::InstallDSoundHook(rt::HookType::Hotpatch, false);
         if (!ds_hooked)
             ds_hooked = rt::InstallDSoundHook(rt::HookType::ATOverride);
-        if (ds_hooked) {
-            auto& dsound = rtvrDSoundHandler::getInstance();
-            rt::AddDSoundHandler(&dsound);
-            dsound.onPlay = []() {
-            };
-            dsound.onStop = []() {
-                rtvrexTalkServer::getInstance().onStop();
-            };
-            dsound.onUpdate = [](const rt::AudioData& ad) {
-                rtvrexTalkServer::getInstance().onUpdateSample(ad);
-            };
-        }
+        if (ds_hooked)
+            rt::AddDSoundHandler(&rtvrDSoundHandler::getInstance());
     }
     return TRUE;
 }

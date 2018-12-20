@@ -3,13 +3,6 @@
 #include "rtvrexHookHandler.h"
 #include "rtvrexTalkServer.h"
 
-void rtvrDSoundHandler::clearCallbacks()
-{
-    onPlay = {};
-    onStop = {};
-    onUpdate = {};
-}
-
 void rtvrDSoundHandler::update(IDirectSoundBuffer *_this, bool apply_margin)
 {
     if (m_buffer.empty()) {
@@ -50,8 +43,8 @@ void rtvrDSoundHandler::update(IDirectSoundBuffer *_this, bool apply_margin)
         m_data.data.insert(m_data.data.end(), m_buffer.begin(), &m_buffer[pcur]);
     }
     m_position = pcur;
-    if (m_playing && onUpdate)
-        onUpdate(m_data);
+    if (m_playing)
+        rtvrexTalkServer::getInstance().onUpdateSample(m_data);
 }
 
 void rtvrDSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret)
@@ -92,8 +85,7 @@ void rtvrDSoundHandler::beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_th
 void rtvrDSoundHandler::afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret)
 {
     m_playing = true;
-    if (onPlay)
-        onPlay();
+    rtvrexTalkServer::getInstance().onSoundPlay();
 }
 
 void rtvrDSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret)
@@ -101,8 +93,7 @@ void rtvrDSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this,
     update(_this, true);
     mute = false;
     m_playing = false;
-    if (onStop)
-        onStop();
+    rtvrexTalkServer::getInstance().onSoundStop();
 }
 
 void rtvrDSoundHandler::beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition)
