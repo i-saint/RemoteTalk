@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
 #include "RemoteTalk/RemoteTalk.h"
 #include "RemoteTalk/RemoteTalkNet.h"
-#include "rtvrCommon.h"
-#include "rtvrHookHandler.h"
-#include "rtvrTalkServer.h"
+#include "rtvr2Common.h"
+#include "rtvr2HookHandler.h"
+#include "rtvr2TalkServer.h"
 
 rtvrITalkInterface* (*rtGetTalkInterface_)();
 static bool rtvr2LoadManagedModule()

@@ -37,7 +37,7 @@ HANDLE FindProcess(const char *exe);
 
 void EnumerateTopWindows(const std::function<void(HWND)> &body);
 void EnumerateChildWindows(HWND parent, const std::function<void(HWND)> &body);
-void EnumerateChildWindowsRecirsive(HWND parent, const std::function<void(HWND)> &body);
+void EnumerateChildWindowsRecursive(HWND parent, const std::function<void(HWND)> &body);
 void EnumerateAllWindows(const std::function<void(HWND)> &body);
 
 

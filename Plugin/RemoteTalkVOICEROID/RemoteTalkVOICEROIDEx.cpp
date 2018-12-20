@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "rtvr2Common.h"
+#include "rtvrexCommon.h"
 
 
 static bool InjectDLL(HANDLE hProcess, const std::string& dllname)
@@ -30,7 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             module_path.resize(spos);
         }
     }
-    std::string hook_path = module_path + "\\" + rtvr2HookDll;
+    std::string hook_path = module_path + "\\" + rtvrexHookDll;
 
     std::string exe_path;
 
@@ -38,32 +38,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         // use arg if provided
         exe_path = __argv[1];
     }
-    else {
-        auto proc = rt::FindProcess(rtvr2HostExe);
-        if (proc) {
-            InjectDLL(proc, hook_path);
-            ::CloseHandle(proc);
-            return 0;
-        }
-        else {
-            if (exe_path.empty()) {
-                // try to get install dir from registry
-                char tmp[MAX_PATH + 1];
-                DWORD tmp_size = sizeof(tmp);
-                if (::RegGetValueA(HKEY_LOCAL_MACHINE,
-                    "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{6F962085-923C-4AEE-BFC2-D64FAEE9B82D}",
-                    "InstallLocation", RRF_RT_REG_SZ, NULL, tmp, &tmp_size) == ERROR_SUCCESS)
-                {
-                    exe_path = std::string(tmp, tmp_size - 1);
-                    exe_path += rtvr2HostExe;
-                }
-            }
-
-            if (exe_path.empty()) {
-                // try to open .exe in main module's dir
-                exe_path = module_path + "\\" + rtvr2HostExe;
-            }
-        }
+    if (exe_path.empty()) {
+        // try to open .exe in main module's dir
+        exe_path = module_path + "\\" + rtvrexHostExe;
     }
 
     {

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "rtvrCommon.h"
+#include "rtvr2Common.h"
 #include "rtvr2InterfaceManaged.h"
 
 static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj, String^ name, List<System::Windows::DependencyObject^>^ dst, bool one, bool recursive, int depth = 0)

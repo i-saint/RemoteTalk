@@ -268,44 +268,51 @@ HANDLE FindProcess(const char *exe)
     return nullptr;
 }
 
-
-std::vector<std::string> g_wclasses;
+DWORD g_pid;
 
 static BOOL CALLBACK CBEnumerateWindows(HWND w, LPARAM _body)
 {
+    DWORD pid;
+    ::GetWindowThreadProcessId(w, &pid);
+    if (pid != g_pid)
+        return TRUE;
+
     auto& body = *(const std::function<void(HWND)>*)_body;
     body(w);
     return TRUE;
 }
 static BOOL CALLBACK CBEnumerateWindowsR(HWND w, LPARAM _body)
 {
-    //char buf[256];
-    //GetClassName(w, buf, 256);
-    //g_wclasses.push_back(buf);
+    DWORD pid;
+    ::GetWindowThreadProcessId(w, &pid);
+    if (pid != g_pid)
+        return TRUE;
 
     auto& body = *(const std::function<void(HWND)>*)_body;
     body(w);
-    ::EnumChildWindows(w, &CBEnumerateWindowsR, _body);
+    ::EnumChildWindows(w, &CBEnumerateWindows, _body);
     return TRUE;
 }
 
 void EnumerateTopWindows(const std::function<void(HWND)>& body)
 {
+    g_pid = ::GetCurrentProcessId();
     ::EnumWindows(CBEnumerateWindows, (LPARAM)&body);
 }
 void EnumerateChildWindows(HWND parent, const std::function<void(HWND)>& body)
 {
+    g_pid = ::GetCurrentProcessId();
     ::EnumChildWindows(parent, &CBEnumerateWindows, (LPARAM)&body);
 }
-void EnumerateChildWindowsRecirsive(HWND parent, const std::function<void(HWND)>& body)
+void EnumerateChildWindowsRecursive(HWND parent, const std::function<void(HWND)>& body)
 {
+    g_pid = ::GetCurrentProcessId();
     ::EnumChildWindows(parent, &CBEnumerateWindowsR, (LPARAM)&body);
 }
 void EnumerateAllWindows(const std::function<void(HWND)>& body)
 {
-    g_wclasses.clear();
+    g_pid = ::GetCurrentProcessId();
     ::EnumWindows(CBEnumerateWindowsR, (LPARAM)&body);
-    printf("");
 }
 
 } // namespace rt
