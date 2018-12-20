@@ -24,7 +24,6 @@ namespace IST.RemoteTalk
         {
             var playable = ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);
             var clone = playable.GetBehaviour();
-            clone.clip = this;
             clone.talk = talk;
             clone.audioSource = audioSource.Resolve(graph.GetResolver());
             clone.audioClip = audioClip.Resolve(graph.GetResolver());

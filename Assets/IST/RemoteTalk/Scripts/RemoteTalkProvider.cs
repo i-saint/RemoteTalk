@@ -92,10 +92,14 @@ namespace IST.RemoteTalk
         }
     }
 
+    public delegate void AudioClipImportCallback(Talk talk, AudioClip clip);
+
 
     public abstract class RemoteTalkProvider : MonoBehaviour
     {
         public static List<RemoteTalkProvider> instances { get; } = new List<RemoteTalkProvider>();
+
+        public static event AudioClipImportCallback onAudioClipImport;
 
         public static IEnumerable<Cast> allCasts
         {
@@ -113,29 +117,26 @@ namespace IST.RemoteTalk
 
         public static Cast FindCast(string castName)
         {
-            foreach (var c in allCasts)
-                if (c.name == castName)
-                    return c;
-            return null;
+            return allCasts.FirstOrDefault(a => a.name == castName);
         }
 
         public static RemoteTalkProvider FindByHostName(string hostName)
         {
-            foreach (var c in instances)
-            {
-                if (c.hostName == hostName)
-                    return c;
-            }
-            return null;
+            return instances.FirstOrDefault(p => p.hostName == hostName);
         }
 
         public static RemoteTalkProvider FindByCastName(string castName)
         {
-            foreach (var p in instances)
-                foreach (var c in p.casts)
-                    if (c.name == castName)
-                        return p;
-            return null;
+            return instances.FirstOrDefault(p =>
+            {
+                return p.casts.FirstOrDefault(c => c.name == castName) != null;
+            });
+        }
+
+        public static void FireOnAudioClipImport(Talk t, AudioClip ac)
+        {
+            if (onAudioClipImport != null)
+                onAudioClipImport(t, ac);
         }
 
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
@@ -8,23 +9,10 @@ namespace IST.RemoteTalk
     [TrackClipType(typeof(RemoteTalkClip))]
     public class RemoteTalkTrack : TrackAsset
     {
-        public bool autoAdjustDuration = true;
+        public bool fitDuration = true;
 
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
-#if UNITY_EDITOR
-            foreach (var c in GetClips())
-            {
-                var clip = (RemoteTalkClip)c.asset;
-                c.displayName = clip.talk.text + "_" + clip.talk.castName;
-
-                if(clip.UpdateCachedAsset())
-                {
-                    if (autoAdjustDuration)
-                        c.duration = clip.duration;
-                }
-            }
-#endif
             var ret = ScriptPlayable<RemoteTalkMixerBehaviour>.Create(graph, inputCount);
             var mixer = ret.GetBehaviour();
             mixer.director = go.GetComponent<PlayableDirector>();
@@ -38,7 +26,14 @@ namespace IST.RemoteTalk
             var ret = base.CreatePlayable(graph, go, clip);
             var playable = (ScriptPlayable<RemoteTalkBehaviour>)ret;
             var behaviour = playable.GetBehaviour();
+            behaviour.director = go.GetComponent<PlayableDirector>();
             behaviour.track = this;
+            behaviour.clip = clip;
+
+            var rtc = (RemoteTalkClip)clip.asset;
+            clip.displayName = rtc.talk.text + "_" + rtc.talk.castName;
+            rtc.UpdateCachedAsset();
+
             return ret;
         }
     }

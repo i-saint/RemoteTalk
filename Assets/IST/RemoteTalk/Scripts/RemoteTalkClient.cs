@@ -24,16 +24,17 @@ namespace IST.RemoteTalk
         [SerializeField] string m_serverAddress = "127.0.0.1";
         [SerializeField] int m_serverPort = 8081;
 
+        [SerializeField] Cast[] m_casts = new Cast[0] { };
         [SerializeField] int m_castID;
         [SerializeField] TalkParam[] m_talkParams;
         [SerializeField] string m_talkText;
 
-        [SerializeField] [Range(1024, 65536)] int m_sampleGranularity = 8192;
         [SerializeField] bool m_exportAudio = false;
         [SerializeField] string m_exportDir = "RemoteTalkAssets";
         [SerializeField] AudioFileFormat m_exportFileFormat = AudioFileFormat.Ogg;
         [SerializeField] rtOggSettings m_oggSettings = rtOggSettings.defaultValue;
         [SerializeField] bool m_useExportedClips = true;
+        [SerializeField] [Range(1024, 65536)] int m_sampleGranularity = 8192;
         [SerializeField] bool m_logging = false;
 
         rtHTTPClient m_client;
@@ -43,12 +44,11 @@ namespace IST.RemoteTalk
         rtAsync m_asyncExport;
 
         string m_hostName;
-        rtTalkParams m_serverParams;
-        Cast[] m_casts = new Cast[0] { };
         bool m_isServerReady = false;
         bool m_isServerTalking = false;
         bool m_wasPlaying = false;
 
+        Talk m_currentTalk = new Talk();
         string m_cacheFileName;
 
 #if UNITY_EDITOR
@@ -141,7 +141,6 @@ namespace IST.RemoteTalk
 
         public override string hostName { get { return m_hostName; } }
         public override Cast[] casts { get { return m_casts; } }
-        public rtTalkParams serverParams { get { return m_serverParams; } }
 
         public int sampleLength { get { return m_client.buffer.sampleLength; } }
         public string assetPath { get { return "Assets/" + m_exportDir; } }
@@ -154,11 +153,15 @@ namespace IST.RemoteTalk
         {
             MakeClient();
 
-            if (isPlaying || (m_asyncTalk && !m_asyncTalk.isFinished))
+            if (!isIdling)
                 return false;
             if ((m_castID < 0 || m_castID >= m_casts.Length) ||
                 (m_talkText == null || m_talkText.Length == 0))
                 return false;
+
+            m_currentTalk.castName = castName;
+            m_currentTalk.text = m_talkText;
+            m_currentTalk.param = m_talkParams;
 
             if (m_exportAudio || m_useExportedClips)
             {
@@ -198,7 +201,7 @@ namespace IST.RemoteTalk
 
         public override bool Play(AudioClip clip)
         {
-            if (isPlaying || (m_asyncTalk && !m_asyncTalk.isFinished))
+            if (isPlaying)
                 return false;
             EachAudio(audio => { audio.Play(clip); });
             return true;
@@ -206,8 +209,10 @@ namespace IST.RemoteTalk
 
         public override void Stop()
         {
-            m_asyncStop = m_client.Stop();
-            EachAudio(audio => { audio.Stop(); });
+            if (isServerTalking)
+                m_asyncStop = m_client.Stop();
+            if (isPlaying)
+                EachAudio(audio => { audio.Stop(); });
         }
 
         public int GetCastID(string castName)
@@ -257,11 +262,11 @@ namespace IST.RemoteTalk
 
         void ReleaseClient()
         {
-            if (m_isServerTalking)
-                Stop();
+            Stop();
             m_asyncStats.Release();
             m_asyncTalk.Release();
             m_asyncStop.Release();
+            m_asyncExport.Release();
             m_client.Release();
             m_hostName = "";
         }
@@ -296,12 +301,11 @@ namespace IST.RemoteTalk
 
         void UpdateState()
         {
-            if (m_asyncStats && m_asyncStats.isFinished)
+            if (m_asyncStats.isFinished)
             {
                 m_asyncStats.Release();
 
                 m_hostName = m_client.host;
-                m_serverParams = m_client.serverParams;
                 m_casts = m_client.casts;
                 foreach (var c in m_casts)
                     c.hostName = m_hostName;
@@ -344,6 +348,7 @@ namespace IST.RemoteTalk
 #endif
                 }
             }
+
 #if UNITY_EDITOR
             FinishExportClip();
 #endif
@@ -354,7 +359,7 @@ namespace IST.RemoteTalk
             }
             m_wasPlaying = playing;
 
-            if (m_asyncStop && m_asyncStop.isFinished)
+            if (m_asyncStop.isFinished)
             {
                 m_isServerTalking = false;
                 m_asyncStop.Release();
@@ -401,6 +406,8 @@ namespace IST.RemoteTalk
                 Try(() =>
                 {
                     AssetDatabase.ImportAsset(m_exportingAssetPath);
+                    var ac = AssetDatabase.LoadAssetAtPath<AudioClip>(m_exportingAssetPath);
+                    RemoteTalkProvider.FireOnAudioClipImport(m_currentTalk, ac);
                 });
             }
         }

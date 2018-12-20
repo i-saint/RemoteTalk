@@ -128,7 +128,7 @@ rtExport bool rtAsyncIsValid(rtAsyncBase *self)
 rtExport bool rtAsyncIsFinished(rtAsyncBase *self)
 {
     if (!self)
-        return true;
+        return false;
     return self->isFinished();
 }
 rtExport void rtAsyncWait(rtAsyncBase *self)

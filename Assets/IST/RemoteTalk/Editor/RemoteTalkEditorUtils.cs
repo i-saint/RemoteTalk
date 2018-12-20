@@ -21,7 +21,7 @@ namespace IST.RemoteTalk
                 rect.height = EditorGUI.GetPropertyHeight(element);
                 EditorGUI.PropertyField(rect, element);
             };
-            ret.onAddCallback += (list) =>
+            ret.onAddCallback = (list) =>
             {
                 prop.arraySize++;
                 list.index = prop.arraySize - 1;

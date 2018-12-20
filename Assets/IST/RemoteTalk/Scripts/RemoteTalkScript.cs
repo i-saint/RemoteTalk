@@ -1,5 +1,8 @@
 using System;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -57,6 +60,87 @@ namespace IST.RemoteTalk
                 m_isPlaying = false;
                 m_current = null;
                 m_prevProvider = null;
+            }
+        }
+
+        public bool ImportFile(string path)
+        {
+            if (path == null || path.Length == 0)
+                return false;
+            try
+            {
+                var talks = new List<Talk>();
+                using (var fin = new FileStream(path, FileMode.Open, FileAccess.Read))
+                {
+                    var rxName = new Regex(@"\[(.+?)\]", RegexOptions.Compiled);
+                    var rxParams = new Regex(@" (.+?)=([\d\.])", RegexOptions.Compiled);
+
+                    var sr = new StreamReader(fin);
+                    string line;
+                    Talk talk = null;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        var matcheName = rxName.Matches(line);
+                        if(matcheName.Count > 0)
+                        {
+                            if (talk != null)
+                                talks.Add(talk);
+
+                            talk = new Talk();
+                            talk.castName = matcheName[0].Groups[1].Value;
+
+                            var matcheParams = rxParams.Matches(line);
+                            talk.param = new TalkParam[matcheParams.Count];
+                            for (int i = 0; i < matcheParams.Count; ++i)
+                            {
+                                if (talk.param[i] == null)
+                                    talk.param[i] = new TalkParam();
+                                talk.param[i].name = matcheParams[i].Groups[1].Value;
+                                talk.param[i].value = float.Parse(matcheParams[i].Groups[2].Value);
+                            }
+                        }
+                        else if (talk != null)
+                            talk.text += line;
+                    }
+                    if (talk.text.Length > 0)
+                        talks.Add(talk);
+
+                    m_talks = talks;
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool ExportFile(string path)
+        {
+            if (path == null || path.Length == 0)
+                return false;
+            try
+            {
+                using (var fo = new FileStream(path, FileMode.Create, FileAccess.Write))
+                {
+                    var sb = new StringBuilder();
+                    foreach (var t in m_talks)
+                    {
+                        sb.Append("[" + t.castName + "]");
+                        foreach (var p in t.param)
+                            sb.Append(" " + p.name + "=" + p.value);
+                        sb.Append("\r\n");
+                        sb.Append(t.text);
+                        sb.Append("\r\n\r\n");
+                    }
+                    byte[] data = new UTF8Encoding(true).GetBytes(sb.ToString());
+                    fo.Write(data, 0, data.Length);
+                    return true;
+                }
+            }
+            catch(Exception)
+            {
+                return false;
             }
         }
 
