@@ -30,13 +30,13 @@ private:
     void setupControls();
     bool doPlay();
     bool doStop();
-    bool doSetText(const std::wstring& text);
+    bool doSetParams(const rt::TalkParams& params);
+    bool doSetText(const std::string& text);
 
     std::wstring m_host;
     HWND m_ctrl_play = nullptr;
     HWND m_ctrl_stop = nullptr;
     HWND m_ctrl_text = nullptr;
-    HWND m_tab_voice = nullptr;
 
     HWND m_ctrl_volume = nullptr;
     HWND m_ctrl_speed = nullptr;

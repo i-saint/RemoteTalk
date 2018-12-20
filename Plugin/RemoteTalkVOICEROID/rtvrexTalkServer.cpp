@@ -46,7 +46,8 @@ rtvrexTalkServer::Status rtvrexTalkServer::onTalk(TalkMessage& mes)
         m_data_queue.clear();
     }
 
-    if (!doSetText(rt::ToWCS(rt::ToUTF8(mes.text))))
+    doSetParams(mes.params);
+    if (!doSetText(mes.text))
         return Status::Failed;
     if (!doPlay())
         return Status::Failed;
@@ -116,10 +117,47 @@ void rtvrexTalkServer::onUpdateSample(const rt::AudioData& data)
 }
 
 
+static bool EmulateClick(HWND hwnd)
+{
+    if (!hwnd)
+        return false;
+    ::SendMessageW(hwnd, BM_CLICK, 0, 0);
+    return true;
+}
+
+static bool SetValue(HWND hwnd, const std::string& value)
+{
+    if (!hwnd)
+        return false;
+    auto t = rt::ToWCS(rt::ToUTF8(value));
+    ::SendMessageW(hwnd, WM_SETTEXT, 0, (LPARAM)t.c_str());
+    ::SendMessageW(hwnd, WM_ACTIVATE, 1, 0);
+    return true;
+}
+
+static bool SetValue(HWND hwnd, float value)
+{
+    if (!hwnd)
+        return false;
+    auto t = rt::to_string(value);
+    ::SendMessageA(hwnd, WM_SETTEXT, 0, (LPARAM)t.c_str());
+    ::SendMessageW(hwnd, WM_ACTIVATE, 1, 0);
+    return true;
+}
+
+static bool SetTabIndex(HWND hwnd, int idx)
+{
+    if (!hwnd)
+        return false;
+    ::SendMessageW(hwnd, TCM_SETCURFOCUS, idx, 0);
+    return true;
+}
+
 void rtvrexTalkServer::setupControls()
 {
     int nth_edit = 0;
-    rt::EnumerateAllWindows([this, &nth_edit](HWND hwnd) {
+    int nth_tab = 0;
+    rt::EnumerateAllWindows([this, &nth_edit, &nth_tab](HWND hwnd) {
         wchar_t text[256];
         auto n = ::GetWindowTextW(hwnd, text, 256);
 
@@ -129,7 +167,7 @@ void rtvrexTalkServer::setupControls()
             if (m_host.empty())
                 m_host = text;
             else if (wcsstr(text, L"âπê∫å¯â "))
-                m_tab_voice = hwnd;
+                EmulateClick(hwnd);
         }
         else if (wcsstr(wclass, L"WindowsForms10.BUTTON")) {
             if (wcsstr(text, L"çƒê∂") && !m_ctrl_play)
@@ -150,10 +188,23 @@ void rtvrexTalkServer::setupControls()
             default: break;
             }
         }
+        else if (wcsstr(wclass, L"WindowsForms10.SysTabControl32")) {
+            if (nth_tab++ == 1)
+                SetTabIndex(hwnd, 2);
+        }
+
+        //wchar_t buf[512];
+        //swprintf(buf, L"%p [%s] %s\n", hwnd, wclass, text);
+        //::OutputDebugStringW(buf);
     });
 
     if (m_cast.name.empty()) {
-        m_cast.name = rt::ToMBS(m_host);
+        auto cast_name = m_host;
+        cast_name = std::regex_replace(cast_name, std::wregex(L"^VOICEROIDÅ{ ", std::regex_constants::icase), L"");
+        cast_name = std::regex_replace(cast_name, std::wregex(L" EX$", std::regex_constants::icase), L"");
+        cast_name = std::regex_replace(cast_name, std::wregex(L"Talk$", std::regex_constants::icase), L"");
+
+        m_cast.name = rt::ToMBS(cast_name);
         m_cast.params.push_back({ rt::ToUTF8("âπó "), 1.0f, 0.0f, 2.0f });
         m_cast.params.push_back({ rt::ToUTF8("òbë¨"), 1.0f, 0.5f, 4.0f });
         m_cast.params.push_back({ rt::ToUTF8("çÇÇ≥"), 1.0f, 0.5f, 2.0f });
@@ -165,7 +216,7 @@ bool rtvrexTalkServer::doPlay()
 {
     if (m_ctrl_play) {
         m_is_playing = true;
-        ::SendMessageW(m_ctrl_play, BM_CLICK, 0, 0);
+        EmulateClick(m_ctrl_play);
         return true;
     }
     return false;
@@ -174,16 +225,25 @@ bool rtvrexTalkServer::doPlay()
 bool rtvrexTalkServer::doStop()
 {
     if (m_ctrl_stop) {
-        ::SendMessageW(m_ctrl_stop, BM_CLICK, 0, 0);
+        EmulateClick(m_ctrl_stop);
         return true;
     }
     return false;
 }
 
-bool rtvrexTalkServer::doSetText(const std::wstring& text)
+bool rtvrexTalkServer::doSetParams(const rt::TalkParams& params)
+{
+    return
+        SetValue(m_ctrl_volume, params[0]) &&
+        SetValue(m_ctrl_speed, params[1]) &&
+        SetValue(m_ctrl_pitch, params[2]) &&
+        SetValue(m_ctrl_intonation, params[3]);
+}
+
+bool rtvrexTalkServer::doSetText(const std::string& text)
 {
     if (m_ctrl_text) {
-        ::SendMessageW(m_ctrl_text, WM_SETTEXT, 0, (LPARAM)text.c_str());
+        SetValue(m_ctrl_text, text);
         return true;
     }
     return false;
