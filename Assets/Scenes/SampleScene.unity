@@ -142,7 +142,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb12442a4fd813143ab56b799d46278a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_delay: 0.5
 --- !u!82 &166210425
 AudioSource:
   m_ObjectHideFlags: 0
@@ -157,7 +156,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -733,9 +732,13 @@ PlayableDirector:
   m_SceneBindings:
   - key: {fileID: 114959244549994012, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
     value: {fileID: 531982282}
-  - key: {fileID: 114368016492843822, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
-    value: {fileID: 0}
   - key: {fileID: 114358443902787678, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+    value: {fileID: 1865400492}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  - key: {fileID: 0}
     value: {fileID: 0}
   m_ExposedReferences:
     m_References: []
@@ -951,11 +954,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8176c32a82d5a740b2a9fe9035a92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_audioSources:
-  - {fileID: 1865400492}
-  - {fileID: 166210425}
+  m_output: {fileID: 1865400492}
   m_serverAddress: 127.0.0.1
   m_serverPort: 8081
+  m_casts:
+  - hostName: VOICEROID2
+    id: 0
+    name: "\u7D50\u6708\u3086\u304B\u308A"
+    paramInfo: []
+  - hostName: VOICEROID2
+    id: 1
+    name: "\u7D32\u661F\u3042\u304B\u308A"
+    paramInfo:
+    - name: "\u97F3\u91CF"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
+    - name: "\u8A71\u901F"
+      value: 1
+      rangeMin: 0.5
+      rangeMax: 4
+    - name: "\u9AD8\u3055"
+      value: 1
+      rangeMin: 0.5
+      rangeMax: 2
+    - name: "\u6291\u63DA"
+      value: 1
+      rangeMin: 0
+      rangeMax: 2
   m_castID: 1
   m_talkParams:
   - name: "\u97F3\u91CF"
@@ -974,14 +1000,14 @@ MonoBehaviour:
     value: 1
     rangeMin: 0
     rangeMax: 2
-  m_talkText: "\u660E\u65E5\u4E16\u754C\u304C\u7D42\u308F\u308B\u3068\u3057\u3066\u3082\n"
-  m_sampleGranularity: 6144
+  m_talkText: "\u79C1\u3001\u5148\u8F29\u306E\u3053\u3068\u3001\u597D\u304D\u3067\u3059\u3088\uFF1F"
   m_exportAudio: 1
   m_exportDir: RemoteTalkAssets
   m_exportFileFormat: 1
   m_oggSettings:
     quality: 1
-  m_useExportedClips: 0
+  m_useExportedClips: 1
+  m_sampleGranularity: 6144
   m_logging: 0
   m_foldVoice: 1
   m_foldAudio: 1
@@ -1012,11 +1038,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8176c32a82d5a740b2a9fe9035a92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_audioSources:
-  - {fileID: 1865400492}
-  - {fileID: 166210425}
+  m_output: {fileID: 166210425}
   m_serverAddress: 127.0.0.1
   m_serverPort: 8082
+  m_casts: []
   m_castID: 1
   m_talkParams:
   - name: "\u5927\u304D\u3055"
@@ -1048,13 +1073,13 @@ MonoBehaviour:
     rangeMin: 0
     rangeMax: 2
   m_talkText: "\u304B\u304D\u304F\u3051\u3053"
-  m_sampleGranularity: 8192
   m_exportAudio: 1
   m_exportDir: RemoteTalkAssets
   m_exportFileFormat: 1
   m_oggSettings:
     quality: 1
-  m_useExportedClips: 0
+  m_useExportedClips: 1
+  m_sampleGranularity: 8192
   m_logging: 0
   m_foldVoice: 1
   m_foldAudio: 1
@@ -1090,7 +1115,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb12442a4fd813143ab56b799d46278a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_delay: 0
 --- !u!82 &1865400492
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1105,7 +1129,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -1231,6 +1255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1924301226}
   - component: {fileID: 1924301225}
+  - component: {fileID: 1924301227}
   m_Layer: 0
   m_Name: RemoteTalkScript
   m_TagString: Untagged
@@ -1390,4 +1415,91 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!320 &1924301227
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924301224}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 114959244549994012, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: 114358443902787678, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+    value: {fileID: 1865400492}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  m_ExposedReferences:
+    m_References:
+    - d3c02d23361fdd248872c84bf416835c: {fileID: 1476112017}
+    - 3de7fef52f893da4394762fc38925990: {fileID: 1476112017}
+--- !u!1 &1964482459
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1964482461}
+  - component: {fileID: 1964482460}
+  m_Layer: 0
+  m_Name: DemoTimeline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!320 &1964482460
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964482459}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 114959244549994012, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: 114358443902787678, guid: 8c9c0c93e08938441ac128d1926a31f5, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: 0}
+    value: {fileID: 0}
+  m_ExposedReferences:
+    m_References: []
+--- !u!4 &1964482461
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964482459}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

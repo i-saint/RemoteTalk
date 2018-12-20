@@ -19,20 +19,48 @@ namespace IST.RemoteTalk
         public AudioClip audioClip;
         public RemoteTalkProvider remoteTalk;
 
+
+        public AudioSource GetOutput()
+        {
+            AudioSource ret = null;
+            foreach(var output in track.outputs)
+            {
+                ret = director.GetGenericBinding(output.sourceObject) as AudioSource;
+                if (ret != null)
+                    break;
+            }
+            return ret;
+        }
+
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
-            if (remoteTalk != null && audioClip != null)
-                remoteTalk.Play(audioClip);
-            else
-                talk.Play();
+            var output = GetOutput();
+            if (output != null)
+            {
+                if (audioClip != null)
+                    output.PlayOneShot(audioClip);
+                else
+                {
+                    var provider = talk.provider;
+                    if (provider != null)
+                    {
+                        provider.output = output;
+                        provider.Play(talk);
+                    }
+                }
+            }
         }
 
         public override void OnBehaviourPause(Playable playable, FrameData info)
         {
-            if (remoteTalk != null && audioClip != null)
-                remoteTalk.Stop();
-            //else
-            //    talk.Stop();
+            var output = GetOutput();
+            if (output != null)
+            {
+                if (audioClip != null)
+                    output.Stop();
+                //else
+                //    talk.Stop();
+            }
         }
 
         public void OnAudioClipImport(Talk t, AudioClip ac)

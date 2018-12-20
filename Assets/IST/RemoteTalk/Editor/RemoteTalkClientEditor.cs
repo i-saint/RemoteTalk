@@ -61,7 +61,7 @@ namespace IST.RemoteTalk
                         if (EditorGUI.EndChangeCheck())
                             so.ApplyModifiedProperties();
 
-                        if (t.isIdling)
+                        if (t.isReady)
                         {
                             if (GUILayout.Button("Play"))
                                 t.Play();
@@ -82,7 +82,7 @@ namespace IST.RemoteTalk
             if (foldAudio.boolValue)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(so.FindProperty("m_audioSources"), true);
+                EditorGUILayout.PropertyField(so.FindProperty("m_output"), true);
 
                 EditorGUILayout.Space();
 

@@ -5,6 +5,8 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -144,13 +146,35 @@ namespace IST.RemoteTalk
             }
         }
 
+        public bool ConvertToRemoteTalkTrack()
+        {
+            var director = Misc.GetOrAddComponent<PlayableDirector>(gameObject);
+            if (director == null)
+                return false;
+
+            var timeline = director.playableAsset as TimelineAsset;
+            if (timeline == null)
+                return false;
+
+            var track = timeline.CreateTrack<RemoteTalkTrack>(null, name);
+            double timeOffset = 0.0;
+            foreach (var talk in m_talks)
+            {
+                var dstClip = track.AddClip(talk);
+                dstClip.start = timeOffset;
+                timeOffset += dstClip.duration;
+            }
+
+            return true;
+        }
+
 
         void UpdateTalk()
         {
             if (!m_isPlaying || !isActiveAndEnabled)
                 return;
 
-            if (m_prevProvider == null || m_prevProvider.isIdling)
+            if (m_prevProvider == null || m_prevProvider.isReady)
             {
                 if(m_talkPos >= m_talks.Count)
                 {

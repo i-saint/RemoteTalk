@@ -142,10 +142,11 @@ namespace IST.RemoteTalk
 
         public abstract string hostName { get; }
         public abstract Cast[] casts { get; }
-        public abstract bool isIdling { get; }
+        public abstract bool isPlaying { get; }
+        public abstract bool isReady { get; }
+        public abstract AudioSource output { get; set; }
 
         public abstract bool Play(Talk talk);
-        public abstract bool Play(AudioClip clip);
         public abstract void Stop();
 
         public abstract AudioClip FindClip(Talk talk);

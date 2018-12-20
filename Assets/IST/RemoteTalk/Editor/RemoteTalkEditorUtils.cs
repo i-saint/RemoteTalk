@@ -40,13 +40,13 @@ namespace IST.RemoteTalk
         {
             var audio = new GameObject();
             audio.name = "RemoteTalkAudio";
-            var source = audio.AddComponent<AudioSource>();
+            var output = audio.AddComponent<AudioSource>();
             audio.AddComponent<RemoteTalkAudio>();
 
             var client = new GameObject();
             client.name = "RemoteTalkClient";
             var rtc = client.AddComponent<RemoteTalkClient>();
-            rtc.audioSources = new AudioSource[1] { source };
+            rtc.output = output;
 
             Undo.RegisterCreatedObjectUndo(audio, "RemoteTalk");
             Undo.RegisterCreatedObjectUndo(client, "RemoteTalk");

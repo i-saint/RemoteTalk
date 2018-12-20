@@ -19,7 +19,7 @@ namespace IST.RemoteTalk
     public class RemoteTalkClient : RemoteTalkProvider
     {
         #region Fields
-        [SerializeField] AudioSource[] m_audioSources = new AudioSource[0];
+        [SerializeField] AudioSource m_output;
 
         [SerializeField] string m_serverAddress = "127.0.0.1";
         [SerializeField] int m_serverPort = 8081;
@@ -72,14 +72,13 @@ namespace IST.RemoteTalk
             set { m_serverPort = value; ReleaseClient(); }
         }
 
-        public AudioSource[] audioSources
+        public override AudioSource output
         {
-            get { return m_audioSources; }
+            get { return m_output; }
             set
             {
-                m_audioSources = value;
-                if (m_audioSources == null)
-                    m_audioSources = new AudioSource[0];
+                if (!isPlaying)
+                    m_output = value;
             }
         }
 
@@ -122,11 +121,11 @@ namespace IST.RemoteTalk
         {
             get { return m_isServerTalking; }
         }
-        public bool isPlaying
+        public override bool isPlaying
         {
             get {
                 bool ret = false;
-                EachAudio(audio =>
+                UseOutput(audio =>
                 {
                     if (audio.isPlaying)
                         ret = true;
@@ -134,7 +133,7 @@ namespace IST.RemoteTalk
                 return ret;
             }
         }
-        public override bool isIdling
+        public override bool isReady
         {
             get { return isServerReady && !isServerTalking && !isPlaying; }
         }
@@ -151,9 +150,7 @@ namespace IST.RemoteTalk
 
         public bool Play()
         {
-            MakeClient();
-
-            if (!isIdling)
+            if (!isReady)
                 return false;
             if ((m_castID < 0 || m_castID >= m_casts.Length) ||
                 (m_talkText == null || m_talkText.Length == 0))
@@ -173,7 +170,7 @@ namespace IST.RemoteTalk
                     var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
                     if (clip != null)
                     {
-                        EachAudio(audio => { audio.Play(clip); });
+                        UseOutput(audio => { audio.Play(clip); });
                         return true;
                     }
                 }
@@ -199,20 +196,12 @@ namespace IST.RemoteTalk
             return Play();
         }
 
-        public override bool Play(AudioClip clip)
-        {
-            if (isPlaying)
-                return false;
-            EachAudio(audio => { audio.Play(clip); });
-            return true;
-        }
-
         public override void Stop()
         {
             if (isServerTalking)
                 m_asyncStop = m_client.Stop();
             if (isPlaying)
-                EachAudio(audio => { audio.Stop(); });
+                UseOutput(audio => { audio.Stop(); });
         }
 
         public int GetCastID(string castName)
@@ -239,16 +228,11 @@ namespace IST.RemoteTalk
 
 
         #region Impl
-        void EachAudio(Action<RemoteTalkAudio> act)
+        void UseOutput(Action<RemoteTalkAudio> act)
         {
-            if (m_audioSources == null)
-                return;
-            foreach(var source in m_audioSources)
-            {
-                var rta = source != null ? Misc.GetOrAddComponent<RemoteTalkAudio>(source.gameObject) : null;
-                if (rta != null)
-                    act(rta);
-            }
+            var rta = m_output != null ? Misc.GetOrAddComponent<RemoteTalkAudio>(m_output.gameObject) : null;
+            if (rta != null)
+                act(rta);
         }
 
         void MakeClient()
@@ -324,7 +308,7 @@ namespace IST.RemoteTalk
                     if (buf.sampleLength > m_sampleGranularity ||
                         (buf.sampleLength > 0 && m_asyncTalk.isFinished && m_asyncTalk.boolValue))
                     {
-                        EachAudio(audio => { audio.Play(buf, SyncBuffers); });
+                        UseOutput(audio => { audio.Play(buf, SyncBuffers); });
                     }
                 }
 

@@ -65,6 +65,11 @@ namespace IST.RemoteTalk
             if (GUILayout.Button("Export"))
                 t.ExportFile(EditorUtility.SaveFilePanel("Export Script", ".", t.name, "txt"));
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button("Convert To Timeline Track"))
+                t.ConvertToRemoteTalkTrack();
         }
     }
 }

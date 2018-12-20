@@ -8,11 +8,11 @@ namespace IST.RemoteTalk
     [Serializable]
     public class RemoteTalkClip : PlayableAsset, ITimelineClipAsset
     {
-        public RemoteTalkBehaviour template = new RemoteTalkBehaviour();
+        // note: non-public template means unrecordable
+        RemoteTalkBehaviour template = new RemoteTalkBehaviour();
+
         public Talk talk = new Talk();
-        public ExposedReference<AudioSource> audioSource;
         public ExposedReference<AudioClip> audioClip;
-        public ExposedReference<RemoteTalkProvider> remoteTalk;
 
 
         public ClipCaps clipCaps
@@ -25,9 +25,7 @@ namespace IST.RemoteTalk
             var playable = ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);
             var clone = playable.GetBehaviour();
             clone.talk = talk;
-            clone.audioSource = audioSource.Resolve(graph.GetResolver());
             clone.audioClip = audioClip.Resolve(graph.GetResolver());
-            clone.remoteTalk = remoteTalk.Resolve(graph.GetResolver());
             return playable;
         }
 
@@ -39,7 +37,6 @@ namespace IST.RemoteTalk
             {
                 var ac = provider.FindClip(talk);
                 audioClip.defaultValue = ac;
-                remoteTalk.defaultValue = provider;
                 return ac != null;
             }
             return false;
