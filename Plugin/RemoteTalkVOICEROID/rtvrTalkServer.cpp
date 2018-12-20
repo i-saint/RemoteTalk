@@ -17,9 +17,9 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
     RequestUpdate();
 }
 
-bool rtvrTalkServer::ready()
+bool rtvrTalkServer::isReady()
 {
-    return rtGetTalkInterface_()->ready();
+    return rtGetTalkInterface_()->isReady();
 }
 
 rtvrTalkServer::Status rtvrTalkServer::onStats(StatsMessage& mes)

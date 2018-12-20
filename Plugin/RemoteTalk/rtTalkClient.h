@@ -18,14 +18,14 @@ struct TalkClientSettings
 class TalkClient
 {
 public:
-    TalkClient(const TalkClientSettings& settings);
+    TalkClient(const TalkClientSettings& settings = {});
     virtual ~TalkClient();
 
     // communicate with server 
 
     bool isServerAvailable();
     bool stats(TalkServerStats& stats);
-    bool talk(const TalkParams& params, const std::string& text, const std::function<void (const AudioData&)>& cb);
+    bool play(const TalkParams& params, const std::string& text, const std::function<void (const AudioData&)>& cb);
     bool stop();
     bool ready();
 

@@ -64,7 +64,7 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
 
     bool handled = false;
     if (uri.getPath() == "/ready") {
-        ServeText(response, m_server->ready() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
+        ServeText(response, m_server->isReady() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
     }
     else if (uri.getPath() == "/talk") {
         auto mes = std::make_shared<TalkServer::TalkMessage>();

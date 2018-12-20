@@ -10,7 +10,7 @@ public:
     rtcvTalkServer();
     void addMessage(MessagePtr mes) override;
 
-    bool ready() override;
+    bool isReady() override;
     Status onStats(StatsMessage& mes) override;
     Status onTalk(TalkMessage& mes) override;
     Status onStop(StopMessage& mes) override;

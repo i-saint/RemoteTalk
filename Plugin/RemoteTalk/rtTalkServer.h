@@ -109,7 +109,7 @@ public:
     virtual bool isRunning() const;
 
     virtual void processMessages();
-    virtual bool ready() = 0;
+    virtual bool isReady() = 0;
     virtual Status onStats(StatsMessage& mes) = 0;
     virtual Status onTalk(TalkMessage& mes) = 0;
     virtual Status onStop(StopMessage& mes) = 0;

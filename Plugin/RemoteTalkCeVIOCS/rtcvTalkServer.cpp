@@ -15,7 +15,7 @@ void rtcvTalkServer::addMessage(MessagePtr mes)
     processMessages();
 }
 
-bool rtcvTalkServer::ready()
+bool rtcvTalkServer::isReady()
 {
     return false;
 }

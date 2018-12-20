@@ -54,7 +54,7 @@ bool rtcvTalkInterface::setText(const char *text)
     return rtcvInterfaceManaged::getInstance()->setText(text);
 }
 
-bool rtcvTalkInterface::ready() const
+bool rtcvTalkInterface::isReady() const
 {
     return !rtcvInterfaceManaged::getInstance()->isPlaying();
 }

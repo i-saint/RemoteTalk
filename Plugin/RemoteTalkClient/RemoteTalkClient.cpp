@@ -2,9 +2,7 @@
 #include "RemoteTalkClient.h"
 
 
-rtHTTPClient::rtHTTPClient(const char *server, uint16_t port)
-    : m_settings(server, port)
-    , m_client(m_settings)
+rtHTTPClient::rtHTTPClient()
 {
 }
 
@@ -16,6 +14,12 @@ rtHTTPClient::~rtHTTPClient()
 void rtHTTPClient::release()
 {
     delete this;
+}
+
+void rtHTTPClient::reset(const char *address, uint16_t port)
+{
+    m_settings = {address, port};
+    m_client = rt::TalkClient(m_settings);
 }
 
 rtAsync<bool>& rtHTTPClient::updateServerStats()
@@ -42,13 +46,13 @@ bool rtHTTPClient::isReady()
     return m_client.ready();
 }
 
-rtAsync<bool>& rtHTTPClient::talk(const rt::TalkParams& params, const std::string& text)
+rtAsync<bool>& rtHTTPClient::play(const rt::TalkParams& params, const std::string& text)
 {
     m_buf_public.clear();
     m_buf_receiving.clear();
 
     m_task_talk.task = std::async(std::launch::async, [this, params, text]() {
-        return m_client.talk(params, text, [this](const rt::AudioData& ad) {
+        return m_client.play(params, text, [this](const rt::AudioData& ad) {
             if (ad.getSampleLength() != 0) {
                 std::unique_lock<std::mutex> lock(m_mutex);
                 m_buf_receiving += ad;
@@ -90,10 +94,10 @@ rtAsync<bool>& rtHTTPClient::exportOgg(const std::string& path, const rt::OggSet
 
 void rtHTTPClient::wait()
 {
-    m_task_stats.wait();
-    m_task_talk.wait();
-    m_task_stop.wait();
-    m_task_export.wait();
+    m_task_stats.wait(30000);
+    m_task_talk.wait(30000);
+    m_task_stop.wait(30000);
+    m_task_export.wait(30000);
 }
 
 const rt::AudioData& rtHTTPClient::syncBuffers()
@@ -131,11 +135,11 @@ rtExport bool rtAsyncIsFinished(rtAsyncBase *self)
         return false;
     return self->isFinished();
 }
-rtExport void rtAsyncWait(rtAsyncBase *self)
+rtExport bool rtAsyncWait(rtAsyncBase *self, int timeout_ms)
 {
     if (!self)
-        return;
-    self->wait();
+        return false;
+    return self->wait(timeout_ms);
 }
 rtExport bool rtAsyncGetBool(rtAsyncBase *self, bool *dst)
 {
@@ -309,15 +313,21 @@ rtExport rtTalkParamInfo* rtCastInfoGetParamInfo(rtCastInfo *self, int i)
 #pragma region rtHTTPClient
 using rtTalkParams = rt::TalkParams;
 
-rtExport rtHTTPClient* rtHTTPClientCreate(const char *server, int port)
+rtExport rtHTTPClient* rtHTTPClientCreate()
 {
-    return new rtHTTPClient(server, port);
+    return new rtHTTPClient();
 }
 
 rtExport void rtHTTPClientRelease(rtHTTPClient *self)
 {
     if (self)
         self->release();
+}
+
+rtExport void rtHTTPClientSetup(rtHTTPClient *self, const char *address, int port)
+{
+    if (self)
+        self->reset(address, port);
 }
 
 rtExport rtAsyncBase* rtHTTPClientUpdateServerStatus(rtHTTPClient *self)
@@ -359,7 +369,7 @@ rtExport rtAsyncBase* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams 
 {
     if (!self)
         return nullptr;
-    return &self->talk(*p, text);
+    return &self->play(*p, text);
 }
 
 rtExport rtAsyncBase* rtHTTPClientStop(rtHTTPClient *self)

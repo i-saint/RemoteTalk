@@ -135,7 +135,7 @@ namespace IST.RemoteTalk
         }
         public override bool isReady
         {
-            get { return isServerReady && !isServerTalking && !isPlaying; }
+            get { return isActiveAndEnabled && isServerReady && !isServerTalking && !isPlaying; }
         }
 
         public override string hostName { get { return m_hostName; } }
@@ -187,7 +187,7 @@ namespace IST.RemoteTalk
 
         public override bool Play(Talk talk)
         {
-            if (m_asyncTalk && !m_asyncTalk.isFinished)
+            if ((m_asyncTalk && !m_asyncTalk.isFinished) || m_asyncStop)
                 return false;
 
             m_castID = GetCastID(talk.castName);
@@ -221,8 +221,8 @@ namespace IST.RemoteTalk
 
         public void RefreshClient()
         {
-            ReleaseClient();
-            MakeClient();
+            m_client.Setup(m_serverAddress, m_serverPort);
+            m_asyncStats = m_client.UpdateServerStatus();
         }
         #endregion
 
@@ -239,7 +239,8 @@ namespace IST.RemoteTalk
         {
             if (!m_client)
             {
-                m_client = rtHTTPClient.Create(m_serverAddress, m_serverPort);
+                m_client = rtHTTPClient.Create();
+                m_client.Setup(m_serverAddress, m_serverPort);
                 m_asyncStats = m_client.UpdateServerStatus();
             }
         }

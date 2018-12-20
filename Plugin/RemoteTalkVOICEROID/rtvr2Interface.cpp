@@ -52,7 +52,7 @@ bool rtvr2TalkInterface::setText(const char *text)
     return rtvr2InterfaceManaged::getInstance()->setText(text);
 }
 
-bool rtvr2TalkInterface::ready() const
+bool rtvr2TalkInterface::isReady() const
 {
     return !m_is_playing;
 }

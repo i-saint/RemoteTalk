@@ -27,7 +27,7 @@ TestCase(RemoteTalkClient)
     std::string text = "hello voiceroid! this is a test of remote talk client.";
 
     rt::AudioData sequence;
-    client.talk(params, text, [&](const rt::AudioData& ad) {
+    client.play(params, text, [&](const rt::AudioData& ad) {
         if (ad.data.empty())
             return;
         sequence += ad;

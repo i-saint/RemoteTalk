@@ -275,7 +275,7 @@ namespace IST.RemoteTalk
         public IntPtr self;
         [DllImport("RemoteTalkClient")] static extern byte rtAsyncIsValid(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern byte rtAsyncIsFinished(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern void rtAsyncWait(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern byte rtAsyncWait(IntPtr self, int timeout_ms);
         [DllImport("RemoteTalkClient")] static extern byte rtAsyncGetBool(IntPtr self, ref byte dst);
         #endregion
 
@@ -283,7 +283,7 @@ namespace IST.RemoteTalk
         public void Release() { self = IntPtr.Zero; }
 
         public bool isFinished { get { return rtAsyncIsFinished(self) != 0; } }
-        public void Wait() { rtAsyncWait(self); }
+        public bool Wait(int timeout_ms = 0) { return rtAsyncWait(self, timeout_ms) != 0; }
 
         public bool boolValue
         {
@@ -304,8 +304,9 @@ namespace IST.RemoteTalk
     {
         #region internal
         public IntPtr self;
-        [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate(string server, int port);
+        [DllImport("RemoteTalkClient")] static extern rtHTTPClient rtHTTPClientCreate();
         [DllImport("RemoteTalkClient")] static extern void rtHTTPClientRelease(IntPtr self);
+        [DllImport("RemoteTalkClient")] static extern void rtHTTPClientSetup(IntPtr self, string server, int port);
 
         [DllImport("RemoteTalkClient")] static extern rtAsync rtHTTPClientUpdateServerStatus(IntPtr self);
         [DllImport("RemoteTalkClient")] static extern IntPtr rtHTTPClientGetServerHostApp(IntPtr self);
@@ -378,8 +379,9 @@ namespace IST.RemoteTalk
             get { return rtHTTPClientGetBuffer(self); }
         }
 
-        public static rtHTTPClient Create(string server, int port) { return rtHTTPClientCreate(server, port); }
+        public static rtHTTPClient Create() { return rtHTTPClientCreate(); }
         public void Release() { rtHTTPClientRelease(self); self = IntPtr.Zero; }
+        public void Setup(string server, int port) { rtHTTPClientSetup(self, server, port); }
 
         public rtAsync UpdateServerStatus() { return rtHTTPClientUpdateServerStatus(self); }
         public rtAsync Talk(ref rtTalkParams para, string text) { return rtHTTPClientTalk(self, ref para, text); }
@@ -389,22 +391,6 @@ namespace IST.RemoteTalk
         public rtAsync ExportOgg(string path, ref rtOggSettings s) { return rtHTTPClientExportOgg(self, path, ref s); }
     }
 
-
-    public struct rtHTTPReceiver
-    {
-        #region internal
-        public IntPtr self;
-        [DllImport("RemoteTalkClient")] static extern rtHTTPReceiver rtHTTPReceiverCreate();
-        [DllImport("RemoteTalkClient")] static extern void rtHTTPReceiverRelease(IntPtr self);
-        [DllImport("RemoteTalkClient")] static extern int rtHTTPReceiverConsumeAudioData(IntPtr self, rtAudioDataCallback cb);
-        #endregion
-
-        public static implicit operator bool(rtHTTPReceiver v) { return v.self != IntPtr.Zero; }
-
-        public static rtHTTPReceiver Create() { return rtHTTPReceiverCreate(); }
-        public void Release() { rtHTTPReceiverRelease(self); }
-        public int Consume(rtAudioDataCallback cb) { return rtHTTPReceiverConsumeAudioData(self, cb); }
-    }
 
     public struct rtspTalkServer
     {

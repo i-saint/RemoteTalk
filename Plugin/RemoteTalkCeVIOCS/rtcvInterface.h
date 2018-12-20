@@ -18,7 +18,7 @@ public:
     rt::CastInfo* getCastInfo(int i) const override;
     bool setText(const char *text) override;
 
-    bool ready() const override;
+    bool isReady() const override;
     bool isPlaying() const override;
     bool talk() override;
     bool stop() override;

@@ -47,8 +47,6 @@ struct TalkParams
     uint32_t hash() const;
 };
 
-// one talk() will call this callback several times. last one has null data to notify end.
-using TalkSampleCallback = void(*)(const AudioData& data, void *userdata);
 
 class TalkInterface
 {
@@ -65,7 +63,7 @@ public:
     virtual const CastInfo* getCastInfo(int i) const = 0;
     virtual bool setText(const char *text) = 0;
 
-    virtual bool ready() const = 0;
+    virtual bool isReady() const = 0;
     virtual bool isPlaying() const = 0;
     virtual bool talk() = 0;
     virtual bool stop() = 0;

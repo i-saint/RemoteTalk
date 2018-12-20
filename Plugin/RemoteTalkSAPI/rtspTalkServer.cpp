@@ -55,7 +55,7 @@ void rtspTalkServer::addMessage(MessagePtr mes)
 }
 
 
-bool rtspTalkServer::ready()
+bool rtspTalkServer::isReady()
 {
     if (!m_voice)
         return false;

@@ -7,7 +7,7 @@ struct rtAsyncBase
     virtual ~rtAsyncBase() {}
     virtual bool isValid() = 0;
     virtual bool isFinished() = 0;
-    virtual void wait() = 0;
+    virtual bool wait(int timeout_ms = 0) = 0;
 };
 
 template<class T>
@@ -25,10 +25,18 @@ struct rtAsync : public rtAsyncBase
         return !task.valid() || task.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
     }
 
-    void wait() override
+    bool wait(int timeout_ms = 0) override
     {
-        if (task.valid())
+        if (!task.valid())
+            return false;
+
+        if (timeout_ms <= 0) {
             task.wait();
+            return true;
+        }
+        else {
+            return task.wait_for(std::chrono::milliseconds(timeout_ms)) == std::future_status::ready;
+        }
     }
 
     T get()
@@ -40,15 +48,16 @@ struct rtAsync : public rtAsyncBase
 class rtHTTPClient
 {
 public:
-    rtHTTPClient(const char *server, uint16_t port);
+    rtHTTPClient();
     ~rtHTTPClient();
     void release();
+    void reset(const char *address, uint16_t port);
 
     rtAsync<bool>& updateServerStats();
     const rt::TalkServerStats& getServerStats() const;
 
     bool isReady();
-    rtAsync<bool>& talk(const rt::TalkParams& params, const std::string& text);
+    rtAsync<bool>& play(const rt::TalkParams& params, const std::string& text);
     rtAsync<bool>& stop();
     rtAsync<bool>& exportWave(const std::string& path);
     rtAsync<bool>& exportOgg(const std::string& path, const rt::OggSettings& settings);

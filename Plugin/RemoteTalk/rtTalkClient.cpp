@@ -94,7 +94,7 @@ bool TalkClient::ready()
     return ret;
 }
 
-bool TalkClient::talk(const TalkParams& params, const std::string& text, const std::function<void(const AudioData&)>& cb)
+bool TalkClient::play(const TalkParams& params, const std::string& text, const std::function<void(const AudioData&)>& cb)
 {
     bool ret = false;
     try {
