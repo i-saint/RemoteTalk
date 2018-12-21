@@ -67,7 +67,7 @@ rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.clear();
     }
-    if (!ifs->talk())
+    if (!ifs->play())
         return Status::Failed;
 
     mes.task = std::async(std::launch::async, [this, &mes]() {

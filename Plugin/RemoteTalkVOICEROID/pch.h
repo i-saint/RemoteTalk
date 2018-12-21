@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <mmsystem.h>
+#include <commctrl.h>
 
 #include <cstdio>
 #include <cstdlib>

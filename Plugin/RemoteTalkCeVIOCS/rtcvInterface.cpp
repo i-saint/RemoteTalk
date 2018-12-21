@@ -64,7 +64,7 @@ bool rtcvTalkInterface::isPlaying() const
     return rtcvInterfaceManaged::getInstance()->isPlaying();
 }
 
-bool rtcvTalkInterface::talk()
+bool rtcvTalkInterface::play()
 {
     m_is_playing = true;
     if (rtcvInterfaceManaged::getInstance()->talk()) {

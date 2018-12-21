@@ -20,7 +20,7 @@ public:
 
     bool isReady() const override;
     bool isPlaying() const override;
-    bool talk() override;
+    bool play() override;
     bool stop() override;
     bool wait() override;
 

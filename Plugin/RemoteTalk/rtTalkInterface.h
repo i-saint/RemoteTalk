@@ -58,14 +58,14 @@ public:
     virtual int getProtocolVersion() const = 0;
 
     virtual bool getParams(TalkParams& params) const = 0;
-    virtual bool setParams(const TalkParams& params) = 0;
     virtual int getNumCasts() const = 0;
     virtual const CastInfo* getCastInfo(int i) const = 0;
+    virtual bool setParams(const TalkParams& params) = 0;
     virtual bool setText(const char *text) = 0;
 
     virtual bool isReady() const = 0;
     virtual bool isPlaying() const = 0;
-    virtual bool talk() = 0;
+    virtual bool play() = 0;
     virtual bool stop() = 0;
 };
 

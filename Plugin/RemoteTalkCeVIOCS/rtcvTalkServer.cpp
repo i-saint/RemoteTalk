@@ -48,7 +48,7 @@ rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
     auto ifs = rtGetTalkInterface_();
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
-    if (!ifs->talk())
+    if (!ifs->play())
         Status::Failed;
 
     m_task_talk = std::async(std::launch::async, [this, ifs]() {

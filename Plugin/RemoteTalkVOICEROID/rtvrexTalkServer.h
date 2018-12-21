@@ -4,7 +4,7 @@
 
 class rtvrexTalkServer : public rt::TalkServer
 {
-    using super = rt::TalkServer;
+using super = rt::TalkServer;
 public:
     rtDefSingleton(rtvrexTalkServer);
     void addMessage(MessagePtr mes) override;
@@ -17,34 +17,8 @@ public:
     Status onDebug(DebugMessage& mes) override;
 #endif
 
-    void onSoundPlay();
-    void onSoundStop();
-    void onUpdateSample(const rt::AudioData& data);
-
 private:
     std::mutex m_data_mutex;
     std::vector<rt::AudioDataPtr> m_data_queue;
-
-
-private:
-    void setupControls();
-    bool doPlay();
-    bool doStop();
-    bool doSetParams(const rt::TalkParams& params);
-    bool doSetText(const std::string& text);
-
-    std::wstring m_host;
-    HWND m_ctrl_play = nullptr;
-    HWND m_ctrl_stop = nullptr;
-    HWND m_ctrl_text = nullptr;
-
-    HWND m_ctrl_volume = nullptr;
-    HWND m_ctrl_speed = nullptr;
-    HWND m_ctrl_pitch = nullptr;
-    HWND m_ctrl_intonation = nullptr;
-
-    rt::CastInfo m_cast;
-    std::atomic_bool m_is_playing{false};
 };
-
 

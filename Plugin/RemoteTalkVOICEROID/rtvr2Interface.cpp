@@ -62,7 +62,7 @@ bool rtvr2TalkInterface::isPlaying() const
     return m_is_playing;
 }
 
-bool rtvr2TalkInterface::talk()
+bool rtvr2TalkInterface::play()
 {
     if (m_is_playing)
         return false;
