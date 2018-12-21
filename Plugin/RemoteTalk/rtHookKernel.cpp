@@ -6,7 +6,7 @@
 
 namespace rt {
 
-#pragma region Kernel32
+#pragma region LoadLibraryHandler
 static std::vector<LoadLibraryHandlerBase*> g_loadlibrary_handlers;
 #define Call(Name, ...) for(auto *handler : g_loadlibrary_handlers) { handler->Name(__VA_ARGS__); }
 
@@ -117,7 +117,7 @@ void AddLoadLibraryHandler(LoadLibraryHandlerBase *handler)
 
 
 
-#pragma region OLE32
+#pragma region CoCreateHandler
 static std::vector<CoCreateHandlerBase*> g_cocreate_handlers;
 #define Call(Name, ...) for(auto *handler : g_cocreate_handlers) { handler->Name(__VA_ARGS__); }
 
@@ -150,10 +150,10 @@ static HRESULT WINAPI CoCreateInstanceEx_hook(REFCLSID rclsid, LPUNKNOWN pUnkOut
 
 static const char OLE32_Dll[] = "ole32.dll";
 
-class LoadLibraryHandler_OLE32 : public LoadLibraryHandlerBase
+class LoadLibraryHandler_CoCreate : public LoadLibraryHandlerBase
 {
 public:
-    rtDefSingleton(LoadLibraryHandler_OLE32);
+    rtDefSingleton(LoadLibraryHandler_CoCreate);
 
     void afterLoadLibrary(HMODULE& mod) override
     {
@@ -185,9 +185,9 @@ bool InstallCoCreateHook(HookType ht, bool load_dll)
 #undef Override
 
         InstallLoadLibraryHook(HookType::ATOverride);
-        AddLoadLibraryHandler(&LoadLibraryHandler_OLE32::getInstance());
+        AddLoadLibraryHandler(&LoadLibraryHandler_CoCreate::getInstance());
 
-        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_OLE32::hook(mod); });
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_CoCreate::hook(mod); });
     }
     else if (ht == HookType::Hotpatch) {
         // ole32 seems incompatible with hotpatch...
@@ -205,7 +205,7 @@ void AddCoCreateHandler(CoCreateHandlerBase *handler)
 
 
 
-#pragma region User32
+#pragma region WindowMessageHandler
 static std::vector<WindowMessageHandlerBase*> g_windowmessage_handlers;
 #define Call(Name, ...) for(auto *handler : g_windowmessage_handlers) { handler->Name(__VA_ARGS__); }
 
@@ -234,10 +234,10 @@ static BOOL WINAPI GetMessageW_hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, 
 
 static const char User32_Dll[] = "user32.dll";
 
-class LoadLibraryHandler_User32 : public LoadLibraryHandlerBase
+class LoadLibraryHandler_WindowMessage : public LoadLibraryHandlerBase
 {
 public:
-    rtDefSingleton(LoadLibraryHandler_User32);
+    rtDefSingleton(LoadLibraryHandler_WindowMessage);
 
     void afterLoadLibrary(HMODULE& mod) override
     {
@@ -268,9 +268,9 @@ bool InstallWindowMessageHook(HookType ht, bool load_dll)
 #undef Override
 
         InstallLoadLibraryHook(HookType::ATOverride);
-        AddLoadLibraryHandler(&LoadLibraryHandler_User32::getInstance());
+        AddLoadLibraryHandler(&LoadLibraryHandler_WindowMessage::getInstance());
 
-        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_User32::hook(mod); });
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_WindowMessage::hook(mod); });
     }
     else if (ht == HookType::Hotpatch) {
 #define Override(Name) tmp=Hotpatch(::GetProcAddress(mod, #Name), Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
@@ -287,5 +287,152 @@ void AddWindowMessageHandler(WindowMessageHandlerBase *handler)
 
 #undef EachFunctions
 #pragma endregion
+
+
+#pragma region FileIOHandler
+static std::vector<FileIOHandlerBase*> g_fileio_handlers;
+#define Call(Name, ...) for(auto *handler : g_fileio_handlers) { handler->Name(__VA_ARGS__); }
+
+HANDLE (WINAPI *CreateFileA_orig)(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+HANDLE WINAPI CreateFileA_hook(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
+{
+    auto ret = CreateFileA_orig(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+    Call(afterCreateFileA, lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile, ret);
+    return ret;
+}
+
+HANDLE (WINAPI *CreateFileW_orig)(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+HANDLE WINAPI CreateFileW_hook(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
+{
+    auto ret = CreateFileW_orig(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+    Call(afterCreateFileW, lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile, ret);
+    return ret;
+}
+
+HANDLE (WINAPI *CreateFile2_orig)(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, DWORD dwCreationDisposition, LPCREATEFILE2_EXTENDED_PARAMETERS pCreateExParams);
+HANDLE WINAPI CreateFile2_hook(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, DWORD dwCreationDisposition, LPCREATEFILE2_EXTENDED_PARAMETERS pCreateExParams)
+{
+    auto ret = CreateFile2_orig(lpFileName, dwDesiredAccess, dwShareMode, dwCreationDisposition, pCreateExParams);
+    Call(afterCreateFile2, lpFileName, dwDesiredAccess, dwShareMode, dwCreationDisposition, pCreateExParams, ret);
+    return ret;
+}
+
+BOOL (WINAPI *ReadFile_orig)(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped);
+BOOL WINAPI ReadFile_hook(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped)
+{
+    auto ret = ReadFile_orig(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+    Call(afterReadFile, hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped, ret);
+    return ret;
+}
+
+BOOL (WINAPI *ReadFileEx_orig)(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+BOOL WINAPI ReadFileEx_hook(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine)
+{
+    auto ret = ReadFileEx_orig(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine);
+    Call(afterReadFileEx, hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine, ret);
+    return ret;
+}
+
+BOOL (WINAPI *WriteFile_orig)(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped);
+BOOL WINAPI WriteFile_hook(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped)
+{
+    auto ret = WriteFile_orig(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped);
+    Call(afterWriteFile, hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped, ret);
+    return ret;
+}
+
+BOOL (WINAPI *WriteFileEx_orig)(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+BOOL WINAPI WriteFileEx_hook(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine)
+{
+    auto ret = WriteFileEx_orig(hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped, lpCompletionRoutine);
+    Call(afterWriteFileEx, hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped, lpCompletionRoutine, ret);
+    return ret;
+}
+
+BOOL (WINAPI *CloseHandle_orig)(HANDLE hObject);
+BOOL WINAPI CloseHandle_hook(HANDLE hObject)
+{
+    Call(beforeCloseHandle, hObject);
+    auto ret = CloseHandle_orig(hObject);
+    return ret;
+}
+
+#define EachFunctions(Body)\
+    Body(CreateFileA);\
+    Body(CreateFileW);\
+    Body(CreateFile2);\
+    Body(ReadFile);\
+    Body(ReadFileEx);\
+    Body(WriteFile);\
+    Body(WriteFileEx);\
+    Body(CloseHandle);
+
+class LoadLibraryHandler_FileIO : public LoadLibraryHandlerBase
+{
+public:
+    rtDefSingleton(LoadLibraryHandler_FileIO);
+
+    void afterLoadLibrary(HMODULE& mod) override
+    {
+        hook(mod);
+    }
+
+    static void hook(HMODULE mod)
+    {
+#define Override(Name) OverrideIAT(mod, Kernel32_Dll, #Name, Name##_hook)
+        EachFunctions(Override);
+#undef Override
+    }
+};
+
+
+bool InstallFileIOHook(HookType ht, bool load_dll)
+{
+    auto mod = ::GetModuleHandleA(Kernel32_Dll);
+    if (!mod && load_dll)
+        mod = ::LoadLibraryA(Kernel32_Dll);
+    if (!mod)
+        return false;
+
+    void *tmp;
+    if (ht == HookType::ATOverride) {
+        auto jumptable = AllocExecutable(1024, mod);
+#define Override(Name) tmp=OverrideEAT(mod, #Name, Name##_hook, jumptable); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
+#undef Override
+
+        InstallLoadLibraryHook(HookType::ATOverride);
+        AddLoadLibraryHandler(&LoadLibraryHandler_FileIO::getInstance());
+
+        EnumerateModules([](HMODULE mod) { LoadLibraryHandler_FileIO::hook(mod); });
+    }
+    else if (ht == HookType::Hotpatch) {
+#define Override(Name) tmp=Hotpatch(::GetProcAddress(mod, #Name), Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+        EachFunctions(Override);
+#undef Override
+    }
+    return true;
+}
+
+bool OverrideFileIOIAT(HMODULE mod)
+{
+    if (!mod)
+        return false;
+
+    void *tmp;
+#define Override(Name) tmp=OverrideIAT(mod, Kernel32_Dll, #Name, Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
+    EachFunctions(Override);
+#undef Override
+    return true;
+}
+
+void AddFileIOHandler(FileIOHandlerBase *handler)
+{
+    g_fileio_handlers.push_back(handler);
+}
+
+#undef EachFunctions
+#pragma endregion
+
 } // namespace rt
 #endif // _WIN32
