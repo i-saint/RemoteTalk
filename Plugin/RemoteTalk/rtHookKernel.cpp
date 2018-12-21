@@ -367,6 +367,9 @@ BOOL WINAPI CloseHandle_hook(HANDLE hObject)
     Body(WriteFileEx);\
     Body(CloseHandle);
 
+static const char KernelBase_Dll[] = "KernelBase.dll";
+static const char CoreFile_Dll[] = "api-ms-win-core-file-l1-1-0.dll";
+
 class LoadLibraryHandler_FileIO : public LoadLibraryHandlerBase
 {
 public:
@@ -379,7 +382,9 @@ public:
 
     static void hook(HMODULE mod)
     {
-#define Override(Name) OverrideIAT(mod, Kernel32_Dll, #Name, Name##_hook)
+        if (!IsValidModule(mod) || mod == ::GetModuleHandleA(Kernel32_Dll))
+            return;
+#define Override(Name) OverrideIAT(mod, Kernel32_Dll, #Name, Name##_hook); OverrideIAT(mod, CoreFile_Dll, #Name, Name##_hook)
         EachFunctions(Override);
 #undef Override
     }
@@ -407,6 +412,10 @@ bool InstallFileIOHook(HookType ht, bool load_dll)
         EnumerateModules([](HMODULE mod) { LoadLibraryHandler_FileIO::hook(mod); });
     }
     else if (ht == HookType::Hotpatch) {
+        auto kb = ::GetModuleHandleA(KernelBase_Dll);
+        if (kb != nullptr)
+            mod = kb;
+
 #define Override(Name) tmp=Hotpatch(::GetProcAddress(mod, #Name), Name##_hook); if(!Name##_orig){ (void*&)Name##_orig=tmp; }
         EachFunctions(Override);
 #undef Override

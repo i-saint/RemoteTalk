@@ -38,14 +38,14 @@ class FileIOHandlerBase
 {
 public:
     virtual ~FileIOHandlerBase() {}
-    virtual void afterCreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile, HANDLE ret) {}
-    virtual void afterCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile, HANDLE ret) {}
-    virtual void afterCreateFile2(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, DWORD dwCreationDisposition, LPCREATEFILE2_EXTENDED_PARAMETERS pCreateExParams, HANDLE ret) {}
-    virtual void afterReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped, BOOL ret) {}
-    virtual void afterReadFileEx(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine, BOOL ret) {}
-    virtual void afterWriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped, BOOL ret) {}
-    virtual void afterWriteFileEx(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine, BOOL ret) {}
-    virtual void beforeCloseHandle(HANDLE hObject) {}
+    virtual void afterCreateFileA(LPCSTR& lpFileName, DWORD& dwDesiredAccess, DWORD& dwShareMode, LPSECURITY_ATTRIBUTES& lpSecurityAttributes, DWORD& dwCreationDisposition, DWORD& dwFlagsAndAttributes, HANDLE& hTemplateFile, HANDLE& ret) {}
+    virtual void afterCreateFileW(LPCWSTR& lpFileName, DWORD& dwDesiredAccess, DWORD& dwShareMode, LPSECURITY_ATTRIBUTES& lpSecurityAttributes, DWORD& dwCreationDisposition, DWORD& dwFlagsAndAttributes, HANDLE& hTemplateFile, HANDLE& ret) {}
+    virtual void afterCreateFile2(LPCWSTR& lpFileName, DWORD& dwDesiredAccess, DWORD& dwShareMode, DWORD& dwCreationDisposition, LPCREATEFILE2_EXTENDED_PARAMETERS& pCreateExParams, HANDLE& ret) {}
+    virtual void afterReadFile(HANDLE& hFile, LPVOID& lpBuffer, DWORD& nNumberOfBytesToRead, LPDWORD& lpNumberOfBytesRead, LPOVERLAPPED& lpOverlapped, BOOL& ret) {}
+    virtual void afterReadFileEx(HANDLE& hFile, LPVOID& lpBuffer, DWORD& nNumberOfBytesToRead, LPOVERLAPPED& lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE& lpCompletionRoutine, BOOL& ret) {}
+    virtual void afterWriteFile(HANDLE& hFile, LPCVOID& lpBuffer, DWORD& nNumberOfBytesToWrite, LPDWORD& lpNumberOfBytesWritten, LPOVERLAPPED& lpOverlapped, BOOL& ret) {}
+    virtual void afterWriteFileEx(HANDLE& hFile, LPCVOID& lpBuffer, DWORD& nNumberOfBytesToWrite, LPOVERLAPPED& lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE& lpCompletionRoutine, BOOL& ret) {}
+    virtual void beforeCloseHandle(HANDLE& hObject) {}
 };
 #pragma warning(pop)
 
@@ -58,6 +58,10 @@ void AddCoCreateHandler(CoCreateHandlerBase *handler);
 bool InstallWindowMessageHook(HookType ht, bool load_dll = true);
 bool OverrideFileIOIAT(HMODULE mod);
 void AddWindowMessageHandler(WindowMessageHandlerBase *handler);
+
+bool InstallFileIOHook(HookType ht, bool load_dll = true);
+bool OverrideFileIOIAT(HMODULE mod);
+void AddFileIOHandler(FileIOHandlerBase *handler);
 
 } // namespace rt
 #endif // _WIN32

@@ -145,9 +145,24 @@ TestCase(rtAudioData_Convert)
     Expect(data3.data == data.data);
 }
 
+class TestFileIOHandler : public rt::FileIOHandlerBase
+{
+
+};
+
+TestCase(FileIOHandler)
+{
+    rt::InstallFileIOHook(rt::HookType::ATOverride);
+    {
+        std::ofstream fo("fileiohandler_test.txt", std::ios::binary);
+        fo.write("foo", 3);
+    }
+}
+
+
+#ifdef _WIN32
 TestCase(LaunchVoiceroid2)
 {
-#ifdef _WIN32
     char install_dir[MAX_PATH+1];
     DWORD install_dir_size = sizeof(install_dir);
     if (::RegGetValueA(HKEY_LOCAL_MACHINE,
@@ -167,17 +182,11 @@ TestCase(LaunchVoiceroid2)
         if (ret) {
         }
     }
-#endif
 }
 
-
-#ifdef _WIN32
 #import "libid:D3AEA482-B527-4818-8CEA-810AFFCB24B6" named_guids rename_namespace("CeVIO")
-#endif
-
 TestCase(LaunchCeVIOCS)
 {
-#ifdef _WIN32
     ::CoInitialize(NULL);
 
     // note: this always fails on x64
@@ -186,5 +195,5 @@ TestCase(LaunchCeVIOCS)
     if (SUCCEEDED(hr)) {
         pServiceControl->StartHost(false);
     }
-#endif
 }
+#endif
