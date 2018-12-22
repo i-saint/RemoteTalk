@@ -1,11 +1,12 @@
 #pragma once
 #include "RemoteTalk/RemoteTalk.h"
 
-#define rtvr2HostName   "VOICEROID2"
-#define rtvr2HookDll    "RemoteTalkVOICEROID2Hook.dll"
-#define rtvr2ManagedDll "RemoteTalkVOICEROID2Managed.dll"
-#define rtvr2HostExe    "VoiceroidEditor.exe"
-#define rtvr2DefaultPort 8101
+#define rtvr2HostName       "VOICEROID2"
+#define rtvr2HookDll        "RemoteTalkVOICEROID2Hook.dll"
+#define rtvr2ManagedDll     "RemoteTalkVOICEROID2Managed.dll"
+#define rtvr2HostExe        "VoiceroidEditor.exe"
+#define rtvr2ConfigFile     "RemoteTalkVOICEROID2.json"
+#define rtvr2DefaultPort    8100
 
 
 namespace rtvr2 {

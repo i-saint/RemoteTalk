@@ -11,6 +11,14 @@ static void RequestUpdate()
     ::PostMessageW((HWND)0xffff, WM_TIMER, 0, 0);
 }
 
+TalkServer::TalkServer()
+{
+    auto exe_path = rt::GetMainModulePath();
+    auto config_path = rt::GetCurrentModuleDirectory() + "\\" + rtvrexConfigFile;
+    auto settings = rt::GetOrAddServerSettings(config_path, exe_path, rtvrexDefaultPort);
+    m_settings.port = settings.port;
+}
+
 void TalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);

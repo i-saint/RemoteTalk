@@ -64,12 +64,12 @@ namespace IST.RemoteTalk
         public string serverAddress
         {
             get { return m_serverAddress; }
-            set { m_serverAddress = value; ReleaseClient(); }
+            set { m_serverAddress = value; }
         }
         public int serverPort
         {
             get { return m_serverPort; }
-            set { m_serverPort = value; ReleaseClient(); }
+            set { m_serverPort = value; }
         }
 
         public override AudioSource output

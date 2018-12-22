@@ -72,25 +72,36 @@ namespace IST.RemoteTalk
             get { return Misc.S(rtGetVersion()); }
         }
 
-        public static bool LaunchVOICEROID2()
+        public static int LaunchVOICEROID2()
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkVOICEROID2.exe");
             proc.WaitForExit();
-            return proc.ExitCode == 0;
+            return proc.ExitCode;
 #else
-            return false;
+            return -1;
 #endif
         }
 
-        public static bool LaunchCeVIOCS()
+        public static int LaunchVOICEROIDEx(string path)
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkVOICEROIDEx.exe", path);
+            proc.WaitForExit();
+            return proc.ExitCode;
+#else
+            return -1;
+#endif
+        }
+
+        public static int LaunchCeVIOCS()
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkCeVIOCS.exe");
             proc.WaitForExit();
-            return proc.ExitCode == 0;
+            return proc.ExitCode;
 #else
-            return false;
+            return -1;
 #endif
         }
     }

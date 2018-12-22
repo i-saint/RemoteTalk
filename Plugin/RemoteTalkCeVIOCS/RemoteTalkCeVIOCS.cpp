@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "RemoteTalk/RemoteTalkNet.h"
 #include "rtcvCommon.h"
 
 
@@ -22,19 +23,14 @@ static bool InjectDLL(HANDLE hProcess, const std::string& dllname)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
 {
-    std::string module_path;
-    {
-        char buf[2048];
-        ::GetModuleFileNameA(nullptr, buf, sizeof(buf));
-        module_path = buf;
-        auto spos = module_path.find_last_of("\\");
-        if (spos != std::string::npos) {
-            module_path.resize(spos);
-        }
-    }
-    std::string hook_path = module_path + "\\" + rtcvHookDll;
+    std::string module_dir = rt::GetCurrentModuleDirectory();
+    std::string hook_path = module_dir + "\\" + rtcvHookDll;
+    std::string config_path = module_dir + "\\" + rtcvConfigFile;
 
-    auto try_launch = [&hook_path](const std::string& exe_path) -> bool {
+    rt::TalkServerSettings settings;
+    settings.port = rtcvDefaultPort;
+
+    auto try_launch = [&hook_path, &config_path, &settings](const std::string& exe_path) -> bool {
         STARTUPINFOA si;
         PROCESS_INFORMATION pi;
         ::ZeroMemory(&si, sizeof(si));
@@ -43,6 +39,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         BOOL ret = ::CreateProcessA(exe_path.c_str(), nullptr, nullptr, nullptr, FALSE,
             NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED, nullptr, nullptr, &si, &pi);
         if (ret) {
+            settings = rt::GetOrAddServerSettings(config_path, exe_path, rtcvDefaultPort);
+
             rtDebugSleep(7000); // for debug
             InjectDLL(pi.hProcess, hook_path);
             ::ResumeThread(pi.hThread);
@@ -51,9 +49,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         return false;
     };
 
-    auto try_inject = [&hook_path]() {
+    auto try_inject = [&hook_path, &config_path, &settings]() -> bool {
         auto proc = rt::FindProcess(rtcvHostExe);
         if (proc) {
+            std::string exe_path;
+            rt::EnumerateModules(proc, [&exe_path](HMODULE mod) {
+                if (exe_path.empty()) {
+                    char buf[1024];
+                     ::GetModuleFileNameA(mod, buf, 1024);
+                     exe_path = buf;
+                }
+            });
+            settings = rt::GetOrAddServerSettings(config_path, exe_path, rtcvDefaultPort);
+
             if (InjectDLL(proc, hook_path)) {
                 ::CloseHandle(proc);
                 return true;
@@ -64,18 +72,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
 
     if (__argc > 1) {
         std::string exe_path = __argv[1];
-        if (try_launch(exe_path))
-            return 0;
+        if (!try_launch(exe_path))
+            return -1;
     }
     else {
-        if (try_inject())
-            return 0;
+        if (!try_inject())
+            return -1;
 
         {
             std::string exe_path = ::getenv("ProgramFiles(x86)");
             exe_path += "\\CeVIO\\CeVIO Creative Studio\\" rtcvHostExe;
-            if (try_launch(exe_path))
-                return 0;
+            if (!try_launch(exe_path))
+                return -1;
         }
         {
             ::CoInitialize(NULL);
@@ -83,11 +91,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
             if (SUCCEEDED(hr)) {
                 pServiceControl->StartHost(false);
-                if (try_inject())
-                    return 0;
+                if (!try_inject())
+                    return -1;
             }
         }
     }
 
-    return 1;
+    return settings.port;
 }

@@ -7,7 +7,10 @@ namespace rtcv {
 
 TalkServer::TalkServer()
 {
-    m_settings.port = rtcvDefaultPort;
+    auto exe_path = rt::GetMainModulePath();
+    auto config_path = rt::GetCurrentModuleDirectory() + "\\" + rtcvConfigFile;
+    auto settings = rt::GetOrAddServerSettings(config_path, exe_path, rtcvDefaultPort);
+    m_settings.port = settings.port;
 }
 
 void TalkServer::addMessage(MessagePtr mes)

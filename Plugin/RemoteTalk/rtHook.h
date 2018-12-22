@@ -21,6 +21,8 @@ bool IsValidModule(HMODULE module);
 HMODULE GetModuleByAddr(const void *p);
 std::string GetModuleDirectory(HMODULE module);
 std::string GetCurrentModuleDirectory();
+std::string GetMainModulePath();
+std::string GetMainModuleDirectory();
 
 void* AllocExecutable(size_t size, void *location);
 void* EmitJmpInstruction(void* from_, void* to_);
@@ -28,6 +30,7 @@ void* OverrideEAT(HMODULE module, const char *funcname, void *replacement, void 
 void* OverrideIAT(HMODULE module, const char *target_module, const char *funcname, void *replacement);
 void* Hotpatch(void *target, const void *replacement);
 
+void EnumerateModules(HANDLE process, const std::function<void(HMODULE)>& body);
 void EnumerateModules(const std::function<void(HMODULE)>& body);
 void EnumerateDLLImports(HMODULE module, const char *dllname, const std::function<void(const char*, void *&)> &body);
 void EnumerateDLLExports(HMODULE module, const std::function<void(const char*, void *&)> &body);

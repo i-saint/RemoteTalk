@@ -12,7 +12,10 @@ static void RequestUpdate()
 
 TalkServer::TalkServer()
 {
-    m_settings.port = rtvr2DefaultPort;
+    auto exe_path = rt::GetMainModulePath();
+    auto config_path = rt::GetCurrentModuleDirectory() + "\\" + rtvr2ConfigFile;
+    auto settings = rt::GetOrAddServerSettings(config_path, exe_path, rtvr2DefaultPort);
+    m_settings.port = settings.port;
 }
 
 void TalkServer::addMessage(MessagePtr mes)
@@ -32,7 +35,7 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
-        // UI needs refresh. wait next message.
+        // UI needs refresh. wait next update.
         RequestUpdate();
         return Status::Pending;
     }

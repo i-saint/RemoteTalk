@@ -1,11 +1,12 @@
 #pragma once
 #include "RemoteTalk/RemoteTalk.h"
 
-#define rtcvHostName "CeVIO CS6"
-#define rtcvHookDll "RemoteTalkCeVIOCSHook.dll"
-#define rtcvManagedDll "RemoteTalkCeVIOCSManaged.dll"
-#define rtcvHostExe "CeVIO Creative Studio.exe"
-#define rtcvDefaultPort 8100
+#define rtcvHostName    "CeVIO CS6"
+#define rtcvHookDll     "RemoteTalkCeVIOCSHook.dll"
+#define rtcvManagedDll  "RemoteTalkCeVIOCSManaged.dll"
+#define rtcvHostExe     "CeVIO Creative Studio.exe"
+#define rtcvConfigFile  "RemoteTalkCeVIOCS.json"
+#define rtcvDefaultPort 8140
 
 namespace rtcv {
 

@@ -88,6 +88,24 @@ std::string GetCurrentModuleDirectory()
 {
     return GetModuleDirectory(GetModuleByAddr(&GetCurrentModuleDirectory));
 }
+std::string GetMainModulePath()
+{
+    char buf[2048];
+    ::GetModuleFileNameA(nullptr, buf, sizeof(buf));
+    return buf;
+}
+std::string GetMainModuleDirectory()
+{
+    char buf[2048];
+    ::GetModuleFileNameA(nullptr, buf, sizeof(buf));
+    std::string ret = buf;
+    auto spos = ret.find_last_of("\\");
+    if (spos != std::string::npos)
+        ret.resize(spos);
+    return ret;
+}
+
+
 
 void* OverrideEAT(HMODULE mod, const char *funcname, void *replacement, void *&jump_table)
 {
@@ -165,16 +183,20 @@ void* Hotpatch(void *target, const void *replacement)
     return orig_func;
 }
 
-void EnumerateModules(const std::function<void(HMODULE)>& body)
+void EnumerateModules(HANDLE process, const std::function<void(HMODULE)>& body)
 {
     std::vector<HMODULE> modules;
     DWORD num_modules;
-    ::EnumProcessModules(::GetCurrentProcess(), nullptr, 0, &num_modules);
+    ::EnumProcessModules(process, nullptr, 0, &num_modules);
     modules.resize(num_modules / sizeof(HMODULE));
-    ::EnumProcessModules(::GetCurrentProcess(), &modules[0], num_modules, &num_modules);
+    ::EnumProcessModules(process, &modules[0], num_modules, &num_modules);
     for (size_t i = 0; i < modules.size(); ++i) {
         body(modules[i]);
     }
+}
+void EnumerateModules(const std::function<void(HMODULE)>& body)
+{
+    EnumerateModules(::GetCurrentProcess(), body);
 }
 
 void EnumerateDLLImports(HMODULE mod, const char *dllname, const std::function<void(const char*, void *&)> &body)

@@ -120,6 +120,10 @@ template<> std::string to_string(const float& v)
     sprintf(buf, "%.3f", v);
     return buf;
 }
+template<> std::string to_string(const picojson::value& v)
+{
+    return v.serialize(true);
+}
 
 template<> int from_string(const std::string& v)
 {
@@ -146,6 +150,20 @@ template<> bool from_json(bool& dst, const picojson::value& v)
     if (!v.is<bool>())
         return false;
     dst = v.get<bool>();
+    return true;
+}
+
+template<> picojson::value to_json(const uint16_t& v)
+{
+    using namespace picojson;
+    return value((float)v);
+}
+template<> bool from_json(uint16_t& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<float>())
+        return false;
+    dst = (uint16_t)v.get<float>();
     return true;
 }
 
@@ -336,7 +354,6 @@ template<> picojson::value to_json(const TalkServerStats& v)
     ret["casts"] = rt::to_json(v.casts);
     return value(std::move(ret));
 }
-
 template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
 {
     using namespace picojson;
@@ -351,7 +368,6 @@ template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
     if (rt::from_json(dst.casts, v.get("casts"))) ++n;
     return n >= 5;
 }
-
 
 template<> picojson::value to_json(const std::map<std::string, std::string>& v)
 {
@@ -371,6 +387,54 @@ template<> bool from_json(std::map<std::string, std::string>& dst, const picojso
     for (auto& kvp : o) {
         if (kvp.second.is<std::string>())
             dst[kvp.first] = kvp.second.get<std::string>();
+    }
+    return true;
+}
+
+
+template<> picojson::value to_json(const TalkServerSettings& v)
+{
+    using namespace picojson;
+    object ret;
+    ret["port"] = rt::to_json(v.port);
+    ret["max_queue"] = rt::to_json(v.max_queue);
+    ret["max_threads"] = rt::to_json(v.max_threads);
+    return value(std::move(ret));
+}
+template<> bool from_json(TalkServerSettings& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<object>())
+        return false;
+
+    int n = 0;
+    if (rt::from_json(dst.port, v.get("port"))) ++n;
+    if (rt::from_json(dst.max_queue, v.get("max_queue"))) ++n;
+    if (rt::from_json(dst.max_threads, v.get("max_threads"))) ++n;
+    return n >= 1;
+}
+
+template<> picojson::value to_json(const TalkServerSettingsTable& v)
+{
+    using namespace picojson;
+    object t;
+    for (auto& kvp : v)
+        t[kvp.first] = to_json(kvp.second);
+    return value(std::move(t));
+}
+template<> bool from_json(TalkServerSettingsTable& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<object>())
+        return false;
+
+    auto& o = v.get<object>();
+    for (auto& kvp : o) {
+        if (kvp.second.is<object>()) {
+            TalkServerSettings tmp;
+            if (from_json(tmp, kvp.second))
+                dst[kvp.first] = tmp;
+        }
     }
     return true;
 }

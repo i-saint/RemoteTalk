@@ -9,6 +9,7 @@ class TalkServer : public rt::TalkServer
 using super = rt::TalkServer;
 public:
     rtDefSingleton(TalkServer);
+    TalkServer();
     void addMessage(MessagePtr mes) override;
 
     bool isReady() override;

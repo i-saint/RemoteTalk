@@ -9,6 +9,50 @@ namespace rt {
 using namespace Poco::Net;
 using Poco::URI;
 
+bool SaveServerSettings(const TalkServerSettingsTable& src, const std::string& path)
+{
+    std::ofstream fo(path);
+    if (!fo)
+        return false;
+    fo << to_string(to_json(src));
+    return true;
+}
+
+bool LoadServerSettings(TalkServerSettingsTable& dst, const std::string& path)
+{
+    std::string s;
+    {
+        std::ifstream fin(path);
+        if (!fin)
+            return false;
+        s = std::string(std::istreambuf_iterator<char>(fin), {});
+    }
+    picojson::value val;
+    picojson::parse(val, s);
+    return from_json(dst, val);
+}
+
+TalkServerSettings GetOrAddServerSettings(const std::string& path, const std::string& key, uint16_t default_port)
+{
+    rt::TalkServerSettingsTable table;
+    rt::LoadServerSettings(table, path);
+
+    uint16_t port = default_port;
+    auto it = table.find(key);
+    if (it == table.end()) {
+        auto& settings = table[key];
+        for (auto& kvp : table)
+            port = std::max<uint16_t>(port, kvp.second.port + 1);
+        settings.port = (uint16_t)port;
+        rt::SaveServerSettings(table, path);
+        return settings;
+    }
+    else {
+        return it->second;
+    }
+}
+
+
 void ServeText(Poco::Net::HTTPServerResponse& response, const std::string& data, int stat, const std::string& mimetype)
 {
     response.setStatus((HTTPResponse::HTTPStatus)stat);

@@ -18,15 +18,16 @@ namespace Poco {
 
 namespace rt {
 
-void ServeText(Poco::Net::HTTPServerResponse& response, const std::string& data, int stat, const std::string& mimetype = "text/plain");
-void ServeBinary(Poco::Net::HTTPServerResponse& response, RawVector<char>& data, const std::string& mimetype = "application/octet-stream");
-
 struct TalkServerSettings
 {
     int max_queue = 256;
     int max_threads = 8;
     uint16_t port = 8081;
 };
+using TalkServerSettingsTable = std::map<std::string, TalkServerSettings>;
+bool SaveServerSettings(const TalkServerSettingsTable& src, const std::string& path);
+bool LoadServerSettings(TalkServerSettingsTable& dst, const std::string& path);
+TalkServerSettings GetOrAddServerSettings(const std::string& path, const std::string& key, uint16_t default_port);
 
 struct TalkServerStats
 {
@@ -36,6 +37,9 @@ struct TalkServerStats
     TalkParams params;
     CastList casts;
 };
+
+void ServeText(Poco::Net::HTTPServerResponse& response, const std::string& data, int stat, const std::string& mimetype = "text/plain");
+void ServeBinary(Poco::Net::HTTPServerResponse& response, RawVector<char>& data, const std::string& mimetype = "application/octet-stream");
 
 class TalkServer
 {

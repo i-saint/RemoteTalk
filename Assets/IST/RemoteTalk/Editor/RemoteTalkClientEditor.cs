@@ -116,10 +116,39 @@ namespace IST.RemoteTalk
             if (foldNetwork.boolValue)
             {
                 if (GUILayout.Button("Connect VOICEROID2"))
-                    rtPlugin.LaunchVOICEROID2();
+                {
+                    var ret = rtPlugin.LaunchVOICEROID2();
+                    if (ret > 0)
+                    {
+                        t.serverPort = ret;
+                        t.RefreshClient();
+                    }
+                }
                 EditorGUILayout.Space();
+                if (GUILayout.Button("Connect VOICEROID Ex"))
+                {
+                    var exePath = EditorUtility.OpenFilePanel("VOICEROID.exe", ".", "exe");
+                    if (exePath != null && exePath.Length > 0)
+                    {
+                        var ret = rtPlugin.LaunchVOICEROIDEx(exePath);
+                        if (ret > 0)
+                        {
+                            t.serverPort = ret;
+                            t.RefreshClient();
+                        }
+                    }
+                }
+                EditorGUILayout.Space();
+
                 if (GUILayout.Button("Connect CeVIO CS"))
-                    rtPlugin.LaunchCeVIOCS();
+                {
+                    var ret = rtPlugin.LaunchCeVIOCS();
+                    if (ret > 0)
+                    {
+                        t.serverPort = ret;
+                        t.RefreshClient();
+                    }
+                }
 
                 EditorGUILayout.Space();
 

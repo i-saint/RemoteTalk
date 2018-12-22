@@ -20,17 +20,9 @@ static bool InjectDLL(HANDLE hProcess, const std::string& dllname)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
 {
-    std::string module_path;
-    {
-        char buf[2048];
-        ::GetModuleFileNameA(nullptr, buf, sizeof(buf));
-        module_path = buf;
-        auto spos = module_path.find_last_of("\\");
-        if (spos != std::string::npos) {
-            module_path.resize(spos);
-        }
-    }
-    std::string hook_path = module_path + "\\" + rtvrexHookDll;
+    std::string module_dir = rt::GetCurrentModuleDirectory();
+    std::string hook_path = module_dir + "\\" + rtvrexHookDll;
+    std::string config_path = module_dir + "\\" + rtvrexConfigFile;
 
     std::string exe_path;
 
@@ -40,7 +32,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
     }
     if (exe_path.empty()) {
         // try to open .exe in main module's dir
-        exe_path = module_path + "\\" + rtvrexHostExe;
+        exe_path = module_dir + "\\" + rtvrexHostExe;
     }
 
     {
@@ -52,12 +44,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         BOOL ret = ::CreateProcessA(exe_path.c_str(), nullptr, nullptr, nullptr, FALSE,
             NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED, nullptr, nullptr, &si, &pi);
         if (ret) {
+            auto settings = rt::GetOrAddServerSettings(config_path, exe_path, rtvrexDefaultPort);
 
             rtDebugSleep(7000); // for debug
             InjectDLL(pi.hProcess, hook_path);
             ::ResumeThread(pi.hThread);
-            return 0;
+            return settings.port;
         }
     }
-    return 1;
+    return -1;
 }
