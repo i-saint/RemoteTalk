@@ -21,7 +21,9 @@ bool IsValidModule(HMODULE module);
 HMODULE GetModuleByAddr(const void *p);
 std::string GetModuleDirectory(HMODULE module);
 std::string GetCurrentModuleDirectory();
+std::string GetMainModulePath(HANDLE proc);
 std::string GetMainModulePath();
+std::string GetMainModuleDirectory(HANDLE proc);
 std::string GetMainModuleDirectory();
 
 void* AllocExecutable(size_t size, void *location);

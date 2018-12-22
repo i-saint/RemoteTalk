@@ -1,8 +1,6 @@
 #include "pch.h"
 #ifdef _WIN32
 #include "rtHook.h"
-#include <psapi.h>
-#include <tlhelp32.h>
 
 namespace rt {
 
@@ -84,19 +82,44 @@ std::string GetModuleDirectory(HMODULE mod)
         ret.resize(spos);
     return ret;
 }
+
 std::string GetCurrentModuleDirectory()
 {
     return GetModuleDirectory(GetModuleByAddr(&GetCurrentModuleDirectory));
 }
+
+std::string GetMainModulePath(HANDLE proc)
+{
+    std::string ret;
+    rt::EnumerateModules(proc, [proc, &ret](HMODULE mod) {
+        if (ret.empty()) {
+            char buf[MAX_PATH + 1];
+            ::GetModuleFileNameExA(proc, mod, buf, 1024);
+            ret = buf;
+        }
+    });
+    return ret;
+}
+
 std::string GetMainModulePath()
 {
-    char buf[2048];
+    char buf[MAX_PATH + 1];
     ::GetModuleFileNameA(nullptr, buf, sizeof(buf));
     return buf;
 }
+
+std::string GetMainModuleDirectory(HANDLE proc)
+{
+    auto ret = GetMainModulePath(proc);
+    auto spos = ret.find_last_of("\\");
+    if (spos != std::string::npos)
+        ret.resize(spos);
+    return ret;
+}
+
 std::string GetMainModuleDirectory()
 {
-    char buf[2048];
+    char buf[MAX_PATH + 1];
     ::GetModuleFileNameA(nullptr, buf, sizeof(buf));
     std::string ret = buf;
     auto spos = ret.find_last_of("\\");

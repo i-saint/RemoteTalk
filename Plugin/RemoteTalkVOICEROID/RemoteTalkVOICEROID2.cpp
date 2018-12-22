@@ -34,9 +34,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
     else {
         auto proc = rt::FindProcess(rtvr2HostExe);
         if (proc) {
-            InjectDLL(proc, hook_path);
+            int ret = -1;
+            if (InjectDLL(proc, hook_path)) {
+                exe_path = rt::GetMainModulePath(proc);
+                auto settings = rt::GetOrAddServerSettings(config_path, exe_path, rtvr2DefaultPort);
+                ret = settings.port;
+            }
             ::CloseHandle(proc);
-            return 0;
+            return ret;
         }
         else {
             if (exe_path.empty()) {

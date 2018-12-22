@@ -5,6 +5,7 @@
 #define NOMINMAX
 #include <winsock2.h>
 #include <windows.h>
+#include <psapi.h>
 #include <tlhelp32.h>
 #include <mmsystem.h>
 #include <ppl.h>

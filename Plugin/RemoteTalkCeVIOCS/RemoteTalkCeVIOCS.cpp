@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <atlbase.h>
 #include "RemoteTalk/RemoteTalkNet.h"
 #include "rtcvCommon.h"
 
@@ -52,14 +53,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
     auto try_inject = [&hook_path, &config_path, &settings]() -> bool {
         auto proc = rt::FindProcess(rtcvHostExe);
         if (proc) {
-            std::string exe_path;
-            rt::EnumerateModules(proc, [proc, &exe_path](HMODULE mod) {
-                if (exe_path.empty()) {
-                    char buf[1024];
-                    ::GetModuleFileNameExA(proc, mod, buf, 1024);
-                    exe_path = buf;
-                }
-            });
+            std::string exe_path = rt::GetMainModulePath(proc);
             settings = rt::GetOrAddServerSettings(config_path, exe_path, rtcvDefaultPort);
 
             if (InjectDLL(proc, hook_path)) {
@@ -84,21 +78,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         if (try_inject())
             return wait_and_return();
 
-        {
-            std::string exe_path = ::getenv("ProgramFiles(x86)");
-            exe_path += "\\CeVIO\\CeVIO Creative Studio\\" rtcvHostExe;
-            if (try_launch(exe_path))
+        ::CoInitialize(NULL);
+        CComPtr<CeVIO::IServiceControl> pServiceControl;
+        HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
+        if (SUCCEEDED(hr)) {
+            pServiceControl->StartHost(false);
+            if (try_inject())
                 return wait_and_return();
-        }
-        {
-            ::CoInitialize(NULL);
-            CeVIO::IServiceControl *pServiceControl;
-            HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
-            if (SUCCEEDED(hr)) {
-                pServiceControl->StartHost(false);
-                if (try_inject())
-                    return wait_and_return();
-            }
         }
     }
 
