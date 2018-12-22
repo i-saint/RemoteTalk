@@ -53,11 +53,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         auto proc = rt::FindProcess(rtcvHostExe);
         if (proc) {
             std::string exe_path;
-            rt::EnumerateModules(proc, [&exe_path](HMODULE mod) {
+            rt::EnumerateModules(proc, [proc, &exe_path](HMODULE mod) {
                 if (exe_path.empty()) {
                     char buf[1024];
-                     ::GetModuleFileNameA(mod, buf, 1024);
-                     exe_path = buf;
+                    ::GetModuleFileNameExA(proc, mod, buf, 1024);
+                    exe_path = buf;
                 }
             });
             settings = rt::GetOrAddServerSettings(config_path, exe_path, rtcvDefaultPort);
@@ -70,20 +70,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
         return false;
     };
 
+    auto wait_and_return = [&settings]() {
+        rt::WaitUntilServerRespond(settings.port, 5000);
+        return settings.port;
+    };
+
     if (__argc > 1) {
         std::string exe_path = __argv[1];
-        if (!try_launch(exe_path))
-            return -1;
+        if (try_launch(exe_path))
+            return wait_and_return();
     }
     else {
-        if (!try_inject())
-            return -1;
+        if (try_inject())
+            return wait_and_return();
 
         {
             std::string exe_path = ::getenv("ProgramFiles(x86)");
             exe_path += "\\CeVIO\\CeVIO Creative Studio\\" rtcvHostExe;
-            if (!try_launch(exe_path))
-                return -1;
+            if (try_launch(exe_path))
+                return wait_and_return();
         }
         {
             ::CoInitialize(NULL);
@@ -91,11 +96,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
             if (SUCCEEDED(hr)) {
                 pServiceControl->StartHost(false);
-                if (!try_inject())
-                    return -1;
+                if (try_inject())
+                    return wait_and_return();
             }
         }
     }
 
-    return settings.port;
+    return -1;
 }

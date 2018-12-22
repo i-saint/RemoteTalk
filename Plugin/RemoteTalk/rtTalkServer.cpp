@@ -2,6 +2,7 @@
 #include "rtFoundation.h"
 #include "rtSerialization.h"
 #include "rtTalkServer.h"
+#include "rtTalkClient.h"
 #include "picojson/picojson.h"
 
 namespace rt {
@@ -32,10 +33,16 @@ bool LoadServerSettings(TalkServerSettingsTable& dst, const std::string& path)
     return from_json(dst, val);
 }
 
-TalkServerSettings GetOrAddServerSettings(const std::string& path, const std::string& key, uint16_t default_port)
+TalkServerSettings GetOrAddServerSettings(const std::string& path, const std::string& key_, uint16_t default_port)
 {
     rt::TalkServerSettingsTable table;
     rt::LoadServerSettings(table, path);
+
+    auto key = key_;
+    for (auto& c : key) {
+        if (c == '\\')
+            c = '/';
+    }
 
     uint16_t port = default_port;
     auto it = table.find(key);
@@ -51,6 +58,29 @@ TalkServerSettings GetOrAddServerSettings(const std::string& path, const std::st
         return it->second;
     }
 }
+
+bool WaitUntilServerRespond(uint16_t port, int timeout_ms)
+{
+    const int NumTry = 5;
+    int interval = timeout_ms / NumTry;
+
+    TalkClientSettings settings;
+    settings.port = port;
+    TalkClient client(settings);
+
+    for (int i = 0; i < NumTry; ++i) {
+        try {
+            TalkServerStats stats;
+            if (client.stats(stats) && stats.casts.size() > 0)
+                break;
+        }
+        catch (...) {}
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+
+    }
+    return false;
+}
+
 
 
 void ServeText(Poco::Net::HTTPServerResponse& response, const std::string& data, int stat, const std::string& mimetype)

@@ -4,6 +4,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <tlhelp32.h>
+#include <psapi.h>
 #include <mmsystem.h>
 
 #include <cstdio>

@@ -72,10 +72,14 @@ namespace IST.RemoteTalk
             get { return Misc.S(rtGetVersion()); }
         }
 
-        public static int LaunchVOICEROID2()
+        public static int LaunchVOICEROID2(string path = null)
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkVOICEROID2.exe");
+            Process proc;
+            if (path == null)
+                proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalk/RemoteTalkVOICEROID2.exe");
+            else
+                proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalk/RemoteTalkVOICEROID2.exe", "\"" + path + "\"");
             proc.WaitForExit();
             return proc.ExitCode;
 #else
@@ -86,7 +90,7 @@ namespace IST.RemoteTalk
         public static int LaunchVOICEROIDEx(string path)
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkVOICEROIDEx.exe", path);
+            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalk/RemoteTalkVOICEROIDEx.exe", "\""+path+"\"");
             proc.WaitForExit();
             return proc.ExitCode;
 #else
@@ -97,7 +101,7 @@ namespace IST.RemoteTalk
         public static int LaunchCeVIOCS()
         {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalkAssets/RemoteTalkCeVIOCS.exe");
+            var proc = Process.Start(Application.streamingAssetsPath + "/RemoteTalk/RemoteTalkCeVIOCS.exe");
             proc.WaitForExit();
             return proc.ExitCode;
 #else

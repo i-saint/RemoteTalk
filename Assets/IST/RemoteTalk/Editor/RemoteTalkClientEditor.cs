@@ -127,7 +127,7 @@ namespace IST.RemoteTalk
                 EditorGUILayout.Space();
                 if (GUILayout.Button("Connect VOICEROID Ex"))
                 {
-                    var exePath = EditorUtility.OpenFilePanel("VOICEROID.exe", ".", "exe");
+                    var exePath = EditorUtility.OpenFilePanel("Locate VOICEROID.exe", ".", "exe");
                     if (exePath != null && exePath.Length > 0)
                     {
                         var ret = rtPlugin.LaunchVOICEROIDEx(exePath);

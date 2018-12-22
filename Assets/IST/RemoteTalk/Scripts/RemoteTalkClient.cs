@@ -22,7 +22,7 @@ namespace IST.RemoteTalk
         [SerializeField] AudioSource m_output;
 
         [SerializeField] string m_serverAddress = "127.0.0.1";
-        [SerializeField] int m_serverPort = 8081;
+        [SerializeField] int m_serverPort = 8100;
 
         [SerializeField] Cast[] m_casts = new Cast[0] { };
         [SerializeField] int m_castID;

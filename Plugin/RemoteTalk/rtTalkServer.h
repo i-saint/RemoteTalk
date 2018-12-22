@@ -28,6 +28,7 @@ using TalkServerSettingsTable = std::map<std::string, TalkServerSettings>;
 bool SaveServerSettings(const TalkServerSettingsTable& src, const std::string& path);
 bool LoadServerSettings(TalkServerSettingsTable& dst, const std::string& path);
 TalkServerSettings GetOrAddServerSettings(const std::string& path, const std::string& key, uint16_t default_port);
+bool WaitUntilServerRespond(uint16_t port, int timeout_ms);
 
 struct TalkServerStats
 {

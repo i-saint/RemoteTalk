@@ -1,6 +1,6 @@
 set PLUGIN32_DIR="..\Assets\IST\RemoteTalk\Plugins\x86\"
 set PLUGIN64_DIR="..\Assets\IST\RemoteTalk\Plugins\x86_64\"
-set ASSET_DIR="..\Assets\StreamingAssets\RemoteTalkAssets\"
+set ASSET_DIR="..\Assets\StreamingAssets\RemoteTalk\"
 set OUT32_DIR="_out\Win32_Master\"
 set OUT64_DIR="_out\x64_Master\"
 
