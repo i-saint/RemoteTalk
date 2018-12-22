@@ -1,16 +1,18 @@
 #pragma once
 
-class rtcvWindowMessageHandler : public rt::WindowMessageHandlerBase
+namespace rtcv {
+
+class WindowMessageHandler : public rt::WindowMessageHandlerBase
 {
 public:
-    rtDefSingleton(rtcvWindowMessageHandler);
+    rtDefSingleton(WindowMessageHandler);
     void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 };
 
-class rtcvWaveOutHandler : public rt::WaveOutHandlerBase
+class WaveOutHandler : public rt::WaveOutHandlerBase
 {
 public:
-    rtDefSingleton(rtcvWaveOutHandler);
+    rtDefSingleton(WaveOutHandler);
 
     bool mute = false;
     std::function<void(rt::AudioData&)> onUpdate;
@@ -33,3 +35,4 @@ private:
     std::map<HWAVEOUT, Record> m_records;
 };
 
+} // namespace rtcv

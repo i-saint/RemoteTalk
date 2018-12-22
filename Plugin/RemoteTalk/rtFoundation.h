@@ -1,7 +1,7 @@
 #pragma once
 
-#define rtPluginVersion 20181217
-#define rtPluginVersionStr "20181217"
+#define rtPluginVersion 20181226
+#define rtPluginVersionStr "20181226"
 #define rtProtocolVersion 100
 
 
@@ -25,9 +25,7 @@ namespace rt {
 #endif
 
 #ifdef _WIN32
-    #define rtExport extern "C" __declspec(dllexport)
-    #define rtImport extern "C"
+    #define rtAPI extern "C" __declspec(dllexport)
 #else
-    #define rtExport extern "C" 
-    #define rtImport extern "C" 
+    #define rtAPI extern "C" 
 #endif

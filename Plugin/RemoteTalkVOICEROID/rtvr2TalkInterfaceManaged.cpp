@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "rtvr2Common.h"
-#include "rtvr2InterfaceManaged.h"
+#include "rtvr2TalkInterfaceManaged.h"
+
+namespace rtvr2 {
 
 static void SelectControlsByTypeNameImpl(System::Windows::DependencyObject^ obj, String^ name, List<System::Windows::DependencyObject^>^ dst, bool one, bool recursive, int depth = 0)
 {
@@ -61,12 +63,12 @@ std::string ToStdString(String^ str)
 }
 
 
-rtvr2InterfaceManaged^ rtvr2InterfaceManaged::getInstance()
+TalkInterfaceManaged^ TalkInterfaceManaged::getInstance()
 {
     return %s_instance;
 }
 
-bool rtvr2InterfaceManaged::prepareUI()
+bool TalkInterfaceManaged::prepareUI()
 {
     auto ttcs = SelectControlsByTypeName("AI.Framework.Wpf.Controls.TitledTabControl", true);
     if (ttcs->Count < 2)
@@ -83,7 +85,7 @@ bool rtvr2InterfaceManaged::prepareUI()
     return true;
 }
 
-rt::CastList rtvr2InterfaceManaged::getCastList()
+rt::CastList TalkInterfaceManaged::getCastList()
 {
     setupControls();
 
@@ -101,7 +103,7 @@ rt::CastList rtvr2InterfaceManaged::getCastList()
     return ret;
 }
 
-bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
+bool TalkInterfaceManaged::getParams(rt::TalkParams& params)
 {
     if (m_lv_casts)
         params.cast = m_lv_casts->SelectedIndex;
@@ -112,7 +114,7 @@ bool rtvr2InterfaceManaged::getParams(rt::TalkParams& params)
     return true;
 }
 
-bool rtvr2InterfaceManaged::setCast(int v)
+bool TalkInterfaceManaged::setCast(int v)
 {
     if (!m_lv_casts || v < 0 && v >= m_lv_casts->Items->Count)
         return false;
@@ -120,7 +122,7 @@ bool rtvr2InterfaceManaged::setCast(int v)
     return false;
 }
 
-bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
+bool TalkInterfaceManaged::setParams(const rt::TalkParams& params)
 {
     if (m_lv_casts)
         setCast(params.cast);
@@ -133,7 +135,7 @@ bool rtvr2InterfaceManaged::setParams(const rt::TalkParams& params)
     return true;
 }
 
-bool rtvr2InterfaceManaged::setText(const char *text)
+bool TalkInterfaceManaged::setText(const char *text)
 {
     if (!m_tb_text)
         return true;
@@ -141,7 +143,7 @@ bool rtvr2InterfaceManaged::setText(const char *text)
     return true;
 }
 
-bool rtvr2InterfaceManaged::setupControls()
+bool TalkInterfaceManaged::setupControls()
 {
     if (!m_tb_text) {
         auto tev = SelectControlsByTypeName("AI.Talk.Editor.TextEditView", true);
@@ -223,13 +225,14 @@ bool rtvr2InterfaceManaged::setupControls()
 }
 
 
-bool rtvr2InterfaceManaged::stop()
+bool TalkInterfaceManaged::stop()
 {
     return EmulateClick(m_bu_stop);
 }
 
-bool rtvr2InterfaceManaged::talk()
+bool TalkInterfaceManaged::talk()
 {
     return EmulateClick(m_bu_rewind) && EmulateClick(m_bu_play);
 }
 
+} // namespace rtvr2

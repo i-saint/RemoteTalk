@@ -1,10 +1,12 @@
 #pragma once
 #include "RemoteTalk/RemoteTalk.h"
 
-class rtvrDSoundHandler : public rt::DSoundHandlerBase
+namespace rtvr2 {
+
+class DSoundHandler : public rt::DSoundHandlerBase
 {
 public:
-    rtDefSingleton(rtvrDSoundHandler);
+    rtDefSingleton(DSoundHandler);
 
     bool mute = false;
     int margin = 88200 / 10; // 1/10 sec
@@ -32,10 +34,11 @@ private:
     bool m_playing = false;
 };
 
-class rtvrWindowMessageHandler : public rt::WindowMessageHandlerBase
+class WindowMessageHandler : public rt::WindowMessageHandlerBase
 {
 public:
-    rtDefSingleton(rtvrWindowMessageHandler);
+    rtDefSingleton(WindowMessageHandler);
     void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 };
 
+} // namespace rtvr2

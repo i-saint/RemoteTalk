@@ -1,13 +1,14 @@
 #include "pch.h"
 #include "rtspHookHandler.h"
 
+namespace rtsp {
 
-void rtspWaveOutHandler::clearCallbacks()
+void WaveOutHandler::clearCallbacks()
 {
     onUpdate = {};
 }
 
-void rtspWaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret)
+void WaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret)
 {
     if (FAILED(ret))
         return;
@@ -25,7 +26,7 @@ void rtspWaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPC
     }
 }
 
-void rtspWaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
+void WaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -38,7 +39,7 @@ void rtspWaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
     rec.is_opened = false;
 }
 
-void rtspWaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh)
+void WaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -55,7 +56,7 @@ void rtspWaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT&
         memset(pwh->lpData, 0, pwh->dwBufferLength);
 }
 
-void rtspWaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
+void WaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -66,3 +67,5 @@ void rtspWaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
         rec.is_playing = false;
     mute = false;
 }
+
+} // namespace rtsp

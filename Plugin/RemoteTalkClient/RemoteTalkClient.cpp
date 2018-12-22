@@ -123,25 +123,25 @@ const rt::AudioData& rtHTTPClient::getBuffer()
 
 
 #pragma region rtAsync
-rtExport bool rtAsyncIsValid(rtAsyncBase *self)
+rtAPI bool rtAsyncIsValid(rtAsyncBase *self)
 {
     if (!self)
         return false;
     return self->isValid();
 }
-rtExport bool rtAsyncIsFinished(rtAsyncBase *self)
+rtAPI bool rtAsyncIsFinished(rtAsyncBase *self)
 {
     if (!self)
         return false;
     return self->isFinished();
 }
-rtExport bool rtAsyncWait(rtAsyncBase *self, int timeout_ms)
+rtAPI bool rtAsyncWait(rtAsyncBase *self, int timeout_ms)
 {
     if (!self)
         return false;
     return self->wait(timeout_ms);
 }
-rtExport bool rtAsyncGetBool(rtAsyncBase *self, bool *dst)
+rtAPI bool rtAsyncGetBool(rtAsyncBase *self, bool *dst)
 {
     if (auto b = dynamic_cast<rtAsync<bool>*>(self)) {
         if (b->isValid()) {
@@ -160,79 +160,79 @@ using rtAudioData = rt::AudioData;
 using rtAudioFormat = rt::AudioFormat;
 using rtOggSettings = rt::OggSettings;
 
-rtExport rtAudioData* rtAudioDataCreate()
+rtAPI rtAudioData* rtAudioDataCreate()
 {
     return new rtAudioData();
 }
 
-rtExport void rtAudioDataRelease(rtAudioData *self)
+rtAPI void rtAudioDataRelease(rtAudioData *self)
 {
     delete self;
 }
 
-rtExport void rtAudioDataAppend(rtAudioData *self, rtAudioData *v)
+rtAPI void rtAudioDataAppend(rtAudioData *self, rtAudioData *v)
 {
     if (!self)
         return;
     *self += *v;
 }
 
-rtExport rtAudioFormat rtAudioDataGetFormat(rtAudioData *self)
+rtAPI rtAudioFormat rtAudioDataGetFormat(rtAudioData *self)
 {
     if (!self)
         return rtAudioFormat::Unknown;
     return self->format;
 }
 
-rtExport int rtAudioDataGetChannels(rtAudioData *self)
+rtAPI int rtAudioDataGetChannels(rtAudioData *self)
 {
     if (!self)
         return 0;
     return self->channels;
 }
 
-rtExport int rtAudioDataGetFrequency(rtAudioData *self)
+rtAPI int rtAudioDataGetFrequency(rtAudioData *self)
 {
     if (!self)
         return 0;
     return self->frequency;
 }
 
-rtExport int rtAudioDataGetSampleLength(rtAudioData *self)
+rtAPI int rtAudioDataGetSampleLength(rtAudioData *self)
 {
     if (!self)
         return 0;
     return (int)self->getSampleLength();
 }
 
-rtExport int rtAudioDataReadSamples(rtAudioData *self, float *dst, int pos, int len)
+rtAPI int rtAudioDataReadSamples(rtAudioData *self, float *dst, int pos, int len)
 {
     if (!self)
         return 0;
     return self->toFloat(dst, pos, len);
 }
 
-rtExport double rtAudioDataReample(rtAudioData *self, float *dst, int frequency, int channels, int length, double pos)
+rtAPI double rtAudioDataReample(rtAudioData *self, float *dst, int frequency, int channels, int length, double pos)
 {
     if (!self)
         return 0;
     return self->resampleFloat(dst, frequency, channels, length, pos);
 }
 
-rtExport void rtAudioDataClearSample(float *dst, int len)
+rtAPI void rtAudioDataClearSample(float *dst, int len)
 {
     for (int i = 0; i < len; ++i)
         dst[i] = 0.0f;
 }
 
-rtExport bool rtAudioDataExportWave(rtAudioData *self, const char *path)
+rtAPI bool rtAudioDataExportWave(rtAudioData *self, const char *path)
 {
     if (!self || !path)
         return false;
     return rt::ExportWave(*self, path);
 }
 
-rtExport bool rtAudioDataExportOgg(rtAudioData *self, const char *path, const rtOggSettings *settings)
+rtAPI bool rtAudioDataExportOgg(rtAudioData *self, const char *path, const rtOggSettings *settings)
 {
     if (!self || !path || !settings)
         return false;
@@ -245,32 +245,32 @@ rtExport bool rtAudioDataExportOgg(rtAudioData *self, const char *path, const rt
 using rtTalkParamInfo = rt::TalkParamInfo;
 using rtTalkParams = rt::TalkParams;
 
-rtExport const char* rtTalkParamInfoGetName(rtTalkParamInfo *self)
+rtAPI const char* rtTalkParamInfoGetName(rtTalkParamInfo *self)
 {
     if (!self)
         return "";
     return self->name.c_str();
 }
-rtExport float rtTalkParamInfoGetValue(rtTalkParamInfo *self)
+rtAPI float rtTalkParamInfoGetValue(rtTalkParamInfo *self)
 {
     if (!self)
         return 0;
     return self->value;
 }
-rtExport float rtTalkParamInfoGetRangeMin(rtTalkParamInfo *self)
+rtAPI float rtTalkParamInfoGetRangeMin(rtTalkParamInfo *self)
 {
     if (!self)
         return 0;
     return self->range_min;
 }
-rtExport float rtTalkParamInfoGetRangeMax(rtTalkParamInfo *self)
+rtAPI float rtTalkParamInfoGetRangeMax(rtTalkParamInfo *self)
 {
     if (!self)
         return 0;
     return self->range_max;
 }
 
-rtExport uint32_t rtTalkParamsGetHash(rtTalkParams *self)
+rtAPI uint32_t rtTalkParamsGetHash(rtTalkParams *self)
 {
     if (!self)
         return 0;
@@ -282,25 +282,25 @@ rtExport uint32_t rtTalkParamsGetHash(rtTalkParams *self)
 #pragma region rtCastInfo
 using rtCastInfo = rt::CastInfo;
 
-rtExport int rtCastInfoGetID(rtCastInfo *self)
+rtAPI int rtCastInfoGetID(rtCastInfo *self)
 {
     if (!self)
         return 0;
     return self->id;
 }
-rtExport const char* rtCastInfoGetName(rtCastInfo *self)
+rtAPI const char* rtCastInfoGetName(rtCastInfo *self)
 {
     if (!self)
         return "";
     return self->name.c_str();
 }
-rtExport int rtCastInfoGetNumParams(rtCastInfo *self)
+rtAPI int rtCastInfoGetNumParams(rtCastInfo *self)
 {
     if (!self)
         return 0;
     return (int)self->params.size();
 }
-rtExport rtTalkParamInfo* rtCastInfoGetParamInfo(rtCastInfo *self, int i)
+rtAPI rtTalkParamInfo* rtCastInfoGetParamInfo(rtCastInfo *self, int i)
 {
     if (!self)
         return nullptr;
@@ -313,100 +313,100 @@ rtExport rtTalkParamInfo* rtCastInfoGetParamInfo(rtCastInfo *self, int i)
 #pragma region rtHTTPClient
 using rtTalkParams = rt::TalkParams;
 
-rtExport rtHTTPClient* rtHTTPClientCreate()
+rtAPI rtHTTPClient* rtHTTPClientCreate()
 {
     return new rtHTTPClient();
 }
 
-rtExport void rtHTTPClientRelease(rtHTTPClient *self)
+rtAPI void rtHTTPClientRelease(rtHTTPClient *self)
 {
     if (self)
         self->release();
 }
 
-rtExport void rtHTTPClientSetup(rtHTTPClient *self, const char *address, int port)
+rtAPI void rtHTTPClientSetup(rtHTTPClient *self, const char *address, int port)
 {
     if (self)
         self->reset(address, port);
 }
 
-rtExport rtAsyncBase* rtHTTPClientUpdateServerStatus(rtHTTPClient *self)
+rtAPI rtAsyncBase* rtHTTPClientUpdateServerStatus(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
     return &self->updateServerStats();
 }
 
-rtExport const char* rtHTTPClientGetServerHostApp(rtHTTPClient *self)
+rtAPI const char* rtHTTPClientGetServerHostApp(rtHTTPClient *self)
 {
     if (!self)
         return "";
     return self->getServerStats().host.c_str();
 }
 
-rtExport void rtHTTPClientGetServerParams(rtHTTPClient *self, rtTalkParams *st)
+rtAPI void rtHTTPClientGetServerParams(rtHTTPClient *self, rtTalkParams *st)
 {
     if (!self)
         return;
     *st = self->getServerStats().params;
 }
 
-rtExport int rtHTTPClientGetNumCasts(rtHTTPClient *self)
+rtAPI int rtHTTPClientGetNumCasts(rtHTTPClient *self)
 {
     if (!self)
         return 0;
     return (int)self->getServerStats().casts.size();
 }
 
-rtExport const rtCastInfo* rtHTTPClientGetCast(rtHTTPClient *self, int i)
+rtAPI const rtCastInfo* rtHTTPClientGetCast(rtHTTPClient *self, int i)
 {
     if (!self)
         return nullptr;
     return &self->getServerStats().casts[i];
 }
 
-rtExport rtAsyncBase* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)
+rtAPI rtAsyncBase* rtHTTPClientTalk(rtHTTPClient *self, const rt::TalkParams *p, const char *text)
 {
     if (!self)
         return nullptr;
     return &self->play(*p, text);
 }
 
-rtExport rtAsyncBase* rtHTTPClientStop(rtHTTPClient *self)
+rtAPI rtAsyncBase* rtHTTPClientStop(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
     return &self->stop();
 }
 
-rtExport bool rtHTTPClientIsReady(rtHTTPClient *self)
+rtAPI bool rtHTTPClientIsReady(rtHTTPClient *self)
 {
     if (!self)
         return false;
     return self->isReady();
 }
 
-rtExport const rtAudioData* rtHTTPClientSyncBuffers(rtHTTPClient *self)
+rtAPI const rtAudioData* rtHTTPClientSyncBuffers(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
     return &self->syncBuffers();
 }
 
-rtExport const rtAudioData* rtHTTPClientGetBuffer(rtHTTPClient *self)
+rtAPI const rtAudioData* rtHTTPClientGetBuffer(rtHTTPClient *self)
 {
     if (!self)
         return nullptr;
     return &self->getBuffer();
 }
 
-rtExport rtAsyncBase* rtHTTPClientExportWave(rtHTTPClient *self, const char *path)
+rtAPI rtAsyncBase* rtHTTPClientExportWave(rtHTTPClient *self, const char *path)
 {
     if (!self || !path)
         return nullptr;
     return &self->exportWave(path);
 }
-rtExport rtAsyncBase* rtHTTPClientExportOgg(rtHTTPClient *self, const char *path, const rtOggSettings *settings)
+rtAPI rtAsyncBase* rtHTTPClientExportOgg(rtHTTPClient *self, const char *path, const rtOggSettings *settings)
 {
     if (!self || !path || !settings)
         return nullptr;

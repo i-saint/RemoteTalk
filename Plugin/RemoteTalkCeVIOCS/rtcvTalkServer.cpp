@@ -3,24 +3,25 @@
 #include "rtcvHookHandler.h"
 #include "rtcvTalkServer.h"
 
+namespace rtcv {
 
-rtcvTalkServer::rtcvTalkServer()
+TalkServer::TalkServer()
 {
-    m_settings.port = 8082;
+    m_settings.port = rtcvDefaultPort;
 }
 
-void rtcvTalkServer::addMessage(MessagePtr mes)
+void TalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);
     processMessages();
 }
 
-bool rtcvTalkServer::isReady()
+bool TalkServer::isReady()
 {
     return false;
 }
 
-rtcvTalkServer::Status rtcvTalkServer::onStats(StatsMessage& mes)
+TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
 
@@ -37,13 +38,13 @@ rtcvTalkServer::Status rtcvTalkServer::onStats(StatsMessage& mes)
     return Status::Succeeded;
 }
 
-rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
+TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
     if (m_task_talk.valid())
         m_task_talk.wait();
 
     m_params = mes.params;
-    rtcvWaveOutHandler::getInstance().mute = m_params.mute;
+    WaveOutHandler::getInstance().mute = m_params.mute;
 
     auto ifs = rtGetTalkInterface_();
     ifs->setParams(mes.params);
@@ -53,7 +54,7 @@ rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
 
     m_task_talk = std::async(std::launch::async, [this, ifs]() {
         ifs->wait();
-        rtcvWaveOutHandler::getInstance().mute = false;
+        WaveOutHandler::getInstance().mute = false;
         {
             auto terminator = std::make_shared<rt::AudioData>();
             std::unique_lock<std::mutex> lock(m_data_mutex);
@@ -83,20 +84,20 @@ rtcvTalkServer::Status rtcvTalkServer::onTalk(TalkMessage& mes)
     return Status::Succeeded;
 }
 
-rtcvTalkServer::Status rtcvTalkServer::onStop(StopMessage& mes)
+TalkServer::Status TalkServer::onStop(StopMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
     return ifs->stop() ? Status::Succeeded : Status::Failed;
 }
 
 #ifdef rtDebug
-rtcvTalkServer::Status rtcvTalkServer::onDebug(DebugMessage& mes)
+TalkServer::Status TalkServer::onDebug(DebugMessage& mes)
 {
     return rtGetTalkInterface_()->onDebug() ? Status::Succeeded : Status::Failed;
 }
 #endif
 
-void rtcvTalkServer::onUpdateBuffer(const rt::AudioData& data)
+void TalkServer::onUpdateBuffer(const rt::AudioData& data)
 {
     auto ifs = rtGetTalkInterface_();
     if (!ifs->isPlaying())
@@ -110,3 +111,5 @@ void rtcvTalkServer::onUpdateBuffer(const rt::AudioData& data)
         m_data_queue.push_back(tmp);
     }
 }
+
+} // namespace rtcv

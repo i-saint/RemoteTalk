@@ -1,10 +1,12 @@
 #pragma once
 #include "rtspCommon.h"
 
-class rtspWaveOutHandler : public rt::WaveOutHandlerBase
+namespace rtsp {
+
+class WaveOutHandler : public rt::WaveOutHandlerBase
 {
 public:
-    rtDefSingleton(rtspWaveOutHandler);
+    rtDefSingleton(WaveOutHandler);
 
     bool mute = false;
     std::function<void(rt::AudioData&)> onUpdate;
@@ -28,3 +30,4 @@ private:
     std::map<HWAVEOUT, Record> m_records;
 };
 
+} // namespace rtsp

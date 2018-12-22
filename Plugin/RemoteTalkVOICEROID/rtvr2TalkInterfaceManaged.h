@@ -3,30 +3,37 @@
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
-using namespace CeVIO::Talk::RemoteService;
+using namespace System::Windows::Controls;
 
+namespace rtvr2 {
 
-ref class rtcvInterfaceManaged
+ref class TalkInterfaceManaged
 {
 public:
-    static rtcvInterfaceManaged^ getInstance();
+    static TalkInterfaceManaged^ getInstance();
 
-    rtcvInterfaceManaged();
-    void updateStats();
-    void updateCast();
-
+    bool prepareUI();
     rt::CastList getCastList();
+
     bool getParams(rt::TalkParams& params);
+    bool setCast(int v);
     bool setParams(const rt::TalkParams& params);
     bool setText(const char *text);
 
-    bool talk();
     bool stop();
-    bool wait();
-    bool isPlaying();
+    bool talk();
 
 private:
-    static rtcvInterfaceManaged s_instance;
+    static TalkInterfaceManaged s_instance;
+
+    bool setupControls();
+
+    TextBox^ m_tb_text;
+    Button^ m_bu_play;
+    Button^ m_bu_stop;
+    Button^ m_bu_rewind;
+    ListView^ m_lv_casts;
+    List<Slider^>^ m_sl_params = gcnew List<Slider^>();
 
     ref class ParamInfo
     {
@@ -44,14 +51,11 @@ private:
         String^ name;
         List<ParamInfo^>^ params;
 
-        CastInfo(int i, String^ n) : id(i), name(n), params(gcnew List<ParamInfo^>()) {}
+        CastInfo(int i, String^ n) : id(i), name(n), params(gcnew List<ParamInfo^>) {}
     };
     List<CastInfo^>^ m_casts;
-    int m_cast = 0;
-    String^ m_text = "";
-
-    Talker^ m_talker;
-    SpeakingState^ m_state;
 };
 
 std::string ToStdString(String^ str);
+
+} // namespace rtvr2

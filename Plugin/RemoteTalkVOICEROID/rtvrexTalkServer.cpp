@@ -2,15 +2,16 @@
 #include "rtvrexCommon.h"
 #include "rtvrexHookHandler.h"
 #include "rtvrexTalkServer.h"
-#include "rtvrexInterface.h"
+#include "rtvrexTalkInterface.h"
 
+namespace rtvrex {
 
 static void RequestUpdate()
 {
     ::PostMessageW((HWND)0xffff, WM_TIMER, 0, 0);
 }
 
-void rtvrexTalkServer::addMessage(MessagePtr mes)
+void TalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);
 
@@ -18,14 +19,14 @@ void rtvrexTalkServer::addMessage(MessagePtr mes)
     RequestUpdate();
 }
 
-bool rtvrexTalkServer::isReady()
+bool TalkServer::isReady()
 {
     return false;
 }
 
-rtvrexTalkServer::Status rtvrexTalkServer::onStats(StatsMessage& mes)
+TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 {
-    auto& ifs = rtvrexInterface::getInstance();
+    auto& ifs = TalkInterface::getInstance();
     ifs.setupControls();
 
     auto& stats = mes.stats;
@@ -39,9 +40,9 @@ rtvrexTalkServer::Status rtvrexTalkServer::onStats(StatsMessage& mes)
     return Status::Succeeded;
 }
 
-rtvrexTalkServer::Status rtvrexTalkServer::onTalk(TalkMessage& mes)
+TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
-    auto& ifs = rtvrexInterface::getInstance();
+    auto& ifs = TalkInterface::getInstance();
     if(ifs.isPlaying())
         return Status::Failed;
 
@@ -59,7 +60,7 @@ rtvrexTalkServer::Status rtvrexTalkServer::onTalk(TalkMessage& mes)
 
     ifs.setupControls();
 
-    rtvrDSoundHandler::getInstance().mute = mes.params.mute;
+    DSoundHandler::getInstance().mute = mes.params.mute;
 
     ifs.setParams(mes.params);
     if (!ifs.setText(mes.text.c_str()))
@@ -89,9 +90,9 @@ rtvrexTalkServer::Status rtvrexTalkServer::onTalk(TalkMessage& mes)
     return Status::Succeeded;
 }
 
-rtvrexTalkServer::Status rtvrexTalkServer::onStop(StopMessage& mes)
+TalkServer::Status TalkServer::onStop(StopMessage& mes)
 {
-    auto& ifs = rtvrexInterface::getInstance();
+    auto& ifs = TalkInterface::getInstance();
     if (!ifs.isPlaying())
         return Status::Failed;
 
@@ -101,10 +102,12 @@ rtvrexTalkServer::Status rtvrexTalkServer::onStop(StopMessage& mes)
 }
 
 #ifdef rtDebug
-rtvrexTalkServer::Status rtvrexTalkServer::onDebug(DebugMessage& mes)
+TalkServer::Status TalkServer::onDebug(DebugMessage& mes)
 {
-    auto& ifs = rtvrexInterface::getInstance();
+    auto& ifs = TalkInterface::getInstance();
     ifs.setupControls();
     return Status::Succeeded;
 }
 #endif
+
+} // namespace rtvrex

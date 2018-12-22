@@ -21,16 +21,16 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="rtcvCommon.h" />
-    <ClInclude Include="rtcvInterface.h" />
-    <ClInclude Include="rtcvInterfaceManaged.h" />
+    <ClInclude Include="rtcvTalkInterface.h" />
+    <ClInclude Include="rtcvTalkInterfaceManaged.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RemoteTalkCeVIOCSManaged.cpp" />
-    <ClCompile Include="rtcvInterface.cpp" />
-    <ClCompile Include="rtcvInterfaceManaged.cpp" />
+    <ClCompile Include="rtcvTalkInterface.cpp" />
+    <ClCompile Include="rtcvTalkInterfaceManaged.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)RemoteTalk\RemoteTalk.vcxproj">

@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "rtvr2Common.h"
-#include "rtvr2InterfaceManaged.h"
-#include "rtvr2Interface.h"
+#include "rtvr2TalkInterfaceManaged.h"
+#include "rtvr2TalkInterface.h"
 
 
-rtExport rt::TalkInterface* rtGetTalkInterface()
+rtAPI rt::TalkInterface* rtGetTalkInterface()
 {
-    return &rtvr2TalkInterface::getInstance();
+    return &rtvr2::TalkInterface::getInstance();
 }

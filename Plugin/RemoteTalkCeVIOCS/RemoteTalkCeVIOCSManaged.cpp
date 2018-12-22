@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "rtcvCommon.h"
-#include "rtcvInterfaceManaged.h"
-#include "rtcvInterface.h"
+#include "rtcvTalkInterfaceManaged.h"
+#include "rtcvTalkInterface.h"
 
 
-rtExport rt::TalkInterface* rtGetTalkInterface()
+rtAPI rt::TalkInterface* rtGetTalkInterface()
 {
-    return &rtcvTalkInterface::getInstance();
+    return &rtcv::TalkInterface::getInstance();
 }

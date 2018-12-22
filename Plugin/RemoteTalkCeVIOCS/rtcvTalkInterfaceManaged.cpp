@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "rtcvCommon.h"
-#include "rtcvInterfaceManaged.h"
+#include "rtcvTalkInterfaceManaged.h"
 
+namespace rtcv {
 
 std::string ToStdString(String^ str)
 {
@@ -10,20 +11,20 @@ std::string ToStdString(String^ str)
 }
 
 
-rtcvInterfaceManaged^ rtcvInterfaceManaged::getInstance()
+TalkInterfaceManaged^ TalkInterfaceManaged::getInstance()
 {
     return %s_instance;
 }
 
 
-rtcvInterfaceManaged::rtcvInterfaceManaged()
+TalkInterfaceManaged::TalkInterfaceManaged()
 {
 }
 
 static inline float to_f(uint32_t v) { return (float)v / 50.0f; }
 static inline uint32_t to_u(float v) { return (uint32_t)(v * 50.0f); }
 
-void rtcvInterfaceManaged::updateStats()
+void TalkInterfaceManaged::updateStats()
 {
     if (!m_casts) {
         m_casts = gcnew List<CastInfo^>();
@@ -48,7 +49,7 @@ void rtcvInterfaceManaged::updateStats()
     }
 }
 
-void rtcvInterfaceManaged::updateCast()
+void TalkInterfaceManaged::updateCast()
 {
     updateStats();
     if (!m_casts || m_casts->Count == 0)
@@ -61,7 +62,7 @@ void rtcvInterfaceManaged::updateCast()
         m_talker = gcnew Talker(m_casts[m_cast]->name);
 }
 
-rt::CastList rtcvInterfaceManaged::getCastList()
+rt::CastList TalkInterfaceManaged::getCastList()
 {
     if (!m_casts)
         updateStats();
@@ -80,7 +81,7 @@ rt::CastList rtcvInterfaceManaged::getCastList()
     return ret;
 }
 
-bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
+bool TalkInterfaceManaged::getParams(rt::TalkParams& params)
 {
     updateCast();
     params.cast = m_cast;
@@ -102,7 +103,7 @@ bool rtcvInterfaceManaged::getParams(rt::TalkParams& params)
     return true;
 }
 
-bool rtcvInterfaceManaged::setParams(const rt::TalkParams& params)
+bool TalkInterfaceManaged::setParams(const rt::TalkParams& params)
 {
     m_cast = params.cast;
     updateCast();
@@ -125,14 +126,14 @@ bool rtcvInterfaceManaged::setParams(const rt::TalkParams& params)
     return true;
 }
 
-bool rtcvInterfaceManaged::setText(const char *text)
+bool TalkInterfaceManaged::setText(const char *text)
 {
     m_text = gcnew String(text);
     return true;
 }
 
 
-bool rtcvInterfaceManaged::talk()
+bool TalkInterfaceManaged::talk()
 {
     stop();
     updateCast();
@@ -144,7 +145,7 @@ bool rtcvInterfaceManaged::talk()
     return m_state != nullptr;
 }
 
-bool rtcvInterfaceManaged::stop()
+bool TalkInterfaceManaged::stop()
 {
     if (m_state && !m_state->IsCompleted) {
         m_talker->Stop();
@@ -152,7 +153,7 @@ bool rtcvInterfaceManaged::stop()
     return true;
 }
 
-bool rtcvInterfaceManaged::wait()
+bool TalkInterfaceManaged::wait()
 {
     if (m_state) {
         m_state->Wait();
@@ -161,8 +162,9 @@ bool rtcvInterfaceManaged::wait()
     return false;
 }
 
-bool rtcvInterfaceManaged::isPlaying()
+bool TalkInterfaceManaged::isPlaying()
 {
     return m_state && !m_state->IsCompleted;
 }
 
+} // namespace rtcv

@@ -1,13 +1,16 @@
 #pragma once
 #include "RemoteTalk/RemoteTalk.h"
 
-#define rtvr2HostName "VOICEROID2"
-#define rtvr2HookDll "RemoteTalkVOICEROID2Hook.dll"
+#define rtvr2HostName   "VOICEROID2"
+#define rtvr2HookDll    "RemoteTalkVOICEROID2Hook.dll"
 #define rtvr2ManagedDll "RemoteTalkVOICEROID2Managed.dll"
-#define rtvr2HostExe "VoiceroidEditor.exe"
+#define rtvr2HostExe    "VoiceroidEditor.exe"
+#define rtvr2DefaultPort 8101
 
 
-class rtvrITalkInterface : public rt::TalkInterface
+namespace rtvr2 {
+
+class ITalkInterface : public rt::TalkInterface
 {
 public:
     virtual bool setCast(int v) = 0;
@@ -20,4 +23,6 @@ public:
 #endif
 };
 
-extern rtvrITalkInterface* (*rtGetTalkInterface_)();
+} // namespace rtvr2
+
+extern rtvr2::ITalkInterface* (*rtGetTalkInterface_)();

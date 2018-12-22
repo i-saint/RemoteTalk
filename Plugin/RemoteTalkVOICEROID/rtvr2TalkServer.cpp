@@ -3,13 +3,19 @@
 #include "rtvr2HookHandler.h"
 #include "rtvr2TalkServer.h"
 
+namespace rtvr2 {
 
 static void RequestUpdate()
 {
     ::PostMessageW((HWND)0xffff, WM_TIMER, 0, 0);
 }
 
-void rtvrTalkServer::addMessage(MessagePtr mes)
+TalkServer::TalkServer()
+{
+    m_settings.port = rtvr2DefaultPort;
+}
+
+void TalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);
 
@@ -17,12 +23,12 @@ void rtvrTalkServer::addMessage(MessagePtr mes)
     RequestUpdate();
 }
 
-bool rtvrTalkServer::isReady()
+bool TalkServer::isReady()
 {
     return rtGetTalkInterface_()->isReady();
 }
 
-rtvrTalkServer::Status rtvrTalkServer::onStats(StatsMessage& mes)
+TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
@@ -47,7 +53,7 @@ rtvrTalkServer::Status rtvrTalkServer::onStats(StatsMessage& mes)
     return Status::Succeeded;
 }
 
-rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
+TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
@@ -62,7 +68,7 @@ rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
 
-    rtvrDSoundHandler::getInstance().mute = mes.params.mute;
+    DSoundHandler::getInstance().mute = mes.params.mute;
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
         m_data_queue.clear();
@@ -92,7 +98,7 @@ rtvrTalkServer::Status rtvrTalkServer::onTalk(TalkMessage& mes)
     return Status::Succeeded;
 }
 
-rtvrTalkServer::Status rtvrTalkServer::onStop(StopMessage& mes)
+TalkServer::Status TalkServer::onStop(StopMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
@@ -104,14 +110,14 @@ rtvrTalkServer::Status rtvrTalkServer::onStop(StopMessage& mes)
 }
 
 #ifdef rtDebug
-rtvrTalkServer::Status rtvrTalkServer::onDebug(DebugMessage& mes)
+TalkServer::Status TalkServer::onDebug(DebugMessage& mes)
 {
     return rtGetTalkInterface_()->onDebug() ? Status::Succeeded : Status::Failed;
 }
 #endif
 
 
-void rtvrTalkServer::onUpdateSample(const rt::AudioData& data)
+void TalkServer::onUpdateSample(const rt::AudioData& data)
 {
     if (!rtGetTalkInterface_()->isPlaying())
         return;
@@ -123,7 +129,7 @@ void rtvrTalkServer::onUpdateSample(const rt::AudioData& data)
     }
 }
 
-void rtvrTalkServer::onStop()
+void TalkServer::onStop()
 {
     if (!rtGetTalkInterface_()->isPlaying())
         return;
@@ -134,3 +140,5 @@ void rtvrTalkServer::onStop()
         m_data_queue.push_back(terminator);
     }
 }
+
+} // namespace rtvr2

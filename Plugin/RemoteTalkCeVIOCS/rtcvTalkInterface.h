@@ -1,12 +1,14 @@
 #pragma once
 
-class rtvr2TalkInterface : public rtvrITalkInterface
+namespace rtcv {
+
+class TalkInterface : public ITalkInterface
 {
 public:
-    rtDefSingleton(rtvr2TalkInterface);
+    rtDefSingleton(TalkInterface);
 
-    rtvr2TalkInterface();
-    ~rtvr2TalkInterface() override;
+    TalkInterface();
+    ~TalkInterface() override;
     void release() override;
     const char* getClientName() const override;
     int getPluginVersion() const override;
@@ -15,18 +17,14 @@ public:
     bool getParams(rt::TalkParams& params) const override;
     bool setParams(const rt::TalkParams& params) override;
     int getNumCasts() const override;
-    const rt::CastInfo* getCastInfo(int i) const override;
+    rt::CastInfo* getCastInfo(int i) const override;
     bool setText(const char *text) override;
 
     bool isReady() const override;
     bool isPlaying() const override;
     bool play() override;
     bool stop() override;
-
-    bool setCast(int v) override;
-    bool prepareUI() override;
-    void onPlay() override;
-    void onStop() override;
+    bool wait() override;
 
 #ifdef rtDebug
     bool onDebug() override;
@@ -34,6 +32,8 @@ public:
 
 private:
     mutable rt::CastList m_casts;
+    rt::TalkParams m_params;
     std::atomic_bool m_is_playing{ false };
 };
 
+} // namespace rtcv

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace IST.RemoteTalk
 {
     [CustomPropertyDrawer(typeof(RemoteTalkBehaviour))]
-    public class RemoteTalkDrawer : PropertyDrawer
+    public class RemoteTalkBehaviourDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {

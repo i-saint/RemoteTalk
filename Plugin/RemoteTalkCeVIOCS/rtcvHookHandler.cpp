@@ -5,20 +5,21 @@
 #include "rtcvHookHandler.h"
 #include "rtcvTalkServer.h"
 
+namespace rtcv {
 
-void rtcvWindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+void WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
-    auto& server = rtcvTalkServer::getInstance();
+    auto& server = TalkServer::getInstance();
     server.start();
 }
 
 
-void rtcvWaveOutHandler::clearCallbacks()
+void WaveOutHandler::clearCallbacks()
 {
     onUpdate = {};
 }
 
-void rtcvWaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret)
+void WaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret)
 {
     if (FAILED(ret))
         return;
@@ -35,7 +36,7 @@ void rtcvWaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPC
     }
 }
 
-void rtcvWaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
+void WaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -48,7 +49,7 @@ void rtcvWaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
     rec.is_opened = false;
 }
 
-void rtcvWaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh)
+void WaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end()) {
@@ -72,7 +73,7 @@ void rtcvWaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT&
         memset(pwh->lpData, 0, pwh->dwBufferLength);
 }
 
-void rtcvWaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
+void WaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -82,3 +83,5 @@ void rtcvWaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
     if (rec.is_playing)
         rec.is_playing = false;
 }
+
+} // namespace rtcv

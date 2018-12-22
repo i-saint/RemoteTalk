@@ -8,14 +8,15 @@ extern CComModule _Module;
 
 #include "rtspCommon.h"
 
+namespace rtsp {
 
-class rtspTalkServer : public rt::TalkServer
+class TalkServer : public rt::TalkServer
 {
     using super = rt::TalkServer;
 public:
-    rtDefSingleton(rtspTalkServer);
-    rtspTalkServer();
-    ~rtspTalkServer();
+    rtDefSingleton(TalkServer);
+    TalkServer();
+    ~TalkServer();
     void addMessage(MessagePtr mes) override;
 
     bool isReady() override;
@@ -42,3 +43,5 @@ private:
 
     std::future<void> m_task_talk;
 };
+
+} // namespace rtsp

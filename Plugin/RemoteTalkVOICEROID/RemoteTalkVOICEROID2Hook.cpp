@@ -5,7 +5,7 @@
 #include "rtvr2HookHandler.h"
 #include "rtvr2TalkServer.h"
 
-rtvrITalkInterface* (*rtGetTalkInterface_)();
+rtvr2::ITalkInterface* (*rtGetTalkInterface_)();
 static bool rtvr2LoadManagedModule()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\" rtvr2ManagedDll;
@@ -23,23 +23,23 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     if (fdwReason == DLL_PROCESS_ATTACH) {
         if (rtvr2LoadManagedModule()) {
             rt::InstallWindowMessageHook(rt::HookType::Hotpatch);
-            rt::AddWindowMessageHandler(&rtvrWindowMessageHandler::getInstance());
+            rt::AddWindowMessageHandler(&rtvr2::WindowMessageHandler::getInstance());
 
             bool ds_hooked = rt::InstallDSoundHook(rt::HookType::Hotpatch, false);
             if (!ds_hooked)
                 ds_hooked = rt::InstallDSoundHook(rt::HookType::ATOverride);
             if (ds_hooked) {
-                auto& dsound = rtvrDSoundHandler::getInstance();
+                auto& dsound = rtvr2::DSoundHandler::getInstance();
                 rt::AddDSoundHandler(&dsound);
                 dsound.onPlay = []() {
                     rtGetTalkInterface_()->onPlay();
                 };
                 dsound.onStop = []() {
-                    rtvrTalkServer::getInstance().onStop();
+                    rtvr2::TalkServer::getInstance().onStop();
                     rtGetTalkInterface_()->onStop();
                 };
                 dsound.onUpdate = [](const rt::AudioData& ad) {
-                    rtvrTalkServer::getInstance().onUpdateSample(ad);
+                    rtvr2::TalkServer::getInstance().onUpdateSample(ad);
                 };
             }
         }
@@ -47,14 +47,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     return TRUE;
 }
 
-rtExport rt::TalkInterface* rtGetTalkInterface()
+rtAPI rt::TalkInterface* rtGetTalkInterface()
 {
     return rtGetTalkInterface_ ? rtGetTalkInterface_() : nullptr;
 }
 
-rtExport void rtOnManagedModuleUnload()
+rtAPI void rtOnManagedModuleUnload()
 {
-    auto& dsound = rtvrDSoundHandler::getInstance();
+    auto& dsound = rtvr2::DSoundHandler::getInstance();
     dsound.onPlay = {};
     dsound.onStop = {};
     dsound.onUpdate = {};

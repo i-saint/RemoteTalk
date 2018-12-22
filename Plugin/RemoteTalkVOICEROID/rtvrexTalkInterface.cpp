@@ -1,6 +1,7 @@
 #include "pch.h"
-#include "rtvrexInterface.h"
+#include "rtvrexTalkInterface.h"
 
+namespace rtvrex {
 
 static bool EmulateClick(HWND hwnd)
 {
@@ -56,12 +57,12 @@ static bool SetTabIndex(HWND hwnd, int idx)
 }
 
 
-void rtvrexInterface::setAudioCallback(const std::function<void(const rt::AudioData&)>& callback)
+void TalkInterface::setAudioCallback(const std::function<void(const rt::AudioData&)>& callback)
 {
     m_callback = callback;
 }
 
-void rtvrexInterface::setupControls()
+void TalkInterface::setupControls()
 {
     int nth_edit = 0;
     int nth_tab = 0;
@@ -125,27 +126,27 @@ void rtvrexInterface::setupControls()
     }
 }
 
-void rtvrexInterface::release()
+void TalkInterface::release()
 {
     // do nothing
 }
 
-const char* rtvrexInterface::getClientName() const
+const char* TalkInterface::getClientName() const
 {
     return m_host.c_str();
 }
 
-int rtvrexInterface::getPluginVersion() const
+int TalkInterface::getPluginVersion() const
 {
     return rtPluginVersion;
 }
 
-int rtvrexInterface::getProtocolVersion() const
+int TalkInterface::getProtocolVersion() const
 {
     return rtProtocolVersion;
 }
 
-bool rtvrexInterface::getParams(rt::TalkParams& params) const
+bool TalkInterface::getParams(rt::TalkParams& params) const
 {
     bool ret = false;
     float tmp = 0.0f;
@@ -168,17 +169,17 @@ bool rtvrexInterface::getParams(rt::TalkParams& params) const
     return ret;
 }
 
-int rtvrexInterface::getNumCasts() const
+int TalkInterface::getNumCasts() const
 {
     return 1;
 }
 
-const rt::CastInfo* rtvrexInterface::getCastInfo(int i) const
+const rt::CastInfo* TalkInterface::getCastInfo(int i) const
 {
     return i == 0 ? &m_cast : nullptr;
 }
 
-bool rtvrexInterface::setParams(const rt::TalkParams& params)
+bool TalkInterface::setParams(const rt::TalkParams& params)
 {
     bool ret = false;
     if (params.isSet(0))
@@ -192,7 +193,7 @@ bool rtvrexInterface::setParams(const rt::TalkParams& params)
     return ret;
 }
 
-bool rtvrexInterface::setText(const char *text)
+bool TalkInterface::setText(const char *text)
 {
     if (m_ctrl_text) {
         SetValue(m_ctrl_text, text);
@@ -201,17 +202,17 @@ bool rtvrexInterface::setText(const char *text)
     return false;
 }
 
-bool rtvrexInterface::isReady() const
+bool TalkInterface::isReady() const
 {
     return m_ctrl_play && !m_is_playing;
 }
 
-bool rtvrexInterface::isPlaying() const
+bool TalkInterface::isPlaying() const
 {
     return m_is_playing;
 }
 
-bool rtvrexInterface::play()
+bool TalkInterface::play()
 {
     if (EmulateClick(m_ctrl_play)) {
         m_is_playing = true;
@@ -220,7 +221,7 @@ bool rtvrexInterface::play()
     return false;
 }
 
-bool rtvrexInterface::stop()
+bool TalkInterface::stop()
 {
     if (EmulateClick(m_ctrl_stop)) {
         return true;
@@ -229,13 +230,13 @@ bool rtvrexInterface::stop()
 }
 
 
-void rtvrexInterface::onSoundPlay()
+void TalkInterface::onSoundPlay()
 {
     // nothing to do for now.
     // m_is_playing is updated on play()
 }
 
-void rtvrexInterface::onSoundStop()
+void TalkInterface::onSoundStop()
 {
     if (!m_is_playing)
         return;
@@ -247,7 +248,7 @@ void rtvrexInterface::onSoundStop()
     }
 }
 
-void rtvrexInterface::onUpdateSample(const rt::AudioData& data)
+void TalkInterface::onUpdateSample(const rt::AudioData& data)
 {
     if (!m_is_playing)
         return;
@@ -255,3 +256,5 @@ void rtvrexInterface::onUpdateSample(const rt::AudioData& data)
     if (m_callback)
         m_callback(data);
 }
+
+} // namespace rtvrex

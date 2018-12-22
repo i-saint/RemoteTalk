@@ -2,11 +2,13 @@
 #include "RemoteTalk/RemoteTalk.h"
 #include "RemoteTalk/RemoteTalkNet.h"
 
-class rtvrexTalkServer : public rt::TalkServer
+namespace rtvrex {
+
+class TalkServer : public rt::TalkServer
 {
 using super = rt::TalkServer;
 public:
-    rtDefSingleton(rtvrexTalkServer);
+    rtDefSingleton(TalkServer);
     void addMessage(MessagePtr mes) override;
 
     bool isReady() override;
@@ -22,3 +24,4 @@ private:
     std::vector<rt::AudioDataPtr> m_data_queue;
 };
 
+} // namespace rtvrex

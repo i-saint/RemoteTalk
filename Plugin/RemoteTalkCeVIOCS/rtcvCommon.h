@@ -5,9 +5,11 @@
 #define rtcvHookDll "RemoteTalkCeVIOCSHook.dll"
 #define rtcvManagedDll "RemoteTalkCeVIOCSManaged.dll"
 #define rtcvHostExe "CeVIO Creative Studio.exe"
+#define rtcvDefaultPort 8100
 
+namespace rtcv {
 
-class rtcvITalkInterface : public rt::TalkInterface
+class ITalkInterface : public rt::TalkInterface
 {
 public:
     virtual bool wait() = 0;
@@ -17,4 +19,6 @@ public:
 #endif
 };
 
-extern rtcvITalkInterface* (*rtGetTalkInterface_)();
+} // namespace rtcv
+
+extern rtcv::ITalkInterface* (*rtGetTalkInterface_)();

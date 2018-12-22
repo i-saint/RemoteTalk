@@ -22,7 +22,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="rtvrexCommon.h" />
     <ClInclude Include="rtvrexHookHandler.h" />
-    <ClInclude Include="rtvrexInterface.h" />
+    <ClInclude Include="rtvrexTalkInterface.h" />
     <ClInclude Include="rtvrexTalkServer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -31,7 +31,7 @@
     </ClCompile>
     <ClCompile Include="RemoteTalkVOICEROIDExHook.cpp" />
     <ClCompile Include="rtvrexHookHandler.cpp" />
-    <ClCompile Include="rtvrexInterface.cpp" />
+    <ClCompile Include="rtvrexTalkInterface.cpp" />
     <ClCompile Include="rtvrexTalkServer.cpp" />
   </ItemGroup>
   <ItemGroup>

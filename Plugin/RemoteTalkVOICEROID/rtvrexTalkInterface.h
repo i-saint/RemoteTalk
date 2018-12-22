@@ -1,10 +1,12 @@
 #pragma once
 #include "RemoteTalk/RemoteTalk.h"
 
-class rtvrexInterface : public rt::TalkInterface
+namespace rtvrex {
+
+class TalkInterface : public rt::TalkInterface
 {
 public:
-    rtDefSingleton(rtvrexInterface);
+    rtDefSingleton(TalkInterface);
 
     void release() override;
     const char* getClientName() const override;
@@ -52,3 +54,4 @@ private:
     std::function<void(const rt::AudioData&)> m_callback;
 };
 
+} // namespace rtvrex

@@ -4,7 +4,7 @@
 #include "rtcvTalkServer.h"
 
 
-rtcvITalkInterface* (*rtGetTalkInterface_)();
+rtcv::ITalkInterface* (*rtGetTalkInterface_)();
 static bool rtcvLoadManagedModule()
 {
     auto path = rt::GetCurrentModuleDirectory() + "\\" rtcvManagedDll;
@@ -22,12 +22,12 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     if (fdwReason == DLL_PROCESS_ATTACH) {
         if (rtcvLoadManagedModule()) {
             rt::InstallWindowMessageHook(rt::HookType::Hotpatch);
-            rt::AddWindowMessageHandler(&rtcvWindowMessageHandler::getInstance());
+            rt::AddWindowMessageHandler(&rtcv::WindowMessageHandler::getInstance());
             if (rt::InstallWaveOutHook(rt::HookType::Hotpatch)) {
-                auto& wo = rtcvWaveOutHandler::getInstance();
+                auto& wo = rtcv::WaveOutHandler::getInstance();
                 rt::AddWaveOutHandler(&wo);
                 wo.onUpdate = [](rt::AudioData& ad) {
-                    rtcvTalkServer::getInstance().onUpdateBuffer(ad);
+                    rtcv::TalkServer::getInstance().onUpdateBuffer(ad);
                 };
             }
         }
@@ -35,12 +35,12 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     return TRUE;
 }
 
-rtExport rt::TalkInterface* rtGetTalkInterface()
+rtAPI rt::TalkInterface* rtGetTalkInterface()
 {
     return rtGetTalkInterface_ ? rtGetTalkInterface_() : nullptr;
 }
 
-rtExport void rtOnManagedModuleUnload()
+rtAPI void rtOnManagedModuleUnload()
 {
-    rtcvWaveOutHandler::getInstance().clearCallbacks();
+    rtcv::WaveOutHandler::getInstance().clearCallbacks();
 }

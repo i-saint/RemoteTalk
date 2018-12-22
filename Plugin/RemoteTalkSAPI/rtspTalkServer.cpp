@@ -2,8 +2,9 @@
 #include "rtspHookHandler.h"
 #include "rtspTalkServer.h"
 
+namespace rtsp {
 
-rtspTalkServer::rtspTalkServer()
+TalkServer::TalkServer()
 {
     HRESULT hr = m_voice.CoCreateInstance(CLSID_SpVoice);
     if (FAILED(hr)) {
@@ -11,9 +12,9 @@ rtspTalkServer::rtspTalkServer()
     }
 
     rt::OverrideWaveOutIAT(::GetModuleHandleA("sapi.dll"));
-    auto& wo = rtspWaveOutHandler::getInstance();
+    auto& wo = WaveOutHandler::getInstance();
     rt::AddWaveOutHandler(&wo);
-    wo.onUpdate = [](rt::AudioData& ad) { rtspTalkServer::getInstance().onUpdateBuffer(ad); };
+    wo.onUpdate = [](rt::AudioData& ad) { TalkServer::getInstance().onUpdateBuffer(ad); };
 
 
     CComPtr<IEnumSpObjectTokens> cpEnum;
@@ -43,26 +44,26 @@ rtspTalkServer::rtspTalkServer()
     }
 }
 
-rtspTalkServer::~rtspTalkServer()
+TalkServer::~TalkServer()
 {
     wait();
 }
 
-void rtspTalkServer::addMessage(MessagePtr mes)
+void TalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);
     processMessages();
 }
 
 
-bool rtspTalkServer::isReady()
+bool TalkServer::isReady()
 {
     if (!m_voice)
         return false;
     return true;
 }
 
-rtspTalkServer::Status rtspTalkServer::onStats(StatsMessage& mes)
+TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 {
     if (!m_voice)
         return Status::Failed;
@@ -83,7 +84,7 @@ rtspTalkServer::Status rtspTalkServer::onStats(StatsMessage& mes)
     return Status::Succeeded;
 }
 
-rtspTalkServer::Status rtspTalkServer::onTalk(TalkMessage& mes)
+TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
     if (!m_voice)
         return Status::Failed;
@@ -91,7 +92,7 @@ rtspTalkServer::Status rtspTalkServer::onTalk(TalkMessage& mes)
     wait();
 
     m_params = mes.params;
-    rtspWaveOutHandler::getInstance().mute = m_params.mute;
+    WaveOutHandler::getInstance().mute = m_params.mute;
 
     m_voice->SetVoice(m_voice_tokens[mes.params.cast]);
     if (mes.params.isSet(0))
@@ -133,7 +134,7 @@ rtspTalkServer::Status rtspTalkServer::onTalk(TalkMessage& mes)
     return Status::Succeeded;
 }
 
-rtspTalkServer::Status rtspTalkServer::onStop(StopMessage& mes)
+TalkServer::Status TalkServer::onStop(StopMessage& mes)
 {
     if (!m_voice)
         return Status::Failed;
@@ -143,19 +144,19 @@ rtspTalkServer::Status rtspTalkServer::onStop(StopMessage& mes)
 }
 
 #ifdef rtDebug
-rtspTalkServer::Status rtspTalkServer::onDebug(DebugMessage& mes)
+TalkServer::Status TalkServer::onDebug(DebugMessage& mes)
 {
     return Status::Succeeded;
 }
 #endif
 
-void rtspTalkServer::wait()
+void TalkServer::wait()
 {
     if (m_task_talk.valid())
         m_task_talk.wait();
 }
 
-void rtspTalkServer::onUpdateBuffer(const rt::AudioData& data)
+void TalkServer::onUpdateBuffer(const rt::AudioData& data)
 {
     if (!m_playing)
         return;
@@ -169,3 +170,4 @@ void rtspTalkServer::onUpdateBuffer(const rt::AudioData& data)
     }
 }
 
+} // namespace rtsp

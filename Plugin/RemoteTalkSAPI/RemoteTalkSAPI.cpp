@@ -15,14 +15,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     return TRUE;
 }
 
-rtExport rt::TalkInterface* rtGetTalkInterface()
+rtAPI rt::TalkInterface* rtGetTalkInterface()
 {
     return nullptr;
 }
 
-rtExport rt::TalkServer* rtspStartServer(int port)
+rtAPI rt::TalkServer* rtspStartServer(int port)
 {
-    auto& inst = rtspTalkServer::getInstance();
+    auto& inst = rtsp::TalkServer::getInstance();
     if (!inst.isRunning()) {
         rt::TalkServerSettings settings;
         settings.port = (uint16_t)port;

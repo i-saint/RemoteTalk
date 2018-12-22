@@ -3,14 +3,16 @@
 #include "rtvr2HookHandler.h"
 #include "rtvr2TalkServer.h"
 
-void rtvrDSoundHandler::clearCallbacks()
+namespace rtvr2 {
+
+void DSoundHandler::clearCallbacks()
 {
     onPlay = {};
     onStop = {};
     onUpdate = {};
 }
 
-void rtvrDSoundHandler::update(IDirectSoundBuffer *_this, bool apply_margin)
+void DSoundHandler::update(IDirectSoundBuffer *_this, bool apply_margin)
 {
     if (m_buffer.empty()) {
         WAVEFORMATEX wf;
@@ -54,7 +56,7 @@ void rtvrDSoundHandler::update(IDirectSoundBuffer *_this, bool apply_margin)
         onUpdate(m_data);
 }
 
-void rtvrDSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret)
+void DSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret)
 {
     update(_this);
 
@@ -70,7 +72,7 @@ void rtvrDSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this,
         *ppvAudioPtr2 = &m_buffer[0];
 }
 
-void rtvrDSoundHandler::beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, LPVOID& pvAudioPtr1, DWORD& dwAudioBytes1, LPVOID& pvAudioPtr2, DWORD& dwAudioBytes2)
+void DSoundHandler::beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, LPVOID& pvAudioPtr1, DWORD& dwAudioBytes1, LPVOID& pvAudioPtr2, DWORD& dwAudioBytes2)
 {
     if (mute) {
         if (m_lbuf1)
@@ -89,14 +91,14 @@ void rtvrDSoundHandler::beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_th
     pvAudioPtr2 = m_lbuf2;
 }
 
-void rtvrDSoundHandler::afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret)
+void DSoundHandler::afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret)
 {
     m_playing = true;
     if (onPlay)
         onPlay();
 }
 
-void rtvrDSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret)
+void DSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret)
 {
     update(_this, true);
     mute = false;
@@ -105,16 +107,18 @@ void rtvrDSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this,
         onStop();
 }
 
-void rtvrDSoundHandler::beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition)
+void DSoundHandler::beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition)
 {
     update(_this);
     m_position = dwNewPosition;
 }
 
 
-void rtvrWindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+void WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
-    auto& server = rtvrTalkServer::getInstance();
+    auto& server = TalkServer::getInstance();
     server.start();
     server.processMessages();
 }
+
+} // namespace rtvr2
