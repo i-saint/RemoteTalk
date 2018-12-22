@@ -188,13 +188,13 @@ namespace IST.RemoteTalk
     [Serializable]
     public struct rtTalkParams
     {
-        public const int MaxParams = 12;
+        public const int MaxParams = 14;
 
-        public int mute;
-        public int forceMono;
-        public int cast;
+        public byte mute;
+        public byte forceMono;
+        public short cast;
         public int flags;
-        public float p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11;
+        public float p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13;
 
         public uint hash { get { return rtTalkParamsGetHash(ref this); } }
 
@@ -233,6 +233,8 @@ namespace IST.RemoteTalk
                     case 9: p9 = src[9].value; break;
                     case 10: p10 = src[10].value; break;
                     case 11: p11 = src[11].value; break;
+                    case 12: p12 = src[12].value; break;
+                    case 13: p13 = src[13].value; break;
                 }
                 flags |= (1 << i);
             }

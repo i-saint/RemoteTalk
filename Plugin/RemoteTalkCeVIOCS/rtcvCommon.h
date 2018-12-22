@@ -1,7 +1,7 @@
 #pragma once
 #include "RemoteTalk/RemoteTalk.h"
 
-#define rtcvHostName    "CeVIO CS6"
+#define rtcvHostName    "CeVIO CS"
 #define rtcvHookDll     "RemoteTalkCeVIOCSHook.dll"
 #define rtcvManagedDll  "RemoteTalkCeVIOCSManaged.dll"
 #define rtcvHostExe     "CeVIO Creative Studio.exe"

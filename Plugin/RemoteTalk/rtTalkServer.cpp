@@ -152,7 +152,7 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
                 mes->params.force_mono = rt::from_string<int>(nvp.second);
             }
             else if (nvp.first == "cast") {
-                mes->params.cast = rt::from_string<int>(nvp.second);
+                mes->params.cast = (short)rt::from_string<int>(nvp.second);
             }
             else if (nvp.first == "text") {
                 Poco::URI::decode(nvp.second, mes->text, true);

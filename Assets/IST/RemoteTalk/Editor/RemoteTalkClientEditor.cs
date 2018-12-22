@@ -16,16 +16,101 @@ namespace IST.RemoteTalk
             var t = target as RemoteTalkClient;
             var so = serializedObject;
 
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.DelayedTextField(so.FindProperty("m_serverAddress"));
-            EditorGUILayout.DelayedIntField(so.FindProperty("m_serverPort"));
-            if (EditorGUI.EndChangeCheck())
+            var foldNetwork = so.FindProperty("m_foldTools");
+            foldNetwork.boolValue = EditorGUILayout.Foldout(foldNetwork.boolValue, "Connection");
+            if (foldNetwork.boolValue)
             {
-                so.ApplyModifiedProperties();
-                t.RefreshClient();
+#if UNITY_EDITOR_WIN
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Connect VOICEROID2"))
+                {
+                    // try to launch VoiceroidEditor.exe
+                    // get install location from registry
+                    var ret = rtPlugin.LaunchVOICEROID2();
+                    if (ret < 0)
+                    {
+                        // failed. open file dialog
+                        var dir = ".";
+                        var programFiles = System.Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+                        if (programFiles != null)
+                        {
+                            programFiles += "\\AHS\\VOICEROID2";
+                            if (System.IO.Directory.Exists(programFiles))
+                                dir = programFiles;
+                        }
+
+                        var exePath = EditorUtility.OpenFilePanel("Locate VoiceroidEditor.exe", dir, "exe");
+                        if (exePath != null && exePath.Length > 0)
+                            ret = rtPlugin.LaunchVOICEROID2(exePath);
+                    }
+                    if (ret > 0)
+                    {
+                        t.serverPort = ret;
+                        t.UpdateStats();
+                        so.Update();
+                    }
+                }
+
+                if (GUILayout.Button("Connect VOICEROID Ex"))
+                {
+                    var dir = ".";
+                    var programFiles = System.Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+                    if (programFiles != null)
+                    {
+                        programFiles += "\\AHS\\VOICEROID+";
+                        if (System.IO.Directory.Exists(programFiles))
+                            dir = programFiles;
+                    }
+
+                    var exePath = EditorUtility.OpenFilePanel("Locate VOICEROID.exe", dir, "exe");
+                    if (exePath != null && exePath.Length > 0)
+                    {
+                        var ret = rtPlugin.LaunchVOICEROIDEx(exePath);
+                        if (ret > 0)
+                        {
+                            t.serverPort = ret;
+                            t.UpdateStats();
+                            so.Update();
+                        }
+                    }
+                }
+                GUILayout.EndHorizontal();
+
+                EditorGUILayout.Space();
+
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Connect CeVIO CS"))
+                {
+                    var ret = rtPlugin.LaunchCeVIOCS();
+                    if (ret > 0)
+                    {
+                        t.serverPort = ret;
+                        t.UpdateStats();
+                        so.Update();
+                    }
+                }
+
+                if (GUILayout.Button("Connect Windows SAPI"))
+                    rtspTalkServer.StartServer();
+                GUILayout.EndHorizontal();
+#endif
+
+                EditorGUILayout.Space();
+
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.DelayedTextField(so.FindProperty("m_serverAddress"));
+                EditorGUILayout.DelayedIntField(so.FindProperty("m_serverPort"));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    so.ApplyModifiedProperties();
+                    t.UpdateStats();
+                }
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Refresh"))
+                    t.UpdateStats();
+                GUILayout.EndHorizontal();
             }
-            if (GUILayout.Button("Refresh"))
-                t.RefreshClient();
 
             EditorGUILayout.Space();
 
@@ -107,55 +192,6 @@ namespace IST.RemoteTalk
                 EditorGUILayout.PropertyField(so.FindProperty("m_logging"));
                 EditorGUI.indentLevel--;
             }
-
-            EditorGUILayout.Space();
-
-#if UNITY_EDITOR_WIN
-            var foldNetwork = so.FindProperty("m_foldTools");
-            foldNetwork.boolValue = EditorGUILayout.Foldout(foldNetwork.boolValue, "Connection");
-            if (foldNetwork.boolValue)
-            {
-                if (GUILayout.Button("Connect VOICEROID2"))
-                {
-                    var ret = rtPlugin.LaunchVOICEROID2();
-                    if (ret > 0)
-                    {
-                        t.serverPort = ret;
-                        t.RefreshClient();
-                    }
-                }
-                EditorGUILayout.Space();
-                if (GUILayout.Button("Connect VOICEROID Ex"))
-                {
-                    var exePath = EditorUtility.OpenFilePanel("Locate VOICEROID.exe", ".", "exe");
-                    if (exePath != null && exePath.Length > 0)
-                    {
-                        var ret = rtPlugin.LaunchVOICEROIDEx(exePath);
-                        if (ret > 0)
-                        {
-                            t.serverPort = ret;
-                            t.RefreshClient();
-                        }
-                    }
-                }
-                EditorGUILayout.Space();
-
-                if (GUILayout.Button("Connect CeVIO CS"))
-                {
-                    var ret = rtPlugin.LaunchCeVIOCS();
-                    if (ret > 0)
-                    {
-                        t.serverPort = ret;
-                        t.RefreshClient();
-                    }
-                }
-
-                EditorGUILayout.Space();
-
-                if (GUILayout.Button("Start SAPI Server"))
-                    rtspTalkServer.StartServer();
-            }
-#endif
 
             if (GUI.changed)
                 so.ApplyModifiedProperties();

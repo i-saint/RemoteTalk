@@ -88,10 +88,10 @@ namespace IST.RemoteTalk
             set
             {
                 m_castID = value;
-                if (m_castID >= 0 || m_castID < m_casts.Length)
-                {
+                if (m_castID >= 0 && m_castID < m_casts.Length)
                     m_talkParams = (TalkParam[])m_casts[m_castID].paramInfo.Clone();
-                }
+                else
+                    m_talkParams = new TalkParam[0];
             }
         }
         public string castName
@@ -179,7 +179,7 @@ namespace IST.RemoteTalk
 
             m_isServerTalking = true;
             var tparam = rtTalkParams.defaultValue;
-            tparam.cast = m_castID;
+            tparam.cast = (short)m_castID;
             tparam.Assign(m_talkParams);
             m_asyncTalk = m_client.Talk(ref tparam, m_talkText);
             return true;
@@ -219,7 +219,7 @@ namespace IST.RemoteTalk
 #endif
         }
 
-        public void RefreshClient()
+        public void UpdateStats()
         {
             m_client.Setup(m_serverAddress, m_serverPort);
             m_asyncStats = m_client.UpdateServerStatus();
@@ -295,6 +295,11 @@ namespace IST.RemoteTalk
                 foreach (var c in m_casts)
                     c.hostName = m_hostName;
 
+                if (m_casts.Length > 0)
+                    castID = Mathf.Clamp(m_castID, 0, m_casts.Length - 1);
+                else
+                    castID = 0;
+
                 m_isServerReady = m_hostName != "Server Not Found";
                 Misc.ForceRepaint();
             }
@@ -320,6 +325,9 @@ namespace IST.RemoteTalk
                     m_asyncTalk.Release();
                     m_isServerTalking = false;
 #if UNITY_EDITOR
+                    if (!result)
+                        UpdateStats();
+
                     if (result && m_exportAudio)
                     {
                         MakeSureAssetDirectoryExists();
@@ -335,7 +343,8 @@ namespace IST.RemoteTalk
             }
 
 #if UNITY_EDITOR
-            FinishExportClip();
+            if (!playing) // to avoid noise
+                FinishExportClip();
 #endif
 
             if (m_wasPlaying && !playing)
@@ -395,11 +404,6 @@ namespace IST.RemoteTalk
                     RemoteTalkProvider.FireOnAudioClipImport(m_currentTalk, ac);
                 });
             }
-        }
-
-        void Reset()
-        {
-            m_serverPort = 8080 + instances.Count;
         }
 #endif
 

@@ -110,6 +110,10 @@ template<> std::string to_string(const int& v)
     sprintf(buf, "%d", v);
     return buf;
 }
+template<> std::string to_string(const short& v)
+{
+    return to_string((int)v);
+}
 template<> std::string to_string(const bool& v)
 {
     return to_string((int)v);
@@ -128,6 +132,10 @@ template<> std::string to_string(const picojson::value& v)
 template<> int from_string(const std::string& v)
 {
     return std::atoi(v.c_str());
+}
+template<> short from_string(const std::string& v)
+{
+    return (short)from_string<int>(v) != 0;
 }
 template<> bool from_string(const std::string& v)
 {
@@ -150,6 +158,20 @@ template<> bool from_json(bool& dst, const picojson::value& v)
     if (!v.is<bool>())
         return false;
     dst = v.get<bool>();
+    return true;
+}
+
+template<> picojson::value to_json(const short& v)
+{
+    using namespace picojson;
+    return value((float)v);
+}
+template<> bool from_json(short& dst, const picojson::value& v)
+{
+    using namespace picojson;
+    if (!v.is<float>())
+        return false;
+    dst = (short)v.get<float>();
     return true;
 }
 
@@ -214,9 +236,9 @@ template<> picojson::value to_json(const TalkParams& v)
 {
     using namespace picojson;
     object t;
-    t["mute"] = value((float)v.mute);
-    t["force_mono"] = value((float)v.force_mono);
-    t["cast"] = value((float)v.cast);
+    t["mute"] = to_json(v.mute);
+    t["force_mono"] = to_json(v.force_mono);
+    t["cast"] = to_json(v.cast);
     {
         object params;
         for (int i = 0; i < TalkParams::MaxParams; ++i) {
@@ -235,9 +257,9 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
 
     const auto& o = v.get<object>();
     int n = 0;
-    if (rt::from_json(dst.mute, v.get("mute"))) ++n;
-    if (rt::from_json(dst.force_mono, v.get("force_mono"))) ++n;
-    if (rt::from_json(dst.cast, v.get("cast"))) ++n;
+    if (from_json(dst.mute, v.get("mute"))) ++n;
+    if (from_json(dst.force_mono, v.get("force_mono"))) ++n;
+    if (from_json(dst.cast, v.get("cast"))) ++n;
     {
         auto it = o.find("params");
         if (it != o.end() && it->second.is<object>()) {
@@ -246,7 +268,7 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
                     int idx = from_string<int>(kvp.first);
                     if (idx >= 0 && idx < TalkParams::MaxParams) {
                         float val;
-                        if (rt::from_json(val, kvp.second))
+                        if (from_json(val, kvp.second))
                             dst[idx] = val;
                     }
                 }
@@ -260,10 +282,10 @@ template<> picojson::value to_json(const TalkParamInfo& v)
 {
     using namespace picojson;
     object o;
-    o["name"] = value(v.name);
-    o["value"] = value(v.value);
-    o["range_min"] = value(v.range_min);
-    o["range_max"] = value(v.range_max);
+    o["name"] = to_json(v.name);
+    o["value"] = to_json(v.value);
+    o["range_min"] = to_json(v.range_min);
+    o["range_max"] = to_json(v.range_max);
     return value(std::move(o));
 }
 template<> bool from_json(TalkParamInfo& dst, const picojson::value& v)
@@ -273,10 +295,10 @@ template<> bool from_json(TalkParamInfo& dst, const picojson::value& v)
         return false;
 
     int n = 0;
-    if (rt::from_json(dst.name, v.get("name"))) ++n;
-    if (rt::from_json(dst.value, v.get("value"))) ++n;
-    if (rt::from_json(dst.range_min, v.get("range_min"))) ++n;
-    if (rt::from_json(dst.range_max, v.get("range_max"))) ++n;
+    if (from_json(dst.name, v.get("name"))) ++n;
+    if (from_json(dst.value, v.get("value"))) ++n;
+    if (from_json(dst.range_min, v.get("range_min"))) ++n;
+    if (from_json(dst.range_max, v.get("range_max"))) ++n;
     return n >= 4;
 }
 
@@ -284,8 +306,8 @@ template<> picojson::value to_json(const CastInfo& v)
 {
     using namespace picojson;
     object o;
-    o["id"] = value((float)v.id);
-    o["name"] = value(v.name);
+    o["id"] = to_json(v.id);
+    o["name"] = to_json(v.name);
 
     if (!v.params.empty()) {
         array params;
@@ -304,8 +326,8 @@ template<> bool from_json(CastInfo& dst, const picojson::value& v)
 
     auto& o = v.get<object>();
     int n = 0;
-    if (rt::from_json(dst.id, v.get("id"))) ++n;
-    if (rt::from_json(dst.name, v.get("name"))) ++n;
+    if (from_json(dst.id, v.get("id"))) ++n;
+    if (from_json(dst.name, v.get("name"))) ++n;
     {
         auto it = o.find("params");
         if (it != o.end() && it->second.is<array>()) {
@@ -313,7 +335,7 @@ template<> bool from_json(CastInfo& dst, const picojson::value& v)
             dst.params.clear();
             for (auto& p : params) {
                 TalkParamInfo tmp;
-                if (rt::from_json(tmp, p))
+                if (from_json(tmp, p))
                     dst.params.push_back(std::move(tmp));
             }
         }
@@ -347,11 +369,11 @@ template<> picojson::value to_json(const TalkServerStats& v)
 {
     using namespace picojson;
     object ret;
-    ret["host"] = rt::to_json(v.host);
-    ret["plugin_version"] = rt::to_json(v.plugin_version);
-    ret["protocol_version"] = rt::to_json(v.protocol_version);
-    ret["params"] = rt::to_json(v.params);
-    ret["casts"] = rt::to_json(v.casts);
+    ret["host"] = to_json(v.host);
+    ret["plugin_version"] = to_json(v.plugin_version);
+    ret["protocol_version"] = to_json(v.protocol_version);
+    ret["params"] = to_json(v.params);
+    ret["casts"] = to_json(v.casts);
     return value(std::move(ret));
 }
 template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
@@ -361,11 +383,11 @@ template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
         return false;
 
     int n = 0;
-    if (rt::from_json(dst.host, v.get("host"))) ++n;
-    if (rt::from_json(dst.plugin_version, v.get("plugin_version"))) ++n;
-    if (rt::from_json(dst.protocol_version, v.get("protocol_version"))) ++n;
-    if (rt::from_json(dst.params, v.get("params"))) ++n;
-    if (rt::from_json(dst.casts, v.get("casts"))) ++n;
+    if (from_json(dst.host, v.get("host"))) ++n;
+    if (from_json(dst.plugin_version, v.get("plugin_version"))) ++n;
+    if (from_json(dst.protocol_version, v.get("protocol_version"))) ++n;
+    if (from_json(dst.params, v.get("params"))) ++n;
+    if (from_json(dst.casts, v.get("casts"))) ++n;
     return n >= 5;
 }
 
@@ -396,9 +418,9 @@ template<> picojson::value to_json(const TalkServerSettings& v)
 {
     using namespace picojson;
     object ret;
-    ret["port"] = rt::to_json(v.port);
-    ret["max_queue"] = rt::to_json(v.max_queue);
-    ret["max_threads"] = rt::to_json(v.max_threads);
+    ret["port"] = to_json(v.port);
+    ret["max_queue"] = to_json(v.max_queue);
+    ret["max_threads"] = to_json(v.max_threads);
     return value(std::move(ret));
 }
 template<> bool from_json(TalkServerSettings& dst, const picojson::value& v)
@@ -408,9 +430,9 @@ template<> bool from_json(TalkServerSettings& dst, const picojson::value& v)
         return false;
 
     int n = 0;
-    if (rt::from_json(dst.port, v.get("port"))) ++n;
-    if (rt::from_json(dst.max_queue, v.get("max_queue"))) ++n;
-    if (rt::from_json(dst.max_threads, v.get("max_threads"))) ++n;
+    if (from_json(dst.port, v.get("port"))) ++n;
+    if (from_json(dst.max_queue, v.get("max_queue"))) ++n;
+    if (from_json(dst.max_threads, v.get("max_threads"))) ++n;
     return n >= 1;
 }
 

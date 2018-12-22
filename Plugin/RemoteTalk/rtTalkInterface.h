@@ -33,11 +33,11 @@ struct TalkParams
         Proxy& operator=(float v);
     };
 
-    static const int MaxParams = 12;
+    static const int MaxParams = 14;
 
-    int mute = false; // as bool
-    int force_mono = false; // as bool
-    int cast = 0;
+    bool mute = false;
+    bool force_mono = false;
+    short cast = 0;
     int param_flags = 0;
     float params[MaxParams] = {};
 

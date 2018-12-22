@@ -145,6 +145,7 @@ TestCase(rtAudioData_Convert)
     Expect(data3.data == data.data);
 }
 
+#ifdef _WIN32
 class TestFileIOHandler : public rt::FileIOHandlerBase
 {
 
@@ -159,8 +160,6 @@ TestCase(FileIOHandler)
     }
 }
 
-
-#ifdef _WIN32
 TestCase(LaunchVoiceroid2)
 {
     char install_dir[MAX_PATH+1];
