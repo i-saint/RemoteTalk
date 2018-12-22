@@ -35,10 +35,12 @@ public:
 private:
     std::wstring m_whost;
     std::string m_host;
+
     HWND m_ctrl_play = nullptr;
     HWND m_ctrl_stop = nullptr;
     HWND m_ctrl_text = nullptr;
 
+    HWND m_ctl_tab = nullptr;
     HWND m_ctrl_volume = nullptr;
     HWND m_ctrl_speed = nullptr;
     HWND m_ctrl_pitch = nullptr;

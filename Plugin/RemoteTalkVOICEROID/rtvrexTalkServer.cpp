@@ -26,6 +26,7 @@ bool rtvrexTalkServer::isReady()
 rtvrexTalkServer::Status rtvrexTalkServer::onStats(StatsMessage& mes)
 {
     auto& ifs = rtvrexInterface::getInstance();
+    ifs.setupControls();
 
     auto& stats = mes.stats;
     stats.host = ifs.getClientName();

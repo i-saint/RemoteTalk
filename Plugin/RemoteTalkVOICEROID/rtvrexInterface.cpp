@@ -30,13 +30,21 @@ static bool SetValue(HWND hwnd, float value)
     return true;
 }
 
-static bool GetValue(HWND hwnd, float value)
+static bool GetValue(HWND hwnd, float& value)
 {
     if (!hwnd)
         return false;
     char buf[256];
     ::SendMessageA(hwnd, WM_GETTEXT, 0, (LPARAM)buf);
     return sscanf(buf, "%f", &value) == 1;
+}
+
+static bool GetTabIndex(HWND hwnd, int& idx)
+{
+    if (!hwnd)
+        return false;
+    idx = ::SendMessageW(hwnd, TCM_GETCURFOCUS, idx, 0);
+    return true;
 }
 
 static bool SetTabIndex(HWND hwnd, int idx)
@@ -91,8 +99,10 @@ void rtvrexInterface::setupControls()
             }
         }
         else if (wcsstr(wclass, L"WindowsForms10.SysTabControl32")) {
-            if (nth_tab++ == 1)
+            if (nth_tab++ == 1) {
+                m_ctl_tab = hwnd;
                 SetTabIndex(hwnd, 2);
+            }
         }
 
         //wchar_t buf[512];
@@ -137,11 +147,25 @@ int rtvrexInterface::getProtocolVersion() const
 
 bool rtvrexInterface::getParams(rt::TalkParams& params) const
 {
-    return
-        GetValue(m_ctrl_volume, params[0]) &&
-        GetValue(m_ctrl_speed, params[1]) &&
-        GetValue(m_ctrl_pitch, params[2]) &&
-        GetValue(m_ctrl_intonation, params[3]);
+    bool ret = false;
+    float tmp = 0.0f;
+    if (GetValue(m_ctrl_volume, tmp)) {
+        params[0] = tmp;
+        ret = true;
+    }
+    if (GetValue(m_ctrl_speed, tmp)) {
+        params[1] = tmp;
+        ret = true;
+    }
+    if (GetValue(m_ctrl_pitch, tmp)) {
+        params[2] = tmp;
+        ret = true;
+    }
+    if (GetValue(m_ctrl_intonation, tmp)) {
+        params[3] = tmp;
+        ret = true;
+    }
+    return ret;
 }
 
 int rtvrexInterface::getNumCasts() const
@@ -156,11 +180,16 @@ const rt::CastInfo* rtvrexInterface::getCastInfo(int i) const
 
 bool rtvrexInterface::setParams(const rt::TalkParams& params)
 {
-    return
-        SetValue(m_ctrl_volume, params[0]) &&
-        SetValue(m_ctrl_speed, params[1]) &&
-        SetValue(m_ctrl_pitch, params[2]) &&
-        SetValue(m_ctrl_intonation, params[3]);
+    bool ret = false;
+    if (params.isSet(0))
+        ret = SetValue(m_ctrl_volume, params[0]) || ret;
+    if (params.isSet(1))
+        ret = SetValue(m_ctrl_speed, params[1]) || ret;
+    if (params.isSet(2))
+        ret = SetValue(m_ctrl_pitch, params[2]) || ret;
+    if (params.isSet(3))
+        ret = SetValue(m_ctrl_intonation, params[3]) || ret;
+    return ret;
 }
 
 bool rtvrexInterface::setText(const char *text)
