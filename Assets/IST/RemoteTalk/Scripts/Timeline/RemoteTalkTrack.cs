@@ -5,7 +5,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
+using UnityEditor;
 using UnityEditor.Timeline;
 #endif
 
@@ -23,19 +25,21 @@ namespace IST.RemoteTalk
         PlayableDirector m_director;
 
 
-        public AudioSource GetOutput()
+        public AudioSource audioSource
         {
-            if (m_director == null)
-                return null;
-
-            AudioSource ret = null;
-            foreach (var output in outputs)
+            get
             {
-                ret = m_director.GetGenericBinding(output.sourceObject) as AudioSource;
-                if (ret != null)
-                    break;
+                if (m_director != null)
+                {
+                    foreach (var output in outputs)
+                    {
+                        var ret = m_director.GetGenericBinding(output.sourceObject) as AudioSource;
+                        if (ret != null)
+                            return ret;
+                    }
+                }
+                return null;
             }
-            return ret;
         }
 
         public TimelineClip AddClip(Talk talk)
@@ -60,9 +64,9 @@ namespace IST.RemoteTalk
             var timeline = timelineAsset;
             var audioTrack = timeline.CreateTrack<AudioTrack>(null, name);
 
-            var audioSource = GetOutput();
-            if (audioSource != null)
-                m_director.SetGenericBinding(audioTrack, audioSource);
+            var output = audioSource;
+            if (output != null)
+                m_director.SetGenericBinding(audioTrack, output);
 
             foreach (var srcClip in GetClips())
             {
@@ -144,6 +148,18 @@ namespace IST.RemoteTalk
 #if UNITY_EDITOR
 #if UNITY_2018_3_OR_NEWER
             TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+#else
+            // select GO that doesn't have PlayableDirector to clear timeline window
+            var roots = SceneManager.GetActiveScene().GetRootGameObjects();
+            foreach(var go in roots)
+            {
+                var director = go.GetComponent<PlayableDirector>();
+                if (director == null)
+                {
+                    Selection.activeGameObject = go;
+                    break;
+                }
+            }
 #endif
 #endif
         }
@@ -153,12 +169,9 @@ namespace IST.RemoteTalk
         {
             m_director = go.GetComponent<PlayableDirector>();
 
-            var ret = ScriptPlayable<RemoteTalkMixerBehaviour>.Create(graph, inputCount);
-            var mixer = ret.GetBehaviour();
-            mixer.director = go.GetComponent<PlayableDirector>();
-            mixer.clips = GetClips();
-            mixer.track = this;
-            return ret;
+            var playable = ScriptPlayable<RemoteTalkMixerBehaviour>.Create(graph, inputCount);
+            var mixer = playable.GetBehaviour();
+            return playable;
         }
 
         protected override Playable CreatePlayable(PlayableGraph graph, GameObject go, TimelineClip clip)

@@ -25,10 +25,7 @@ namespace IST.RemoteTalk
 
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
-            if (info.evaluationType == FrameData.EvaluationType.Playback && info.deltaTime == 0)
-                return;
-
-            var output = track.GetOutput();
+            var output = track.audioSource;
             if (output != null)
             {
                 if (audioClip != null)
@@ -51,7 +48,7 @@ namespace IST.RemoteTalk
 
         public override void OnBehaviourPause(Playable playable, FrameData info)
         {
-            var output = track.GetOutput();
+            var output = track.audioSource;
             if (output != null)
             {
                 if (audioClip != null)

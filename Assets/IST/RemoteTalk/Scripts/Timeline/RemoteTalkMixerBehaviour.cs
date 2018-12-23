@@ -9,13 +9,7 @@ namespace IST.RemoteTalk
 {
     public class RemoteTalkMixerBehaviour : PlayableBehaviour
     {
-        public IEnumerable<TimelineClip> clips;
-        public PlayableDirector director;
-        public RemoteTalkTrack track;
-
-        public override void ProcessFrame(Playable playable, FrameData info, object playerData)
-        {
-        }
+        // nothing to do for now
     }
 }
 #endif
