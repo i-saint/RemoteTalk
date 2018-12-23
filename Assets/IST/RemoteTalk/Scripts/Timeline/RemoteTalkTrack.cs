@@ -5,6 +5,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+#if UNITY_EDITOR
+using UnityEditor.Timeline;
+#endif
 
 namespace IST.RemoteTalk
 {
@@ -73,6 +76,7 @@ namespace IST.RemoteTalk
                 dstClip.start = srcClip.start;
                 dstClip.duration = srcClip.duration;
             }
+            RefreshTimelineWindow();
         }
 
         public void OnTalk(RemoteTalkBehaviour behaviour)
@@ -83,14 +87,15 @@ namespace IST.RemoteTalk
 
         public void OnAudioClipUpdated(RemoteTalkBehaviour behaviour)
         {
+            var clip = behaviour.clip;
+            var rtc = (RemoteTalkClip)clip.asset;
+            double prev = clip.duration;
+            double duration = rtc.duration;
+            double gap = duration - prev;
+
             if (fitDuration)
             {
-                var clip = behaviour.clip;
-                var rtc = (RemoteTalkClip)clip.asset;
-                double prev = clip.duration;
-                clip.duration = rtc.duration;
-                double gap = clip.duration - prev;
-
+                clip.duration = duration;
                 if (rearrange)
                 {
                     bool doArrange = false;
@@ -104,7 +109,10 @@ namespace IST.RemoteTalk
                 }
             }
             if (pauseWhenExport)
-                behaviour.director.Resume();
+            {
+                m_director.time = m_director.time + duration;
+                m_director.Resume();
+            }
         }
 
         public bool ImportText(string path)
@@ -113,6 +121,7 @@ namespace IST.RemoteTalk
             if (talks != null)
             {
                 AddClips(talks);
+                RefreshTimelineWindow();
                 return true;
             }
             return false;
@@ -128,6 +137,15 @@ namespace IST.RemoteTalk
                     talks.Add(talk);
             }
             return RemoteTalkScript.TalksToTextFile(path, talks);
+        }
+
+        public static void RefreshTimelineWindow()
+        {
+#if UNITY_EDITOR
+#if UNITY_2018_3_OR_NEWER
+            TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+#endif
+#endif
         }
 
 
@@ -154,7 +172,6 @@ namespace IST.RemoteTalk
 
             var rtc = (RemoteTalkClip)clip.asset;
             clip.displayName = rtc.talk.text + "_" + rtc.talk.castName;
-            rtc.UpdateCachedClip();
 
             return ret;
         }

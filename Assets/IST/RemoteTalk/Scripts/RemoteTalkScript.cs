@@ -166,6 +166,7 @@ namespace IST.RemoteTalk
                 dstClip.start = timeOffset;
                 timeOffset += dstClip.duration;
             }
+            RemoteTalkTrack.RefreshTimelineWindow();
 
             return true;
         }
