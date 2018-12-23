@@ -12,7 +12,7 @@ namespace rtsp {
 
 class TalkServer : public rt::TalkServer
 {
-    using super = rt::TalkServer;
+using super = rt::TalkServer;
 public:
     rtDefSingleton(TalkServer);
     TalkServer();
@@ -27,6 +27,7 @@ public:
     Status onDebug(DebugMessage& mes) override;
 #endif
 
+    bool loadConfig(const char *path);
     void wait();
     void onUpdateBuffer(const rt::AudioData& data);
 

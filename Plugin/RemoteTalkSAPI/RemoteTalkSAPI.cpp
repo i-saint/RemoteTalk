@@ -20,14 +20,32 @@ rtAPI rt::TalkInterface* rtGetTalkInterface()
     return nullptr;
 }
 
-rtAPI rt::TalkServer* rtspStartServer(int port)
+rtAPI bool rtspIsServerRunning()
+{
+    return rtsp::TalkServer::getInstance().isRunning();
+}
+
+rtAPI int rtspGetServerPort()
+{
+    return rtsp::TalkServer::getInstance().getSettings().port;
+}
+
+rtAPI bool rtspStartServer(const char *config_path)
 {
     auto& inst = rtsp::TalkServer::getInstance();
     if (!inst.isRunning()) {
-        rt::TalkServerSettings settings;
-        settings.port = (uint16_t)port;
-        inst.setSettings(settings);
-        inst.start();
+        inst.loadConfig(config_path);
+        return inst.start();
     }
-    return &inst;
+    return false;
+}
+
+rtAPI bool rtspStopServer()
+{
+    auto& inst = rtsp::TalkServer::getInstance();
+    if (inst.isRunning()) {
+        inst.stop();
+        return true;
+    }
+    return false;
 }

@@ -91,7 +91,12 @@ namespace IST.RemoteTalk
                 }
 
                 if (GUILayout.Button("Connect Windows SAPI"))
+                {
                     rtspTalkServer.StartServer();
+                    t.serverPort = rtspTalkServer.serverPort;
+                    t.UpdateStats();
+                    so.Update();
+                }
                 GUILayout.EndHorizontal();
 #endif
 

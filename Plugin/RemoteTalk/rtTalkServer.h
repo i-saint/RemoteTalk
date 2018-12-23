@@ -108,6 +108,7 @@ public:
 
     TalkServer();
     virtual ~TalkServer();
+    virtual const TalkServerSettings& getSettings() const;
     virtual void setSettings(const TalkServerSettings& v);
     virtual bool start();
     virtual void stop();

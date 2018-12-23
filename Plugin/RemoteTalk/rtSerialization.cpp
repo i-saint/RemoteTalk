@@ -147,14 +147,14 @@ template<> float from_string(const std::string& v)
 }
 
 
+using namespace picojson;
+
 template<> picojson::value to_json(const bool& v)
 {
-    using namespace picojson;
     return value(v);
 }
 template<> bool from_json(bool& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<bool>())
         return false;
     dst = v.get<bool>();
@@ -163,12 +163,10 @@ template<> bool from_json(bool& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const short& v)
 {
-    using namespace picojson;
     return value((float)v);
 }
 template<> bool from_json(short& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<float>())
         return false;
     dst = (short)v.get<float>();
@@ -177,12 +175,10 @@ template<> bool from_json(short& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const uint16_t& v)
 {
-    using namespace picojson;
     return value((float)v);
 }
 template<> bool from_json(uint16_t& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<float>())
         return false;
     dst = (uint16_t)v.get<float>();
@@ -191,12 +187,10 @@ template<> bool from_json(uint16_t& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const int& v)
 {
-    using namespace picojson;
     return value((float)v);
 }
 template<> bool from_json(int& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<float>())
         return false;
     dst = (int)v.get<float>();
@@ -205,12 +199,10 @@ template<> bool from_json(int& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const float& v)
 {
-    using namespace picojson;
     return value(v);
 }
 template<> bool from_json(float& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<float>())
         return false;
     dst = v.get<float>();
@@ -219,22 +211,18 @@ template<> bool from_json(float& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const std::string& v)
 {
-    using namespace picojson;
     return value(v);
 }
 template<> bool from_json(std::string& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<std::string>())
         return false;
     dst = v.get<std::string>();
     return true;
 }
 
-
 template<> picojson::value to_json(const TalkParams& v)
 {
-    using namespace picojson;
     object t;
     t["mute"] = to_json(v.mute);
     t["force_mono"] = to_json(v.force_mono);
@@ -251,7 +239,6 @@ template<> picojson::value to_json(const TalkParams& v)
 }
 template<> bool from_json(TalkParams& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<object>())
         return false;
 
@@ -280,7 +267,6 @@ template<> bool from_json(TalkParams& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const TalkParamInfo& v)
 {
-    using namespace picojson;
     object o;
     o["name"] = to_json(v.name);
     o["value"] = to_json(v.value);
@@ -290,7 +276,6 @@ template<> picojson::value to_json(const TalkParamInfo& v)
 }
 template<> bool from_json(TalkParamInfo& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<object>())
         return false;
 
@@ -304,7 +289,6 @@ template<> bool from_json(TalkParamInfo& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const CastInfo& v)
 {
-    using namespace picojson;
     object o;
     o["id"] = to_json(v.id);
     o["name"] = to_json(v.name);
@@ -320,7 +304,6 @@ template<> picojson::value to_json(const CastInfo& v)
 }
 template<> bool from_json(CastInfo& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<object>())
         return false;
 
@@ -345,7 +328,6 @@ template<> bool from_json(CastInfo& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const CastList& v)
 {
-    using namespace picojson;
     array t(v.size());
     for (size_t i = 0; i < v.size(); ++i)
         t[i] = to_json(v[i]);
@@ -353,7 +335,6 @@ template<> picojson::value to_json(const CastList& v)
 }
 template<> bool from_json(CastList& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<array>())
         return false;
 
@@ -367,7 +348,6 @@ template<> bool from_json(CastList& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const TalkServerStats& v)
 {
-    using namespace picojson;
     object ret;
     ret["host"] = to_json(v.host);
     ret["plugin_version"] = to_json(v.plugin_version);
@@ -378,7 +358,6 @@ template<> picojson::value to_json(const TalkServerStats& v)
 }
 template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<object>())
         return false;
 
@@ -393,7 +372,6 @@ template<> bool from_json(TalkServerStats& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const std::map<std::string, std::string>& v)
 {
-    using namespace picojson;
     object t;
     for (auto& kvp : v)
         t[kvp.first] = value(kvp.second);
@@ -401,7 +379,6 @@ template<> picojson::value to_json(const std::map<std::string, std::string>& v)
 }
 template<> bool from_json(std::map<std::string, std::string>& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<object>())
         return false;
 
@@ -413,10 +390,8 @@ template<> bool from_json(std::map<std::string, std::string>& dst, const picojso
     return true;
 }
 
-
 template<> picojson::value to_json(const TalkServerSettings& v)
 {
-    using namespace picojson;
     object ret;
     ret["port"] = to_json(v.port);
     ret["max_queue"] = to_json(v.max_queue);
@@ -425,7 +400,6 @@ template<> picojson::value to_json(const TalkServerSettings& v)
 }
 template<> bool from_json(TalkServerSettings& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<object>())
         return false;
 
@@ -438,7 +412,6 @@ template<> bool from_json(TalkServerSettings& dst, const picojson::value& v)
 
 template<> picojson::value to_json(const TalkServerSettingsTable& v)
 {
-    using namespace picojson;
     object t;
     for (auto& kvp : v)
         t[kvp.first] = to_json(kvp.second);
@@ -446,7 +419,6 @@ template<> picojson::value to_json(const TalkServerSettingsTable& v)
 }
 template<> bool from_json(TalkServerSettingsTable& dst, const picojson::value& v)
 {
-    using namespace picojson;
     if (!v.is<object>())
         return false;
 

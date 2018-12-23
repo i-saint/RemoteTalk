@@ -77,7 +77,7 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
     mes.stats.params[0] = (float)volume / 100.0f; // [0, 100] -> [0.0, 1.0]
     mes.stats.params[1] = (float)(rate + 10) / 10.0f; // [-10, 10] -> [0.0, 2.0]
 
-    mes.stats.host = "Windows SAPI";
+    mes.stats.host = rtspHostName;
     mes.stats.protocol_version = rtProtocolVersion;
     mes.stats.plugin_version = rtPluginVersion;
     mes.stats.casts = m_casts;
@@ -149,6 +149,12 @@ TalkServer::Status TalkServer::onDebug(DebugMessage& mes)
     return Status::Succeeded;
 }
 #endif
+
+bool TalkServer::loadConfig(const char *path)
+{
+    m_settings = rt::GetOrAddServerSettings(path, rtspDllFile, rtspDefaultPort);
+    return true;
+}
 
 void TalkServer::wait()
 {

@@ -413,9 +413,16 @@ namespace IST.RemoteTalk
     {
         #region internal
         public IntPtr self;
-        [DllImport("RemoteTalkSAPI")] static extern rtspTalkServer rtspStartServer(int port);
+        [DllImport("RemoteTalkSAPI")] static extern byte rtspIsServerRunning();
+        [DllImport("RemoteTalkSAPI")] static extern int rtspGetServerPort();
+        [DllImport("RemoteTalkSAPI")] static extern byte rtspStartServer(string configPath);
+        [DllImport("RemoteTalkSAPI")] static extern byte rtspStopServer();
         #endregion
 
-        public static rtspTalkServer StartServer(int port = 8083) { return rtspStartServer(port); }
+        public static bool isServerRunning { get { return rtspIsServerRunning() != 0; } }
+        public static int serverPort{ get { return rtspGetServerPort(); } }
+
+        public static bool StartServer() { return rtspStartServer(Application.streamingAssetsPath + "/RemoteTalk/RemoteTalkSAPI.json") != 0; }
+        public static bool StopServer() { return rtspStopServer() != 0; }
     }
 }

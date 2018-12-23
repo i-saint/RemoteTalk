@@ -314,6 +314,11 @@ TalkServer::~TalkServer()
     stop();
 }
 
+const TalkServerSettings& TalkServer::getSettings() const
+{
+    return m_settings;
+}
+
 void TalkServer::setSettings(const TalkServerSettings& v)
 {
     m_settings = v;
