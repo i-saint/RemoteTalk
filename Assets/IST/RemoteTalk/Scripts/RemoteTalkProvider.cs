@@ -97,7 +97,9 @@ namespace IST.RemoteTalk
 
     public abstract class RemoteTalkProvider : MonoBehaviour
     {
-        public static List<RemoteTalkProvider> instances { get; } = new List<RemoteTalkProvider>();
+        static List<RemoteTalkProvider> s_instances = new List<RemoteTalkProvider>();
+
+        public static List<RemoteTalkProvider> instances { get { return s_instances; } }
 
         public static event AudioClipImportCallback onAudioClipImport;
 

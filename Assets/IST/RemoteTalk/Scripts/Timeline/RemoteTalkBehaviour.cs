@@ -1,3 +1,4 @@
+#if UNITY_2017_1_OR_NEWER
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -94,3 +95,4 @@ namespace IST.RemoteTalk
         }
     }
 }
+#endif

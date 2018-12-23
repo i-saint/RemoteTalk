@@ -66,10 +66,12 @@ namespace IST.RemoteTalk
                 t.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", t.name, "txt"));
             EditorGUILayout.EndHorizontal();
 
+#if UNITY_2017_1_OR_NEWER
             EditorGUILayout.Space();
 
             if (GUILayout.Button("Convert To Timeline Track"))
                 t.ConvertToRemoteTalkTrack();
+#endif
         }
     }
 }

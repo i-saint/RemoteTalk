@@ -5,8 +5,10 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_2017_1_OR_NEWER
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+#endif
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -145,6 +147,7 @@ namespace IST.RemoteTalk
             return TalksToTextFile(path, m_talks);
         }
 
+#if UNITY_2017_1_OR_NEWER
         public bool ConvertToRemoteTalkTrack()
         {
             var director = Misc.GetOrAddComponent<PlayableDirector>(gameObject);
@@ -166,7 +169,7 @@ namespace IST.RemoteTalk
 
             return true;
         }
-
+#endif
 
         void UpdateTalk()
         {
