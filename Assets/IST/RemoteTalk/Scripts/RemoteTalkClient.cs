@@ -166,8 +166,8 @@ namespace IST.RemoteTalk
 #if UNITY_EDITOR
                 if (m_useExportedClips)
                 {
-                    var dstPath = assetPath + "/" + m_cacheFileName;
-                    var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(dstPath);
+                    var path = assetPath + "/" + m_cacheFileName;
+                    var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
                     if (clip != null)
                     {
                         UseOutput(audio => { audio.Play(clip); });
@@ -381,8 +381,9 @@ namespace IST.RemoteTalk
         {
             Try(() =>
             {
-                if (!AssetDatabase.IsValidFolder(assetPath))
-                    AssetDatabase.CreateFolder("Assets", m_exportDir);
+                var path = Application.dataPath + "/" + m_exportDir;
+                if (!System.IO.Directory.Exists(path))
+                    System.IO.Directory.CreateDirectory(path);
             });
         }
 
