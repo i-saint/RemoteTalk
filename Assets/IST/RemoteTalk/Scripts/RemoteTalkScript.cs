@@ -65,85 +65,84 @@ namespace IST.RemoteTalk
             }
         }
 
-        public bool ImportFile(string path)
+        public static List<Talk> TextFileToTalks(string path)
         {
-            if (path == null || path.Length == 0)
-                return false;
-            try
+            List<Talk> talks = null;
+            using (var fin = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
-                var talks = new List<Talk>();
-                using (var fin = new FileStream(path, FileMode.Open, FileAccess.Read))
+                talks = new List<Talk>();
+                var rxName = new Regex(@"\[(.+?)\]", RegexOptions.Compiled);
+                var rxParams = new Regex(@" (.+?)=([\d\.])", RegexOptions.Compiled);
+
+                var sr = new StreamReader(fin);
+                string line;
+                Talk talk = null;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    var rxName = new Regex(@"\[(.+?)\]", RegexOptions.Compiled);
-                    var rxParams = new Regex(@" (.+?)=([\d\.])", RegexOptions.Compiled);
-
-                    var sr = new StreamReader(fin);
-                    string line;
-                    Talk talk = null;
-                    while ((line = sr.ReadLine()) != null)
+                    var matcheName = rxName.Matches(line);
+                    if (matcheName.Count > 0)
                     {
-                        var matcheName = rxName.Matches(line);
-                        if(matcheName.Count > 0)
+                        if (talk != null)
+                            talks.Add(talk);
+
+                        talk = new Talk();
+                        talk.castName = matcheName[0].Groups[1].Value;
+
+                        var matcheParams = rxParams.Matches(line);
+                        talk.param = new TalkParam[matcheParams.Count];
+                        for (int i = 0; i < matcheParams.Count; ++i)
                         {
-                            if (talk != null)
-                                talks.Add(talk);
-
-                            talk = new Talk();
-                            talk.castName = matcheName[0].Groups[1].Value;
-
-                            var matcheParams = rxParams.Matches(line);
-                            talk.param = new TalkParam[matcheParams.Count];
-                            for (int i = 0; i < matcheParams.Count; ++i)
-                            {
-                                if (talk.param[i] == null)
-                                    talk.param[i] = new TalkParam();
-                                talk.param[i].name = matcheParams[i].Groups[1].Value;
-                                talk.param[i].value = float.Parse(matcheParams[i].Groups[2].Value);
-                            }
+                            if (talk.param[i] == null)
+                                talk.param[i] = new TalkParam();
+                            talk.param[i].name = matcheParams[i].Groups[1].Value;
+                            talk.param[i].value = float.Parse(matcheParams[i].Groups[2].Value);
                         }
-                        else if (talk != null)
-                            talk.text += line;
                     }
-                    if (talk.text.Length > 0)
-                        talks.Add(talk);
-
-                    m_talks = talks;
-                    return true;
+                    else if (talk != null)
+                        talk.text += line;
                 }
+                if (talk.text.Length > 0)
+                    talks.Add(talk);
             }
-            catch (Exception)
-            {
-                return false;
-            }
+            return talks;
         }
 
-        public bool ExportFile(string path)
+        public static bool TalksToTextFile(string path, List<Talk> talks)
         {
-            if (path == null || path.Length == 0)
-                return false;
-            try
+            bool ret = false;
+            using (var fo = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
-                using (var fo = new FileStream(path, FileMode.Create, FileAccess.Write))
+                var sb = new StringBuilder();
+                foreach (var t in talks)
                 {
-                    var sb = new StringBuilder();
-                    foreach (var t in m_talks)
-                    {
-                        sb.Append("[" + t.castName + "]");
-                        foreach (var p in t.param)
-                            sb.Append(" " + p.name + "=" + p.value);
-                        sb.Append("\r\n");
-                        sb.Append(t.text);
-                        sb.Append("\r\n\r\n");
-                    }
-                    byte[] data = new UTF8Encoding(true).GetBytes(sb.ToString());
-                    fo.Write(data, 0, data.Length);
-                    return true;
+                    sb.Append("[" + t.castName + "]");
+                    foreach (var p in t.param)
+                        sb.Append(" " + p.name + "=" + p.value);
+                    sb.Append("\r\n");
+                    sb.Append(t.text);
+                    sb.Append("\r\n\r\n");
                 }
+                byte[] data = new UTF8Encoding(true).GetBytes(sb.ToString());
+                fo.Write(data, 0, data.Length);
+                ret = true;
             }
-            catch(Exception)
+            return ret;
+        }
+
+        public bool ImportText(string path)
+        {
+            var talks = TextFileToTalks(path);
+            if (talks != null)
             {
-                return false;
+                m_talks = talks;
+                return true;
             }
+            return false;
+        }
+
+        public bool ExportText(string path)
+        {
+            return TalksToTextFile(path, m_talks);
         }
 
         public bool ConvertToRemoteTalkTrack()

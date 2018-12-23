@@ -159,40 +159,4 @@ TestCase(FileIOHandler)
         fo.write("foo", 3);
     }
 }
-
-TestCase(LaunchVoiceroid2)
-{
-    char install_dir[MAX_PATH+1];
-    DWORD install_dir_size = sizeof(install_dir);
-    if (::RegGetValueA(HKEY_LOCAL_MACHINE,
-        "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{6F962085-923C-4AEE-BFC2-D64FAEE9B82D}",
-        "InstallLocation", RRF_RT_REG_SZ, NULL, install_dir, &install_dir_size) == ERROR_SUCCESS)
-    {
-        std::string exe_path(install_dir, install_dir_size - 1);
-        exe_path += "VoiceroidEditor.exe";
-
-        STARTUPINFOA si;
-        PROCESS_INFORMATION pi;
-        ::ZeroMemory(&si, sizeof(si));
-        ::ZeroMemory(&pi, sizeof(pi));
-        si.cb = sizeof(si);
-        BOOL ret = ::CreateProcessA(exe_path.c_str(), nullptr, nullptr, nullptr, FALSE,
-            NORMAL_PRIORITY_CLASS, nullptr, nullptr, &si, &pi);
-        if (ret) {
-        }
-    }
-}
-
-#import "libid:D3AEA482-B527-4818-8CEA-810AFFCB24B6" named_guids rename_namespace("CeVIO")
-TestCase(LaunchCeVIOCS)
-{
-    ::CoInitialize(NULL);
-
-    // note: this always fails on x64
-    CeVIO::IServiceControl *pServiceControl;
-    HRESULT hr = ::CoCreateInstance(CeVIO::CLSID_ServiceControl, NULL, CLSCTX_INPROC_SERVER, CeVIO::IID_IServiceControl, reinterpret_cast<LPVOID *>(&pServiceControl));
-    if (SUCCEEDED(hr)) {
-        pServiceControl->StartHost(false);
-    }
-}
 #endif

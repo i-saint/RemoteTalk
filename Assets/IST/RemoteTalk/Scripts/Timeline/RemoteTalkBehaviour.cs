@@ -19,6 +19,8 @@ namespace IST.RemoteTalk
         public AudioClip audioClip;
         public RemoteTalkProvider remoteTalk;
 
+        bool m_export;
+
 
         public AudioSource GetOutput()
         {
@@ -45,7 +47,11 @@ namespace IST.RemoteTalk
                     if (provider != null)
                     {
                         provider.output = output;
-                        provider.Play(talk);
+                        if (provider.Play(talk))
+                        {
+                            m_export = true;
+                            track.OnTalk(this);
+                        }
                     }
                 }
             }
@@ -65,12 +71,15 @@ namespace IST.RemoteTalk
 
         public void OnAudioClipImport(Talk t, AudioClip ac)
         {
+            if (!m_export)
+                return;
+            m_export = false;
+
             var rtc = (RemoteTalkClip)clip.asset;
-            if (rtc.UpdateCachedAsset())
+            if (rtc.UpdateCachedClip())
             {
                 audioClip = rtc.audioClip.defaultValue as AudioClip;
-                if (track.fitDuration)
-                    clip.duration = rtc.duration;
+                track.OnAudioClipUpdated(this);
             }
         }
 

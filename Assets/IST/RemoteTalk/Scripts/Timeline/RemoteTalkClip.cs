@@ -30,7 +30,7 @@ namespace IST.RemoteTalk
         }
 
 
-        public bool UpdateCachedAsset()
+        public bool UpdateCachedClip()
         {
             var provider = talk.provider;
             if (provider != null)

@@ -60,10 +60,10 @@ namespace IST.RemoteTalk
             EditorGUILayout.Space();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Import"))
-                t.ImportFile(EditorUtility.OpenFilePanel("Import Script", ".", "txt"));
-            if (GUILayout.Button("Export"))
-                t.ExportFile(EditorUtility.SaveFilePanel("Export Script", ".", t.name, "txt"));
+            if (GUILayout.Button("Import Text"))
+                t.ImportText(EditorUtility.OpenFilePanel("Import Text", ".", "txt"));
+            if (GUILayout.Button("Export Text"))
+                t.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", t.name, "txt"));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();

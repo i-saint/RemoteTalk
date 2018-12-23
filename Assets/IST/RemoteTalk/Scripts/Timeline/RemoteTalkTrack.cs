@@ -13,6 +13,9 @@ namespace IST.RemoteTalk
     public class RemoteTalkTrack : TrackAsset
     {
         public bool fitDuration = true;
+        public bool rearrange = true;
+        public bool pauseWhenExport = true;
+
 
         public TimelineClip AddClip(Talk talk)
         {
@@ -20,7 +23,6 @@ namespace IST.RemoteTalk
             var asset = ret.asset as RemoteTalkClip;
             asset.talk = talk;
             asset.audioClip.defaultValue = talk.audioClip;
-            ret.duration = asset.duration;
             return ret;
         }
 
@@ -44,10 +46,66 @@ namespace IST.RemoteTalk
                     continue;
 
                 var dstClip = audioTrack.CreateClip((AudioClip)ac);
+                dstClip.displayName = srcClip.displayName;
                 dstClip.start = srcClip.start;
                 dstClip.duration = srcClip.duration;
             }
         }
+
+        public void OnTalk(RemoteTalkBehaviour behaviour)
+        {
+            if (pauseWhenExport)
+                behaviour.director.Pause();
+        }
+
+        public void OnAudioClipUpdated(RemoteTalkBehaviour behaviour)
+        {
+            if (fitDuration)
+            {
+                var clip = behaviour.clip;
+                var rtc = (RemoteTalkClip)clip.asset;
+                double prev = clip.duration;
+                clip.duration = rtc.duration;
+                double gap = clip.duration - prev;
+
+                if (rearrange)
+                {
+                    bool doArrange = false;
+                    foreach(var c in GetClips())
+                    {
+                        if (doArrange)
+                            c.start = c.start + gap;
+                        else
+                            doArrange = c == clip;
+                    }
+                }
+            }
+            if (pauseWhenExport)
+                behaviour.director.Resume();
+        }
+        public bool ImportText(string path)
+        {
+            var talks = RemoteTalkScript.TextFileToTalks(path);
+            if (talks != null)
+            {
+                AddClips(talks);
+                return true;
+            }
+            return false;
+        }
+
+        public bool ExportText(string path)
+        {
+            var talks = new List<Talk>();
+            foreach (var c in GetClips())
+            {
+                var talk = ((RemoteTalkClip)c.asset).talk;
+                if (talks != null)
+                    talks.Add(talk);
+            }
+            return RemoteTalkScript.TalksToTextFile(path, talks);
+        }
+
 
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
@@ -70,7 +128,7 @@ namespace IST.RemoteTalk
 
             var rtc = (RemoteTalkClip)clip.asset;
             clip.displayName = rtc.talk.text + "_" + rtc.talk.castName;
-            rtc.UpdateCachedAsset();
+            rtc.UpdateCachedClip();
 
             return ret;
         }
