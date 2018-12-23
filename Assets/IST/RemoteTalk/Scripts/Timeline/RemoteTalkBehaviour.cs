@@ -23,21 +23,12 @@ namespace IST.RemoteTalk
         bool m_export;
 
 
-        public AudioSource GetOutput()
-        {
-            AudioSource ret = null;
-            foreach(var output in track.outputs)
-            {
-                ret = director.GetGenericBinding(output.sourceObject) as AudioSource;
-                if (ret != null)
-                    break;
-            }
-            return ret;
-        }
-
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
-            var output = GetOutput();
+            if (info.evaluationType == FrameData.EvaluationType.Playback && info.deltaTime == 0)
+                return;
+
+            var output = track.GetOutput();
             if (output != null)
             {
                 if (audioClip != null)
@@ -60,7 +51,7 @@ namespace IST.RemoteTalk
 
         public override void OnBehaviourPause(Playable playable, FrameData info)
         {
-            var output = GetOutput();
+            var output = track.GetOutput();
             if (output != null)
             {
                 if (audioClip != null)

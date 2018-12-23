@@ -17,6 +17,23 @@ namespace IST.RemoteTalk
         public bool rearrange = true;
         public bool pauseWhenExport = true;
 
+        PlayableDirector m_director;
+
+
+        public AudioSource GetOutput()
+        {
+            if (m_director == null)
+                return null;
+
+            AudioSource ret = null;
+            foreach (var output in outputs)
+            {
+                ret = m_director.GetGenericBinding(output.sourceObject) as AudioSource;
+                if (ret != null)
+                    break;
+            }
+            return ret;
+        }
 
         public TimelineClip AddClip(Talk talk)
         {
@@ -39,6 +56,11 @@ namespace IST.RemoteTalk
         {
             var timeline = timelineAsset;
             var audioTrack = timeline.CreateTrack<AudioTrack>(null, name);
+
+            var audioSource = GetOutput();
+            if (audioSource != null)
+                m_director.SetGenericBinding(audioTrack, audioSource);
+
             foreach (var srcClip in GetClips())
             {
                 var srcAsset = (RemoteTalkClip)srcClip.asset;
@@ -84,6 +106,7 @@ namespace IST.RemoteTalk
             if (pauseWhenExport)
                 behaviour.director.Resume();
         }
+
         public bool ImportText(string path)
         {
             var talks = RemoteTalkScript.TextFileToTalks(path);
@@ -110,6 +133,8 @@ namespace IST.RemoteTalk
 
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
+            m_director = go.GetComponent<PlayableDirector>();
+
             var ret = ScriptPlayable<RemoteTalkMixerBehaviour>.Create(graph, inputCount);
             var mixer = ret.GetBehaviour();
             mixer.director = go.GetComponent<PlayableDirector>();
