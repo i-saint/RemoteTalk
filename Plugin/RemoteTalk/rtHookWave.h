@@ -4,36 +4,24 @@
 
 namespace rt {
 
-#pragma warning(push)
-#pragma warning(disable:4100)
 class WaveOutHandlerBase
 {
 public:
+    WaveOutHandlerBase *prev;
+
     virtual ~WaveOutHandlerBase() {}
-    virtual void beforeWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen) {}
-    virtual void afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret) {}
-    virtual void beforeWaveOutClose(HWAVEOUT& hwo) {}
-    virtual void afterWaveOutClose(HWAVEOUT& hwo, MMRESULT& ret) {}
-    virtual void beforeWaveOutPrepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh) {}
-    virtual void afterWaveOutPrepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) {}
-    virtual void beforeWaveOutUnprepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh) {}
-    virtual void afterWaveOutUnprepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) {}
-    virtual void beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh) {}
-    virtual void afterWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) {}
-    virtual void beforeWaveOutPause(HWAVEOUT& hwo) {}
-    virtual void afterWaveOutPause(HWAVEOUT& hwo, MMRESULT& ret) {}
-    virtual void beforeWaveOutRestart(HWAVEOUT& hwo) {}
-    virtual void afterWaveOutRestart(HWAVEOUT& hwo, MMRESULT& ret) {}
-    virtual void beforeWaveOutReset(HWAVEOUT& hwo) {}
-    virtual void afterWaveOutReset(HWAVEOUT& hwo, MMRESULT& ret) {}
-    virtual void beforeWaveOutBreakLoop(HWAVEOUT& hwo) {}
-    virtual void afterWaveOutBreakLoop(HWAVEOUT& hwo, MMRESULT& ret) {}
-    virtual void beforeWaveOutSetPitch(HWAVEOUT& hwo, DWORD& dwPitch) {}
-    virtual void afterWaveOutSetPitch(HWAVEOUT& hwo, DWORD& dwPitch, MMRESULT& ret) {}
-    virtual void beforeWaveOutSetPlaybackRate(HWAVEOUT& hwo, DWORD& dwRate) {}
-    virtual void afterWaveOutSetPlaybackRate(HWAVEOUT& hwo, DWORD& dwRate, MMRESULT& ret) {}
+    virtual void onWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret) { prev->onWaveOutOpen(phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen, ret); }
+    virtual void onWaveOutClose(HWAVEOUT& hwo, MMRESULT& ret) { prev->onWaveOutClose(hwo, ret); }
+    virtual void onWaveOutPrepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) { prev->onWaveOutPrepareHeader(hwo, pwh, cbwh, ret); }
+    virtual void onWaveOutUnprepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) { prev->onWaveOutUnprepareHeader(hwo, pwh, cbwh, ret); }
+    virtual void onWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) { prev->onWaveOutWrite(hwo, pwh, cbwh, ret); }
+    virtual void onWaveOutPause(HWAVEOUT& hwo, MMRESULT& ret) { prev->onWaveOutPause(hwo, ret); }
+    virtual void onWaveOutRestart(HWAVEOUT& hwo, MMRESULT& ret) { prev->onWaveOutRestart(hwo, ret); }
+    virtual void onWaveOutReset(HWAVEOUT& hwo, MMRESULT& ret) { prev->onWaveOutReset(hwo, ret); }
+    virtual void onWaveOutBreakLoop(HWAVEOUT& hwo, MMRESULT& ret) { prev->onWaveOutBreakLoop(hwo, ret); }
+    virtual void onWaveOutSetPitch(HWAVEOUT& hwo, DWORD& dwPitch, MMRESULT& ret) { prev->onWaveOutSetPitch(hwo, dwPitch, ret); }
+    virtual void onWaveOutSetPlaybackRate(HWAVEOUT& hwo, DWORD& dwRate, MMRESULT& ret) { prev->onWaveOutSetPlaybackRate(hwo, dwRate, ret); }
 };
-#pragma warning(pop)
 
 bool InstallWaveOutHook(HookType ht, bool load_dll = true);
 bool OverrideWaveOutIAT(HMODULE target);

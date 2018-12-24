@@ -4,13 +4,15 @@ namespace rtcv {
 
 class WindowMessageHandler : public rt::WindowMessageHandlerBase
 {
+using super = rt::WindowMessageHandlerBase;
 public:
     rtDefSingleton(WindowMessageHandler);
-    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+    void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 };
 
 class WaveOutHandler : public rt::WaveOutHandlerBase
 {
+using super = rt::WaveOutHandlerBase;
 public:
     rtDefSingleton(WaveOutHandler);
 
@@ -20,10 +22,10 @@ public:
     void clearCallbacks();
 
 protected:
-    void afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret) override;
-    void beforeWaveOutClose(HWAVEOUT& hwo) override;
-    void beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh) override;
-    void beforeWaveOutReset(HWAVEOUT& hwo) override;
+    void onWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret) override;
+    void onWaveOutClose(HWAVEOUT& hwo, MMRESULT& ret) override;
+    void onWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) override;
+    void onWaveOutReset(HWAVEOUT& hwo, MMRESULT& ret) override;
 
 private:
     struct Record

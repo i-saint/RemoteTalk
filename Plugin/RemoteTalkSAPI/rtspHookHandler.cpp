@@ -8,10 +8,12 @@ void WaveOutHandler::clearCallbacks()
     onUpdate = {};
 }
 
-void WaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret)
+void WaveOutHandler::onWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret)
 {
+    super::onWaveOutOpen(phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen, ret);
     if (FAILED(ret))
         return;
+
     auto& rec = m_records[phwo ? *phwo : nullptr];
     rec.is_opened = true;
     rec.wave_format = *pwfx;
@@ -26,7 +28,7 @@ void WaveOutHandler::afterWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVE
     }
 }
 
-void WaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
+void WaveOutHandler::onWaveOutClose(HWAVEOUT& hwo, MMRESULT& ret)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -37,9 +39,11 @@ void WaveOutHandler::beforeWaveOutClose(HWAVEOUT& hwo)
         rec.is_playing = false;
     }
     rec.is_opened = false;
+
+    super::onWaveOutClose(hwo, ret);
 }
 
-void WaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh)
+void WaveOutHandler::onWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -54,9 +58,11 @@ void WaveOutHandler::beforeWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbw
         onUpdate(rec.data);
     if (mute)
         memset(pwh->lpData, 0, pwh->dwBufferLength);
+
+    super::onWaveOutWrite(hwo, pwh, cbwh, ret);
 }
 
-void WaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
+void WaveOutHandler::onWaveOutReset(HWAVEOUT& hwo, MMRESULT& ret)
 {
     auto it = m_records.find(hwo);
     if (it == m_records.end())
@@ -66,6 +72,8 @@ void WaveOutHandler::beforeWaveOutReset(HWAVEOUT& hwo)
     if (rec.is_playing)
         rec.is_playing = false;
     mute = false;
+
+    super::onWaveOutReset(hwo, ret);
 }
 
 } // namespace rtsp

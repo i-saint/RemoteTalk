@@ -5,6 +5,7 @@ namespace rtvr2 {
 
 class DSoundHandler : public rt::DSoundHandlerBase
 {
+using super = rt::DSoundHandlerBase;
 public:
     rtDefSingleton(DSoundHandler);
 
@@ -17,11 +18,11 @@ public:
     void update(IDirectSoundBuffer *_this, bool apply_margin = false);
 
 protected:
-    void afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret) override;
-    void afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret) override;
-    void beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition) override;
-    void afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret) override;
-    void beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, LPVOID& pvAudioPtr1, DWORD& dwAudioBytes1, LPVOID& pvAudioPtr2, DWORD& dwAudioBytes2) override;
+    void onIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret) override;
+    void onIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret) override;
+    void onIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition, HRESULT& ret) override;
+    void onIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret) override;
+    void onIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, LPVOID& pvAudioPtr1, DWORD& dwAudioBytes1, LPVOID& pvAudioPtr2, DWORD& dwAudioBytes2, HRESULT& ret) override;
 
 private:
     rt::RawVector<char> m_buffer;
@@ -36,9 +37,10 @@ private:
 
 class WindowMessageHandler : public rt::WindowMessageHandlerBase
 {
+using super = rt::WindowMessageHandlerBase;
 public:
     rtDefSingleton(WindowMessageHandler);
-    void afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+    void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 };
 
 } // namespace rtvr2

@@ -50,8 +50,10 @@ void DSoundHandler::update(IDirectSoundBuffer *_this, bool apply_margin)
         TalkInterface::getInstance().onUpdateSample(m_data);
 }
 
-void DSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret)
+void DSoundHandler::onIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWORD& dwWriteCursor, DWORD& dwWriteBytes, LPVOID *&ppvAudioPtr1, LPDWORD& pdwAudioBytes1, LPVOID *&ppvAudioPtr2, LPDWORD& pdwAudioBytes2, DWORD& dwFlags, HRESULT& ret)
 {
+    super::onIDirectSoundBuffer_Lock(_this, dwWriteCursor, dwWriteBytes, ppvAudioPtr1, pdwAudioBytes1, ppvAudioPtr2, pdwAudioBytes2, dwFlags, ret);
+
     update(_this);
 
     m_lbuf1 = ppvAudioPtr1 ? *ppvAudioPtr1 : nullptr;
@@ -66,7 +68,7 @@ void DSoundHandler::afterIDirectSoundBuffer_Lock(IDirectSoundBuffer *&_this, DWO
         *ppvAudioPtr2 = &m_buffer[0];
 }
 
-void DSoundHandler::beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, LPVOID& pvAudioPtr1, DWORD& dwAudioBytes1, LPVOID& pvAudioPtr2, DWORD& dwAudioBytes2)
+void DSoundHandler::onIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, LPVOID& pvAudioPtr1, DWORD& dwAudioBytes1, LPVOID& pvAudioPtr2, DWORD& dwAudioBytes2, HRESULT& ret)
 {
     if (mute) {
         if (m_lbuf1)
@@ -83,31 +85,41 @@ void DSoundHandler::beforeIDirectSoundBuffer_Unlock(IDirectSoundBuffer *&_this, 
 
     pvAudioPtr1 = m_lbuf1;
     pvAudioPtr2 = m_lbuf2;
+
+    super::onIDirectSoundBuffer_Unlock(_this, pvAudioPtr1, dwAudioBytes1, pvAudioPtr2, dwAudioBytes2, ret);
 }
 
-void DSoundHandler::afterIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret)
+void DSoundHandler::onIDirectSoundBuffer_Play(IDirectSoundBuffer *&_this, DWORD& dwReserved1, DWORD& dwPriority, DWORD& dwFlags, HRESULT& ret)
 {
+    super::onIDirectSoundBuffer_Play(_this, dwReserved1, dwPriority, dwFlags, ret);
+
     m_playing = true;
     TalkInterface::getInstance().onSoundPlay();
 }
 
-void DSoundHandler::afterIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret)
+void DSoundHandler::onIDirectSoundBuffer_Stop(IDirectSoundBuffer *&_this, HRESULT& ret)
 {
+    super::onIDirectSoundBuffer_Stop(_this, ret);
+
     update(_this, true);
     mute = false;
     m_playing = false;
     TalkInterface::getInstance().onSoundStop();
 }
 
-void DSoundHandler::beforeIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition)
+void DSoundHandler::onIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *&_this, DWORD& dwNewPosition, HRESULT& ret)
 {
     update(_this);
     m_position = dwNewPosition;
+
+    super::onIDirectSoundBuffer_SetCurrentPosition(_this, dwNewPosition, ret);
 }
 
 
-void WindowMessageHandler::afterGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+void WindowMessageHandler::onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
+    super::onGetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
+
     auto& server = TalkServer::getInstance();
     server.start();
     server.processMessages();

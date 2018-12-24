@@ -7,107 +7,154 @@
 
 namespace rt {
 
-static std::vector<WaveOutHandlerBase*> g_waveouthandlers;
-#define Call(Name, ...) for(auto *handler : g_waveouthandlers) { handler->Name(__VA_ARGS__); }
+static std::vector<WaveOutHandlerBase*>& GetWaveOutHandlers()
+{
+    static std::vector<WaveOutHandlerBase*> s_handlers;
+    return s_handlers;
+}
+#define Call(Name, ...) GetWaveOutHandlers().back()->Name(__VA_ARGS__);
 
 static MMRESULT(WINAPI *waveOutOpen_orig)(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
 static MMRESULT WINAPI waveOutOpen_hook(LPHWAVEOUT phwo, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen)
 {
-    Call(beforeWaveOutOpen, phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen);
-    auto ret = waveOutOpen_orig(phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen);
-    Call(afterWaveOutOpen, phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutOpen, phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutClose_orig)(HWAVEOUT hwo);
 static MMRESULT WINAPI waveOutClose_hook(HWAVEOUT hwo)
 {
-    Call(beforeWaveOutClose, hwo);
-    auto ret = waveOutClose_orig(hwo);
-    Call(afterWaveOutClose, hwo, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutClose, hwo, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutPrepareHeader_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
 static MMRESULT WINAPI waveOutPrepareHeader_hook(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 {
-    Call(beforeWaveOutPrepareHeader, hwo, pwh, cbwh);
-    auto ret = waveOutPrepareHeader_orig(hwo, pwh, cbwh);
-    Call(afterWaveOutPrepareHeader, hwo, pwh, cbwh, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutPrepareHeader, hwo, pwh, cbwh, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutUnprepareHeader_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
 static MMRESULT WINAPI waveOutUnprepareHeader_hook(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 {
-    Call(beforeWaveOutUnprepareHeader, hwo, pwh, cbwh);
-    auto ret = waveOutUnprepareHeader_orig(hwo, pwh, cbwh);
-    Call(afterWaveOutUnprepareHeader, hwo, pwh, cbwh, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutUnprepareHeader, hwo, pwh, cbwh, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutWrite_orig)(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
 static MMRESULT WINAPI waveOutWrite_hook(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 {
-    Call(beforeWaveOutWrite, hwo, pwh, cbwh);
-    auto ret = waveOutWrite_orig(hwo, pwh, cbwh);
-    Call(afterWaveOutWrite, hwo, pwh, cbwh, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutWrite, hwo, pwh, cbwh, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutPause_orig)(HWAVEOUT hwo);
 static MMRESULT WINAPI waveOutPause_hook(HWAVEOUT hwo)
 {
-    Call(beforeWaveOutPause, hwo);
-    auto ret = waveOutPause_orig(hwo);
-    Call(afterWaveOutPause, hwo, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutPause, hwo, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutRestart_orig)(HWAVEOUT hwo);
 static MMRESULT WINAPI waveOutRestart_hook(HWAVEOUT hwo)
 {
-    Call(beforeWaveOutRestart, hwo);
-    auto ret = waveOutRestart_orig(hwo);
-    Call(afterWaveOutRestart, hwo, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutRestart, hwo, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutReset_orig)(HWAVEOUT hwo);
 static MMRESULT WINAPI waveOutReset_hook(HWAVEOUT hwo)
 {
-    Call(beforeWaveOutReset, hwo);
-    auto ret = waveOutReset_orig(hwo);
-    Call(afterWaveOutReset, hwo, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutReset, hwo, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutBreakLoop_orig)(HWAVEOUT hwo);
 static MMRESULT WINAPI waveOutBreakLoop_hook(HWAVEOUT hwo)
 {
-    Call(beforeWaveOutBreakLoop, hwo);
-    auto ret = waveOutBreakLoop_orig(hwo);
-    Call(afterWaveOutBreakLoop, hwo, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutBreakLoop, hwo, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutSetPitch_orig)(HWAVEOUT hwo, DWORD dwPitch);
 static MMRESULT WINAPI waveOutSetPitch_hook(HWAVEOUT hwo, DWORD dwPitch)
 {
-    Call(beforeWaveOutSetPitch, hwo, dwPitch);
-    auto ret = waveOutSetPitch_orig(hwo, dwPitch);
-    Call(afterWaveOutSetPitch, hwo, dwPitch, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutSetPitch, hwo, dwPitch, ret);
     return ret;
 }
 
 static MMRESULT(WINAPI *waveOutSetPlaybackRate_orig)(HWAVEOUT hwo, DWORD dwRate);
 static MMRESULT WINAPI waveOutSetPlaybackRate_hook(HWAVEOUT hwo, DWORD dwRate)
 {
-    Call(beforeWaveOutSetPlaybackRate, hwo, dwRate);
-    auto ret = waveOutSetPlaybackRate_orig(hwo, dwRate);
-    Call(afterWaveOutSetPlaybackRate, hwo, dwRate, ret);
+    MMRESULT ret = 0;
+    Call(onWaveOutSetPlaybackRate, hwo, dwRate, ret);
     return ret;
 }
+#undef Call
+
+class WaveOutHandlerRoot : public WaveOutHandlerBase
+{
+public:
+    rtDefSingleton(WaveOutHandlerRoot);
+    WaveOutHandlerRoot() { GetWaveOutHandlers().push_back(this); }
+
+    void onWaveOutOpen(LPHWAVEOUT& phwo, UINT& uDeviceID, LPCWAVEFORMATEX& pwfx, DWORD_PTR& dwCallback, DWORD_PTR& dwInstance, DWORD& fdwOpen, MMRESULT& ret) override
+    {
+        ret = waveOutOpen_orig(phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen);
+    }
+    void onWaveOutClose(HWAVEOUT& hwo, MMRESULT& ret) override
+    {
+        ret = waveOutClose_orig(hwo);
+    }
+    void onWaveOutPrepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) override
+    {
+        ret = waveOutPrepareHeader_orig(hwo, pwh, cbwh);
+    }
+    void onWaveOutUnprepareHeader(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) override
+    {
+        ret = waveOutUnprepareHeader_orig(hwo, pwh, cbwh);
+    }
+    void onWaveOutWrite(HWAVEOUT& hwo, LPWAVEHDR& pwh, UINT& cbwh, MMRESULT& ret) override
+    {
+        ret = waveOutWrite_orig(hwo, pwh, cbwh);
+    }
+    void onWaveOutPause(HWAVEOUT& hwo, MMRESULT& ret) override
+    {
+        ret = waveOutPause_orig(hwo);
+    }
+    void onWaveOutRestart(HWAVEOUT& hwo, MMRESULT& ret) override
+    {
+        ret = waveOutRestart_orig(hwo);
+    }
+    void onWaveOutReset(HWAVEOUT& hwo, MMRESULT& ret) override
+    {
+        ret = waveOutReset_orig(hwo);
+    }
+    void onWaveOutBreakLoop(HWAVEOUT& hwo, MMRESULT& ret) override
+    {
+        ret = waveOutBreakLoop_orig(hwo);
+    }
+    void onWaveOutSetPitch(HWAVEOUT& hwo, DWORD& dwPitch, MMRESULT& ret) override
+    {
+        ret = waveOutSetPitch_orig(hwo, dwPitch);
+    }
+    void onWaveOutSetPlaybackRate(HWAVEOUT& hwo, DWORD& dwRate, MMRESULT& ret) override
+    {
+        ret = waveOutSetPlaybackRate_orig(hwo, dwRate);
+    }
+};
+
 
 #define EachFunctions(Body)\
     Body(waveOutOpen);\
@@ -130,7 +177,7 @@ class LoadLibraryHandler_WaveOut : public LoadLibraryHandlerBase
 public:
     rtDefSingleton(LoadLibraryHandler_WaveOut);
 
-    void afterLoadLibrary(HMODULE& mod) override
+    void onLoadLibrary(HMODULE& mod) override
     {
         hook(mod);
     }
@@ -187,7 +234,10 @@ bool OverrideWaveOutIAT(HMODULE mod)
 
 void AddWaveOutHandler(WaveOutHandlerBase *handler)
 {
-    g_waveouthandlers.push_back(handler);
+    WaveOutHandlerRoot::getInstance();
+    auto& handlers = GetWaveOutHandlers();
+    handler->prev = handlers.back();
+    handlers.push_back(handler);
 }
 
 } // namespace rt
