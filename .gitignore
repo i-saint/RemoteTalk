@@ -44,5 +44,7 @@ RemoteTalk.csproj
 RemoteTalk.sln
 Assets/RemoteTalkAssets/
 Assets/DefaultPlayables*
+Assets/StreamingAssets/RemoteTalk/*.json
+Assets/StreamingAssets/RemoteTalk/*.json.meta
 
 Plugin/dist/

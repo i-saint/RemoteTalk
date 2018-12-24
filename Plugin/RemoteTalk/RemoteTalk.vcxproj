@@ -27,6 +27,7 @@
     <ClInclude Include="rtFoundation.h" />
     <ClInclude Include="rtHook.h" />
     <ClInclude Include="rtHookDSound.h" />
+    <ClInclude Include="rtHookFileIO.h" />
     <ClInclude Include="rtHookKernel.h" />
     <ClInclude Include="rtHookWave.h" />
     <ClInclude Include="rtNorm.h" />
@@ -43,6 +44,7 @@
     <ClCompile Include="rtAudioFile.cpp" />
     <ClCompile Include="rtHook.cpp" />
     <ClCompile Include="rtHookDSound.cpp" />
+    <ClCompile Include="rtHookFileIO.cpp" />
     <ClCompile Include="rtHookKernel.cpp" />
     <ClCompile Include="rtHookWave.cpp" />
     <ClCompile Include="pch.cpp">

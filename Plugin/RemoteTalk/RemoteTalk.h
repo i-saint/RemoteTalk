@@ -2,6 +2,7 @@
 #include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
+#include "rtHookFileIO.h"
 #include "rtHookWave.h"
 #include "rtHookDSound.h"
 
