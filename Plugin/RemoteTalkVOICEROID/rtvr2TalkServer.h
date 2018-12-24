@@ -24,6 +24,9 @@ public:
     void onStop();
 
 private:
+    int m_num_casts = 0;
+    int m_current_cast = 0;
+
     std::mutex m_data_mutex;
     std::vector<rt::AudioDataPtr> m_data_queue;
 };

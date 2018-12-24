@@ -116,10 +116,10 @@ bool TalkInterfaceManaged::getParams(rt::TalkParams& params)
 
 bool TalkInterfaceManaged::setCast(int v)
 {
-    if (!m_lv_casts || v < 0 && v >= m_lv_casts->Items->Count)
+    if (!m_lv_casts || v < 0 || v >= m_lv_casts->Items->Count)
         return false;
     m_lv_casts->SelectedIndex = v;
-    return false;
+    return true;
 }
 
 bool TalkInterfaceManaged::setParams(const rt::TalkParams& params)

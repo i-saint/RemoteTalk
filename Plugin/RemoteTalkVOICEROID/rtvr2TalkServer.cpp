@@ -40,6 +40,14 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
         return Status::Pending;
     }
 
+    m_num_casts = ifs->getNumCasts();
+    if (m_current_cast < m_num_casts) {
+        if (ifs->setCast(m_current_cast))
+            ++m_current_cast;
+        RequestUpdate();
+        return Status::Pending;
+    }
+
     auto& stats = mes.stats;
     if (!ifs->getParams(stats.params)) {
         RequestUpdate();
