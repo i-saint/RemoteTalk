@@ -190,8 +190,8 @@ namespace IST.RemoteTalk
             if ((m_asyncTalk && !m_asyncTalk.isFinished) || m_asyncStop)
                 return false;
 
-            m_castID = GetCastID(talk.castName);
-            m_talkParams = talk.param;
+            castID = GetCastID(talk.castName);
+            TalkParam.Merge(m_talkParams, talk.param);
             m_talkText = talk.text;
             return Play();
         }
@@ -308,7 +308,7 @@ namespace IST.RemoteTalk
 
             if (m_asyncTalk)
             {
-                if(!playing)
+                if (!playing)
                 {
                     var buf = m_client.SyncBuffers();
                     if (buf.sampleLength > m_sampleGranularity ||

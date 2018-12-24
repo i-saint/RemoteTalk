@@ -23,6 +23,7 @@ namespace IST.RemoteTalk
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
+            talk.ValidateParams();
             UpdateCachedClip();
 
             var playable = ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);

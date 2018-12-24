@@ -13,6 +13,24 @@ namespace IST.RemoteTalk
     {
         public string name;
         public float value, rangeMin, rangeMax;
+
+        public static int Merge(TalkParam[] dst, TalkParam[] src)
+        {
+            int ret = 0;
+            foreach (var sp in src)
+            {
+                var i = Array.FindIndex(dst, a => a.name == sp.name);
+                if (i != -1)
+                {
+                    var dp = dst[i];
+                    dp.value = sp.value;
+                    if (dp.rangeMax > dp.rangeMin)
+                        dp.value = Mathf.Clamp(dp.value, dp.rangeMin, dp.rangeMax);
+                    ++ret;
+                }
+            }
+            return ret;
+        }
     }
 
     [Serializable]
@@ -89,6 +107,25 @@ namespace IST.RemoteTalk
                 if (prov != null)
                     prov.Stop();
             }
+        }
+
+        public bool ValidateParams()
+        {
+            var c = cast;
+            if (c != null)
+            {
+                var prev = param;
+                param = (TalkParam[])c.paramInfo.Clone();
+                TalkParam.Merge(param, prev);
+                return true;
+            }
+            return false;
+        }
+
+        public TalkParam FindParam(string key)
+        {
+            var i = Array.FindIndex(param, a => a.name == key);
+            return i != -1 ? param[i] : null;
         }
     }
 

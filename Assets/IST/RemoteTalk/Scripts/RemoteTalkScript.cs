@@ -91,13 +91,25 @@ namespace IST.RemoteTalk
                         talk.castName = matcheName[0].Groups[1].Value;
 
                         var matcheParams = rxParams.Matches(line);
-                        talk.param = new TalkParam[matcheParams.Count];
-                        for (int i = 0; i < matcheParams.Count; ++i)
+                        if (talk.ValidateParams())
                         {
-                            if (talk.param[i] == null)
-                                talk.param[i] = new TalkParam();
-                            talk.param[i].name = matcheParams[i].Groups[1].Value;
-                            talk.param[i].value = float.Parse(matcheParams[i].Groups[2].Value);
+                            for (int i = 0; i < matcheParams.Count; ++i)
+                            {
+                                var p = talk.FindParam(matcheParams[i].Groups[1].Value);
+                                if (p != null)
+                                    p.value = float.Parse(matcheParams[i].Groups[2].Value);
+                            }
+                        }
+                        else
+                        {
+                            talk.param = new TalkParam[matcheParams.Count];
+                            for (int i = 0; i < matcheParams.Count; ++i)
+                            {
+                                if (talk.param[i] == null)
+                                    talk.param[i] = new TalkParam();
+                                talk.param[i].name = matcheParams[i].Groups[1].Value;
+                                talk.param[i].value = float.Parse(matcheParams[i].Groups[2].Value);
+                            }
                         }
                     }
                     else if (talk != null)
