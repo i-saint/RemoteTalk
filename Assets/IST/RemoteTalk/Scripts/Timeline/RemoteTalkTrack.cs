@@ -23,6 +23,7 @@ namespace IST.RemoteTalk
         public bool pauseWhenExport = true;
 
         PlayableDirector m_director;
+        bool m_resumeRequested;
 
 
         public AudioSource audioSource
@@ -83,10 +84,13 @@ namespace IST.RemoteTalk
             RefreshTimelineWindow();
         }
 
-        public void OnTalk(RemoteTalkBehaviour behaviour)
+        public void OnTalk(RemoteTalkBehaviour behaviour, FrameData info)
         {
-            if (pauseWhenExport)
+            if (pauseWhenExport && info.evaluationType == FrameData.EvaluationType.Playback)
+            {
                 behaviour.director.Pause();
+                m_resumeRequested = true;
+            }
         }
 
         public void OnAudioClipUpdated(RemoteTalkBehaviour behaviour)
@@ -112,10 +116,11 @@ namespace IST.RemoteTalk
                     }
                 }
             }
-            if (pauseWhenExport)
+            if (pauseWhenExport && m_resumeRequested)
             {
                 m_director.time = m_director.time + duration;
                 m_director.Resume();
+                m_resumeRequested = false;
             }
         }
 

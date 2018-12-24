@@ -39,7 +39,7 @@ namespace IST.RemoteTalk
                         if (provider.Play(talk))
                         {
                             m_export = true;
-                            track.OnTalk(this);
+                            track.OnTalk(this, info);
                         }
                     }
                 }

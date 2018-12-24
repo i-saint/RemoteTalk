@@ -60,13 +60,7 @@ namespace IST.RemoteTalk
                         castName.stringValue = cast.name;
                         param.arraySize = cast.paramInfo.Length;
                         for (int i = 0; i < cast.paramInfo.Length; ++i)
-                        {
-                            var e = param.GetArrayElementAtIndex(i);
-                            e.FindPropertyRelative("name").stringValue = cast.paramInfo[i].name;
-                            e.FindPropertyRelative("value").floatValue = cast.paramInfo[i].value;
-                            e.FindPropertyRelative("rangeMin").floatValue = cast.paramInfo[i].rangeMin;
-                            e.FindPropertyRelative("rangeMax").floatValue = cast.paramInfo[i].rangeMax;
-                        }
+                            TalkParam.Copy(param.GetArrayElementAtIndex(i), cast.paramInfo[i]);
                     }
                 }
                 position.y += lineHeight;

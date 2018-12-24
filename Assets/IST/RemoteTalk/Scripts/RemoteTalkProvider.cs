@@ -14,6 +14,31 @@ namespace IST.RemoteTalk
         public string name;
         public float value, rangeMin, rangeMax;
 
+
+        public void Validate()
+        {
+            if (rangeMax > rangeMin)
+                value = Mathf.Clamp(value, rangeMin, rangeMax);
+        }
+
+        public TalkParam Clone()
+        {
+            return new TalkParam {
+                name = name,
+                value = value,
+                rangeMin = rangeMin,
+                rangeMax = rangeMax
+            };
+        }
+
+        public static TalkParam[] Clone(TalkParam[] src)
+        {
+            var ret = new TalkParam[src.Length];
+            for (int i = 0; i < ret.Length; ++i)
+                ret[i] = src[i].Clone();
+            return ret;
+        }
+
         public static int Merge(TalkParam[] dst, TalkParam[] src)
         {
             int ret = 0;
@@ -24,12 +49,19 @@ namespace IST.RemoteTalk
                 {
                     var dp = dst[i];
                     dp.value = sp.value;
-                    if (dp.rangeMax > dp.rangeMin)
-                        dp.value = Mathf.Clamp(dp.value, dp.rangeMin, dp.rangeMax);
+                    dp.Validate();
                     ++ret;
                 }
             }
             return ret;
+        }
+
+        public static void Copy(SerializedProperty dst, TalkParam src)
+        {
+            dst.FindPropertyRelative("name").stringValue = src.name;
+            dst.FindPropertyRelative("value").floatValue = src.value;
+            dst.FindPropertyRelative("rangeMin").floatValue = src.rangeMin;
+            dst.FindPropertyRelative("rangeMax").floatValue = src.rangeMax;
         }
     }
 
@@ -115,7 +147,7 @@ namespace IST.RemoteTalk
             if (c != null)
             {
                 var prev = param;
-                param = (TalkParam[])c.paramInfo.Clone();
+                param = TalkParam.Clone(c.paramInfo);
                 TalkParam.Merge(param, prev);
                 return true;
             }

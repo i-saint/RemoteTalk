@@ -200,6 +200,9 @@ namespace IST.RemoteTalk
 
             if (GUI.changed)
                 so.ApplyModifiedProperties();
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Plugin Version: " + rtPlugin.version);
         }
     }
 }

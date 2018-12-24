@@ -123,6 +123,14 @@ const rt::AudioData& rtHTTPClient::getBuffer()
 
 
 #pragma region rtAsync
+rtAPI const char* rtGetVersion()
+{
+    return rtPluginVersionStr;
+}
+#pragma endregion
+
+
+#pragma region rtAsync
 rtAPI bool rtAsyncIsValid(rtAsyncBase *self)
 {
     if (!self)

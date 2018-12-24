@@ -89,7 +89,11 @@ namespace IST.RemoteTalk
             {
                 m_castID = value;
                 if (m_castID >= 0 && m_castID < m_casts.Length)
-                    m_talkParams = (TalkParam[])m_casts[m_castID].paramInfo.Clone();
+                {
+                    var prev = m_talkParams;
+                    m_talkParams = TalkParam.Clone(m_casts[m_castID].paramInfo);
+                    TalkParam.Merge(m_talkParams, prev);
+                }
                 else
                     m_talkParams = new TalkParam[0];
             }
@@ -100,7 +104,7 @@ namespace IST.RemoteTalk
                 if (m_castID >= 0 && m_castID < m_casts.Length)
                     return m_casts[m_castID].name;
                 else
-                    return null;
+                    return "";
             }
         }
         public TalkParam[] talkParams
