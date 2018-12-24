@@ -19,7 +19,8 @@ public:
     rt::CastList getCastList();
     bool getParams(rt::TalkParams& params);
     bool setParams(const rt::TalkParams& params);
-    bool setText(const char *text);
+    void setText(const char *text);
+    void setTempFilePath(const char *path);
 
     bool talk();
     bool stop();
@@ -50,6 +51,7 @@ private:
     List<CastInfo^>^ m_casts;
     int m_cast = 0;
     String^ m_text = "";
+    String^ m_tmp_path = "";
 
     Talker^ m_talker;
     SpeakingState^ m_state;

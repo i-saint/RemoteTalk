@@ -8,6 +8,8 @@ struct OggSettings
     float quality = 1.0f;
 };
 
+bool ImportWave(AudioData& ad, std::istream& is);
+bool ImportWave(AudioData& ad, const char* path);
 
 bool ExportWave(const AudioData& ad, std::ostream& os);
 bool ExportWave(const AudioData& ad, const char* path);

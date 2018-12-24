@@ -145,9 +145,11 @@ namespace IST.RemoteTalk
                         for (int i = 0; i < talkParams.arraySize; ++i)
                             EditorGUILayout.PropertyField(talkParams.GetArrayElementAtIndex(i));
 
+                        var textStyle = EditorStyles.textField;
+                        textStyle.wordWrap = true;
                         var text = so.FindProperty("m_talkText");
                         EditorGUI.BeginChangeCheck();
-                        text.stringValue = EditorGUILayout.TextArea(text.stringValue, GUILayout.Height(100));
+                        text.stringValue = EditorGUILayout.TextArea(text.stringValue, textStyle, GUILayout.Height(100));
                         if (EditorGUI.EndChangeCheck())
                             so.ApplyModifiedProperties();
 

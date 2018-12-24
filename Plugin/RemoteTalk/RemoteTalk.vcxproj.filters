@@ -11,9 +11,10 @@
     <ClCompile Include="rtTalkReceiver.cpp" />
     <ClCompile Include="rtTalkServer.cpp" />
     <ClCompile Include="rtSerialization.cpp" />
-    <ClCompile Include="rtAudioFile.cpp" />
     <ClCompile Include="rtTalkInterface.cpp" />
     <ClCompile Include="rtHookFileIO.cpp" />
+    <ClCompile Include="rtAudioFile_Ogg.cpp" />
+    <ClCompile Include="rtAudioFile_Wave.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RemoteTalkNet.h" />
@@ -35,8 +36,8 @@
     <ClInclude Include="picojson\picojson.h">
       <Filter>picojson</Filter>
     </ClInclude>
-    <ClInclude Include="rtAudioFile.h" />
     <ClInclude Include="rtHookFileIO.h" />
+    <ClInclude Include="rtAudioFile.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="picojson">

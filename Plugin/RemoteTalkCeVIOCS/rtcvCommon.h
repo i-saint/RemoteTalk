@@ -13,6 +13,7 @@ namespace rtcv {
 class ITalkInterface : public rt::TalkInterface
 {
 public:
+    virtual void setTempFilePath(const char *path) = 0;
     virtual bool wait() = 0;
 
 #ifdef rtDebug

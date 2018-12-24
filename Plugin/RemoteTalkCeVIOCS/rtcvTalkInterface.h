@@ -19,6 +19,8 @@ public:
     int getNumCasts() const override;
     rt::CastInfo* getCastInfo(int i) const override;
     bool setText(const char *text) override;
+    void setTempFilePath(const char *path) override;
+
 
     bool isReady() const override;
     bool isPlaying() const override;

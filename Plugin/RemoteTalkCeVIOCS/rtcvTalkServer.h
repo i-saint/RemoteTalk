@@ -6,7 +6,7 @@ namespace rtcv {
 
 class TalkServer : public rt::TalkServer
 {
-    using super = rt::TalkServer;
+using super = rt::TalkServer;
 public:
     rtDefSingleton(TalkServer);
     TalkServer();
@@ -23,7 +23,15 @@ public:
     void onUpdateBuffer(const rt::AudioData& data);
 
 private:
+    enum class Mode {
+        HookWaveOut,
+        ExportFile,
+    };
+
     rt::TalkParams m_params;
+    Mode m_mode = Mode::ExportFile;
+    std::string m_tmp_path;
+
     std::future<void> m_task_talk;
     std::mutex m_data_mutex;
     std::vector<rt::AudioDataPtr> m_data_queue;

@@ -52,8 +52,16 @@ rt::CastInfo* TalkInterface::getCastInfo(int i) const
 
 bool TalkInterface::setText(const char *text)
 {
-    return TalkInterfaceManaged::getInstance()->setText(text);
+    TalkInterfaceManaged::getInstance()->setText(text);
+    return true;
 }
+
+void TalkInterface::setTempFilePath(const char *path)
+{
+    TalkInterfaceManaged::getInstance()->setTempFilePath(path);
+}
+
+
 
 bool TalkInterface::isReady() const
 {

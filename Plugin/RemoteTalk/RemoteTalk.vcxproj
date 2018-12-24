@@ -41,7 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtAudioData.cpp" />
-    <ClCompile Include="rtAudioFile.cpp" />
+    <ClCompile Include="rtAudioFile_Ogg.cpp" />
+    <ClCompile Include="rtAudioFile_Wave.cpp" />
     <ClCompile Include="rtHook.cpp" />
     <ClCompile Include="rtHookDSound.cpp" />
     <ClCompile Include="rtHookFileIO.cpp" />

@@ -126,12 +126,15 @@ bool TalkInterfaceManaged::setParams(const rt::TalkParams& params)
     return true;
 }
 
-bool TalkInterfaceManaged::setText(const char *text)
+void TalkInterfaceManaged::setText(const char *text)
 {
     m_text = gcnew String(text);
-    return true;
 }
 
+void TalkInterfaceManaged::setTempFilePath(const char *path)
+{
+    m_tmp_path = gcnew String(path);
+}
 
 bool TalkInterfaceManaged::talk()
 {
@@ -141,8 +144,13 @@ bool TalkInterfaceManaged::talk()
     if (!m_talker || !m_text || m_text->Length == 0)
         return false;
 
-    m_state = m_talker->Speak(m_text);
-    return m_state != nullptr;
+    if (m_tmp_path != nullptr && m_tmp_path->Length != 0) {
+        return m_talker->OutputWaveToFile(m_text, m_tmp_path);
+    }
+    else {
+        m_state = m_talker->Speak(m_text);
+        return m_state != nullptr;
+    }
 }
 
 bool TalkInterfaceManaged::stop()
