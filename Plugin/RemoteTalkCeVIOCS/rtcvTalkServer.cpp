@@ -44,8 +44,10 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 
 TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
-    if (m_task_talk.valid())
-        m_task_talk.wait();
+    if (m_task_talk.valid()) {
+        if (m_task_talk.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout)
+            return Status::Failed;
+    }
 
     m_params = mes.params;
 

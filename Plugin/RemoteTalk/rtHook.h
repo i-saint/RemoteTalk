@@ -46,6 +46,11 @@ void EnumerateChildWindowsRecursive(HWND parent, const std::function<void(HWND)>
 void EnumerateAllWindows(const std::function<void(HWND)> &body);
 
 
+void EnumerateThreads(DWORD pid, const std::function<void(DWORD)> &proc);
+void EnumerateThreads(const std::function<void(DWORD)> &proc);
+DWORD GetMainThreadID();
+bool IsInMainThread();
+
 enum class HookType
 {
     ATOverride,

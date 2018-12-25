@@ -78,6 +78,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
             rtDebugSleep(7000); // for debug
             InjectDLL(pi.hProcess, hook_path);
             ::ResumeThread(pi.hThread);
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
             rt::WaitUntilServerRespond(settings.port, 5000);
             return settings.port;
         }

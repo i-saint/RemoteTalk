@@ -91,11 +91,11 @@ rt::CastList TalkInterfaceManaged::getCastList()
 
     rt::CastList ret;
     if (m_casts) {
-        for each(auto ti in m_casts) {
+        for each(auto casts in m_casts) {
             rt::CastInfo ci;
-            ci.id = ti->id;
-            ci.name = ToStdString(ti->name);
-            for each(auto p in ti->params)
+            ci.id = casts->id;
+            ci.name = ToStdString(casts->name);
+            for each(auto p in casts->params)
                 ci.params.push_back({ ToStdString(p->name), p->value, p->range_min, p->range_max });
             ret.push_back(std::move(ci));
         }
@@ -118,7 +118,10 @@ bool TalkInterfaceManaged::setCast(int v)
 {
     if (!m_lv_casts || v < 0 || v >= m_lv_casts->Items->Count)
         return false;
-    m_lv_casts->SelectedIndex = v;
+    if (m_lv_casts->SelectedIndex != v) {
+        m_lv_casts->SelectedIndex = v;
+        return false;
+    }
     return true;
 }
 
@@ -166,20 +169,24 @@ bool TalkInterfaceManaged::setupControls()
         if (buttons->Count >= 2)
             m_bu_rewind = dynamic_cast<Button^>(buttons[2]);
 
-        auto vplv = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetListView", true);
-        if (vplv->Count >= 1) {
-            auto listview = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListView", true);
-            if (listview->Count >= 1) {
-                m_lv_casts = dynamic_cast<ListView^>(listview[0]);
+        if (m_casts == nullptr) {
+            auto vplv = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetListView", true);
+            if (vplv->Count >= 1) {
+                auto listview = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListView", true);
+                if (listview->Count >= 1) {
+                    m_lv_casts = dynamic_cast<ListView^>(listview[0]);
 
-                m_casts = gcnew List<CastInfo^>();
-                int index = 0;
-                auto items = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListViewItem", false);
-                for each(ListViewItem^ item in items) {
-                    auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
-                    if (tbs->Count >= 2) {
-                        auto tb = dynamic_cast<TextBlock^>(tbs[1]);
-                        m_casts->Add(gcnew CastInfo(index++, tb->Text));
+                    int index = 0;
+                    auto items = SelectControlsByTypeName(vplv[0], "System.Windows.Controls.ListViewItem", false);
+
+                    m_casts = gcnew List<CastInfo^>();
+                    for each(ListViewItem^ item in items) {
+                        auto tbs = SelectControlsByTypeName(item, "System.Windows.Controls.TextBlock", false);
+                        if (tbs->Count >= 2) {
+                            auto tb = dynamic_cast<TextBlock^>(tbs[1]);
+                            m_casts->Add(gcnew CastInfo(index, tb->Text));
+                            ++index;
+                        }
                     }
                 }
             }

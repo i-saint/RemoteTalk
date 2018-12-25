@@ -68,6 +68,10 @@ namespace IST.RemoteTalk
 
         public void Stop()
         {
+            if (m_audioSource == null)
+                return;
+            m_isPlaying = false;
+            m_isFinished = false;
             m_audioSource.Stop();
             m_audioSource.loop = false;
             m_audioSource.clip = null;
@@ -84,17 +88,12 @@ namespace IST.RemoteTalk
         void Update()
         {
             if (m_isFinished)
-            {
-                m_audioSource.Stop();
-                m_audioSource.clip = null;
-                m_isPlaying = false;
-                m_isFinished = false;
-            }
+                Stop();
         }
 
         void OnAudioFilterRead(float[] dst, int channels)
         {
-            if (!m_isPlaying)
+            if (!m_isPlaying || !m_data)
                 return;
 
             bool eos = m_syncBuffers();

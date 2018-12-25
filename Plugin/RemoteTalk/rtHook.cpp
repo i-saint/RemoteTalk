@@ -360,5 +360,59 @@ void EnumerateAllWindows(const std::function<void(HWND)>& body)
     ::EnumWindows(CBEnumerateWindowsR, (LPARAM)&body);
 }
 
+
+void EnumerateThreads(DWORD pid, const std::function<void(DWORD)> &proc)
+{
+    HANDLE ss = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    if (ss != INVALID_HANDLE_VALUE) {
+        THREADENTRY32 te;
+        te.dwSize = sizeof(te);
+        if (::Thread32First(ss, &te)) {
+            do {
+                if (te.dwSize >= FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(te.th32OwnerProcessID) &&
+                    te.th32OwnerProcessID == pid)
+                {
+                    proc(te.th32ThreadID);
+                }
+                te.dwSize = sizeof(te);
+            } while (::Thread32Next(ss, &te));
+        }
+        ::CloseHandle(ss);
+    }
+}
+
+void EnumerateThreads(const std::function<void(DWORD)> &proc)
+{
+    EnumerateThreads(::GetCurrentProcessId(), proc);
+}
+
+DWORD GetMainThreadID()
+{
+    static DWORD s_ret;
+    if (s_ret == 0) {
+        uint64_t oldest = ~0llu;
+        EnumerateThreads([&](DWORD tid) {
+            HANDLE hThread = ::OpenThread(THREAD_QUERY_INFORMATION, TRUE, tid);
+            if (hThread) {
+                FILETIME ctime, etime, ktime, utime;
+                if (::GetThreadTimes(hThread, &ctime, &etime, &ktime, &utime)) {
+                    if ((uint64_t&)ctime < oldest) {
+                        oldest = (uint64_t&)ctime;
+                        s_ret = tid;
+                    }
+                }
+                ::CloseHandle(hThread);
+            }
+            });
+    }
+    return s_ret;
+}
+
+bool IsInMainThread()
+{
+    return GetMainThreadID() == ::GetCurrentThreadId();
+}
+
+
 } // namespace rt
 #endif // _WIN32

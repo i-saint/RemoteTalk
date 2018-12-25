@@ -76,7 +76,6 @@ bool WaitUntilServerRespond(uint16_t port, int timeout_ms)
         }
         catch (...) {}
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-
     }
     return false;
 }

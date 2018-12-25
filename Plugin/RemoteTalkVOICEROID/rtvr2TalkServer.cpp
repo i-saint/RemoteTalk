@@ -5,11 +5,6 @@
 
 namespace rtvr2 {
 
-static void RequestUpdate()
-{
-    ::PostMessageW((HWND)0xffff, WM_TIMER, 0, 0);
-}
-
 TalkServer::TalkServer()
 {
     auto exe_path = rt::GetMainModulePath();
@@ -21,9 +16,6 @@ TalkServer::TalkServer()
 void TalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);
-
-    // force call GetMessageW()
-    RequestUpdate();
 }
 
 bool TalkServer::isReady()
@@ -36,46 +28,47 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
     auto ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next update.
-        RequestUpdate();
         return Status::Pending;
     }
 
     m_num_casts = ifs->getNumCasts();
+    if (m_num_casts == 0)
+        return Status::Failed;;
+
     if (m_current_cast < m_num_casts) {
-        if (ifs->setCast(m_current_cast))
+        if (ifs->setCast(m_current_cast)) {
+            ifs->prepareUI();
             ++m_current_cast;
-        RequestUpdate();
+        }
         return Status::Pending;
     }
 
     auto& stats = mes.stats;
     if (!ifs->getParams(stats.params)) {
-        RequestUpdate();
         return Status::Pending;
     }
-    {
-        int n = ifs->getNumCasts();
-        for (int i = 0; i < n; ++i)
-            stats.casts.push_back(*ifs->getCastInfo(i));
+    for (int i = 0; i < m_num_casts; ++i) {
+        auto& cast = *ifs->getCastInfo(i);
+        stats.casts.push_back(cast);
+        if (cast.params.size() == 0)
+            m_current_cast = 0;
     }
     stats.host = ifs->getClientName();
     stats.plugin_version = ifs->getPluginVersion();
     stats.protocol_version = ifs->getProtocolVersion();
-    return Status::Succeeded;
+    return m_current_cast > 0 ? Status::Succeeded : Status::Failed;
 }
 
 TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
+    if (ifs->isPlaying())
+        return Status::Failed;
+
     if (!ifs->prepareUI()) {
-        RequestUpdate();
         return Status::Pending;
     }
-    if (ifs->stop()) {
-        // need to wait until next message if stop() succeeded.
-        RequestUpdate();
-        return Status::Pending;
-    }
+
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
 
@@ -114,7 +107,6 @@ TalkServer::Status TalkServer::onStop(StopMessage& mes)
     auto *ifs = rtGetTalkInterface_();
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next message.
-        RequestUpdate();
         return Status::Pending;
     }
     return ifs->stop() ? Status::Succeeded : Status::Failed;

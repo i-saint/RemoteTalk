@@ -202,10 +202,11 @@ namespace IST.RemoteTalk
 
         public override void Stop()
         {
-            if (isServerTalking)
-                m_asyncStop = m_client.Stop();
             if (isPlaying)
                 UseOutput(audio => { audio.Stop(); });
+            if (isServerTalking)
+                m_asyncStop = m_client.Stop();
+            m_asyncTalk.Release();
         }
 
         public int GetCastID(string castName)

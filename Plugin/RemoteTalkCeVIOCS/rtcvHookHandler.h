@@ -2,14 +2,6 @@
 
 namespace rtcv {
 
-class WindowMessageHandler : public rt::WindowMessageHandlerBase
-{
-using super = rt::WindowMessageHandlerBase;
-public:
-    rtDefSingleton(WindowMessageHandler);
-    void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
-};
-
 class WaveOutHandler : public rt::WaveOutHandlerBase
 {
 using super = rt::WaveOutHandlerBase;
@@ -35,6 +27,18 @@ private:
         bool is_playing = false;
     };
     std::map<HWAVEOUT, Record> m_records;
+};
+
+class WindowMessageHandler : public rt::WindowMessageHandlerBase
+{
+    using super = rt::WindowMessageHandlerBase;
+public:
+    rtDefSingleton(WindowMessageHandler);
+    void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+
+    const int interval = 33;
+    int frame = 0;
+    UINT_PTR timer_id = 0;
 };
 
 } // namespace rtcv

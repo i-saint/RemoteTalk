@@ -300,6 +300,7 @@ static const GUID IID_IDirectSound8_ = { 0xC50A7E93, 0xF395, 0x4834, 0x9E, 0xF6,
 
 static bool InstallVTableHooks(HMODULE mod)
 {
+    DSoundHandlerRoot::getInstance();
     HRESULT (WINAPI *_DirectSoundCreate8)(LPCGUID pcGuidDevice, LPDIRECTSOUND8 *ppDS8, LPUNKNOWN pUnkOuter);
     (void*&)_DirectSoundCreate8 = ::GetProcAddress(mod, "DirectSoundCreate8");
     if (!_DirectSoundCreate8)

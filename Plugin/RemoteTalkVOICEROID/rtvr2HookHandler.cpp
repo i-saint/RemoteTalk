@@ -128,9 +128,21 @@ void WindowMessageHandler::onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFil
 {
     super::onGetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
 
-    auto& server = TalkServer::getInstance();
-    server.start();
-    server.processMessages();
+    if (!rt::IsInMainThread())
+        return;
+
+    const auto& msg = *lpMsg;
+    if (timer_id == 0) {
+        timer_id = ::SetTimer(nullptr, 0, interval, nullptr);
+    }
+    else if (msg.message == WM_TIMER && msg.wParam == timer_id) {
+        timer_id = ::SetTimer(nullptr, 0, interval, nullptr);
+        ++frame;
+
+        auto& server = TalkServer::getInstance();
+        server.start();
+        server.processMessages();
+    }
 }
 
 } // namespace rtvr2

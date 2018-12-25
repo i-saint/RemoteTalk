@@ -6,11 +6,6 @@
 
 namespace rtvrex {
 
-static void RequestUpdate()
-{
-    ::PostMessageW((HWND)0xffff, WM_TIMER, 0, 0);
-}
-
 TalkServer::TalkServer()
 {
     auto exe_path = rt::GetMainModulePath();
@@ -22,9 +17,6 @@ TalkServer::TalkServer()
 void TalkServer::addMessage(MessagePtr mes)
 {
     super::addMessage(mes);
-
-    // force call GetMessageW()
-    RequestUpdate();
 }
 
 bool TalkServer::isReady()
@@ -51,7 +43,7 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
     auto& ifs = TalkInterface::getInstance();
-    if(ifs.isPlaying())
+    if (ifs.isPlaying())
         return Status::Failed;
 
     {

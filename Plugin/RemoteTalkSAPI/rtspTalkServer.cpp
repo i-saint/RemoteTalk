@@ -86,7 +86,7 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 
 TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
-    if (!m_voice)
+    if (!m_voice || m_playing)
         return Status::Failed;
 
     wait();
@@ -101,8 +101,8 @@ TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
         m_voice->SetRate((long)(mes.params[0] * 10.0f - 10.0f));
 
     auto text = rt::ToWCS(rt::ToUTF8(mes.text));
+    m_playing = true;
     m_task_talk = std::async(std::launch::async, [this, text]() {
-        m_playing = true;
         m_voice->Speak(text.c_str(), 0, nullptr);
 
         rt::AudioData terminator;
