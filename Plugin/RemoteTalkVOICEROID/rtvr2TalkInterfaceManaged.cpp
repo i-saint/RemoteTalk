@@ -36,6 +36,17 @@ static List<System::Windows::DependencyObject^>^ SelectControlsByTypeName(String
     return ret;
 }
 
+static bool IsMainWindowVisible()
+{
+    if (System::Windows::Application::Current != nullptr) {
+        for each(System::Windows::Window^ w in System::Windows::Application::Current->Windows) {
+            if(w->GetType()->FullName == "AI.Talk.Editor.MainWindow")
+                return w->IsVisible;
+        }
+    }
+    return false;
+}
+
 static bool EmulateClick(Button^ button)
 {
     if (!button)
@@ -66,6 +77,11 @@ std::string ToStdString(String^ str)
 TalkInterfaceManaged^ TalkInterfaceManaged::getInstance()
 {
     return %s_instance;
+}
+
+bool TalkInterfaceManaged::isMainWindowVisible()
+{
+    return IsMainWindowVisible();
 }
 
 bool TalkInterfaceManaged::prepareUI()
@@ -105,7 +121,7 @@ rt::CastList TalkInterfaceManaged::getCastList()
 
 bool TalkInterfaceManaged::getParams(rt::TalkParams& params)
 {
-    if (m_lv_casts)
+    if (m_lv_casts && m_lv_casts->SelectedIndex != -1)
         params.cast = m_lv_casts->SelectedIndex;
 
     int n = std::min(m_sl_params->Count, rt::TalkParams::MaxParams);
@@ -190,7 +206,7 @@ bool TalkInterfaceManaged::setupControls()
         }
     }
 
-    {
+    if (m_lv_casts != nullptr && m_lv_casts->SelectedIndex != -1) {
         auto vpev = SelectControlsByTypeName("AI.Talk.Editor.VoicePresetEditView", true);
         if (vpev->Count >= 1) {
             auto cast = m_casts[m_lv_casts->SelectedIndex];

@@ -12,6 +12,7 @@ ref class TalkInterfaceManaged
 public:
     static TalkInterfaceManaged^ getInstance();
 
+    bool isMainWindowVisible();
     bool prepareUI();
     rt::CastList getCastList();
 

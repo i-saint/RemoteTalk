@@ -26,6 +26,9 @@ bool TalkServer::isReady()
 TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 {
     auto ifs = rtGetTalkInterface_();
+    if (!ifs->isMainWindowVisible())
+        return Status::Failed;
+
     if (!ifs->prepareUI()) {
         // UI needs refresh. wait next update.
         return Status::Pending;
@@ -33,7 +36,7 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 
     m_num_casts = ifs->getNumCasts();
     if (m_num_casts == 0)
-        return Status::Failed;;
+        return Status::Failed;
 
     if (m_current_cast < m_num_casts) {
         if (ifs->setCast(m_current_cast)) {
@@ -62,7 +65,7 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
-    if (ifs->isPlaying())
+    if (!ifs->isMainWindowVisible() || ifs->isPlaying())
         return Status::Failed;
 
     if (!ifs->setCast(mes.params.cast) || !ifs->prepareUI())
@@ -104,7 +107,7 @@ TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 TalkServer::Status TalkServer::onStop(StopMessage& mes)
 {
     auto *ifs = rtGetTalkInterface_();
-    if (!ifs->prepareUI()) {
+    if (!ifs->isMainWindowVisible() || !ifs->prepareUI()) {
         // UI needs refresh. wait next message.
         return Status::Pending;
     }

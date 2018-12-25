@@ -16,6 +16,7 @@ class ITalkInterface : public rt::TalkInterface
 public:
     virtual bool setCast(int v) = 0;
 
+    virtual bool isMainWindowVisible() = 0;
     virtual bool prepareUI() = 0;
     virtual void onPlay() = 0;
     virtual void onStop() = 0;

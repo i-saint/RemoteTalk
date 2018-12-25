@@ -90,6 +90,11 @@ bool TalkInterface::setCast(int v)
     return TalkInterfaceManaged::getInstance()->setCast(v);
 }
 
+bool TalkInterface::isMainWindowVisible()
+{
+    return TalkInterfaceManaged::getInstance()->isMainWindowVisible();
+}
+
 bool TalkInterface::prepareUI()
 {
     return TalkInterfaceManaged::getInstance()->prepareUI();

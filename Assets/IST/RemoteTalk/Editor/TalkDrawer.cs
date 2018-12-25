@@ -86,7 +86,6 @@ namespace IST.RemoteTalk
                 var textStyle = EditorStyles.textField;
                 textStyle.wordWrap = true;
                 text.stringValue = EditorGUI.TextArea(position, text.stringValue, textStyle);
-
             }
         }
     }

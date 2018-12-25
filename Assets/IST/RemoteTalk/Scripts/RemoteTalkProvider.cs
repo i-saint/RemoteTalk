@@ -41,6 +41,8 @@ namespace IST.RemoteTalk
 
         public static int Merge(TalkParam[] dst, TalkParam[] src)
         {
+            if (dst == null || src == null)
+                return 0;
             int ret = 0;
             foreach (var sp in src)
             {
@@ -54,6 +56,19 @@ namespace IST.RemoteTalk
                 }
             }
             return ret;
+        }
+
+        public static bool Compare(TalkParam[] dst, TalkParam[] src)
+        {
+            if (dst == null || src == null)
+                return false;
+            foreach (var sp in src)
+            {
+                var i = Array.FindIndex(dst, a => a.name == sp.name);
+                if (i != -1 && dst[i].value != sp.value)
+                    return false;
+            }
+            return true;
         }
 
         public static void Copy(SerializedProperty dst, TalkParam src)
@@ -83,7 +98,7 @@ namespace IST.RemoteTalk
     public class Talk
     {
         public string castName = "";
-        public TalkParam[] param;
+        public TalkParam[] param = new TalkParam[0];
         public string text = "";
 #if UNITY_EDITOR
         public bool foldParams;

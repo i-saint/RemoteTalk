@@ -26,6 +26,7 @@ public:
     bool stop() override;
 
     bool setCast(int v) override;
+    bool isMainWindowVisible() override;
     bool prepareUI() override;
     void onPlay() override;
     void onStop() override;
