@@ -38,6 +38,9 @@ using super = rt::WindowMessageHandlerBase;
 public:
     rtDefSingleton(WindowMessageHandler);
     void onGetMessageA(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+    void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+
+    void update(const MSG& msg);
 
     const int interval = 33;
     int frame = 0;

@@ -27,7 +27,10 @@ bool TalkServer::isReady()
 TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 {
     auto& ifs = TalkInterface::getInstance();
-    ifs.setupControls();
+    if (!ifs.isMainWindowVisible())
+        return Status::Failed;
+    if (!ifs.prepareUI())
+        return Status::Pending;
 
     auto& stats = mes.stats;
     stats.host = ifs.getClientName();
@@ -43,8 +46,10 @@ TalkServer::Status TalkServer::onStats(StatsMessage& mes)
 TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 {
     auto& ifs = TalkInterface::getInstance();
-    if (ifs.isPlaying())
+    if (!ifs.isMainWindowVisible() || ifs.isPlaying())
         return Status::Failed;
+    if (!ifs.prepareUI())
+        return Status::Pending;
 
     {
         std::unique_lock<std::mutex> lock(m_data_mutex);
@@ -57,8 +62,6 @@ TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
             m_data_queue.push_back(tmp);
         }
     });
-
-    ifs.setupControls();
 
     DSoundHandler::getInstance().mute = mes.params.mute;
 
@@ -93,8 +96,10 @@ TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
 TalkServer::Status TalkServer::onStop(StopMessage& mes)
 {
     auto& ifs = TalkInterface::getInstance();
-    if (!ifs.isPlaying())
+    if (!ifs.isMainWindowVisible() || !ifs.isPlaying())
         return Status::Failed;
+    if (!ifs.prepareUI())
+        return Status::Pending;
 
     ifs.setupControls();
     ifs.stop();

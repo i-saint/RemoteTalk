@@ -120,10 +120,19 @@ void WindowMessageHandler::onGetMessageA(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFil
 {
     super::onGetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
 
-    if (!rt::IsInMainThread())
-        return;
+    if (lpMsg && rt::IsInMainThread())
+        update(*lpMsg);
+}
+void WindowMessageHandler::onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+{
+    super::onGetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
 
-    const auto& msg = *lpMsg;
+    if (lpMsg && rt::IsInMainThread())
+        update(*lpMsg);
+}
+
+void WindowMessageHandler::update(const MSG& msg)
+{
     if (timer_id == 0) {
         timer_id = ::SetTimer(nullptr, 0, interval, nullptr);
     }

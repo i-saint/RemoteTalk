@@ -62,6 +62,32 @@ void TalkInterface::setAudioCallback(const std::function<void(const rt::AudioDat
     m_callback = callback;
 }
 
+bool TalkInterface::isMainWindowVisible()
+{
+    // splash screen and main window has identical class name and text.
+    // so check existence of controls...
+    if (!m_ctrl_play)
+        setupControls();
+    return m_ctrl_play != nullptr;
+}
+
+bool TalkInterface::prepareUI()
+{
+    setupControls();
+
+    if (!m_ctl_tab)
+        return false;
+
+    int tidx = 0;
+    if (GetTabIndex(m_ctl_tab, tidx)) {
+        if (tidx != 2) {
+            SetTabIndex(m_ctl_tab, 2);
+            return false;
+        }
+    }
+    return true;
+}
+
 void TalkInterface::setupControls()
 {
     int nth_edit = 0;
@@ -102,7 +128,6 @@ void TalkInterface::setupControls()
         else if (wcsstr(wclass, L"WindowsForms10.SysTabControl32")) {
             if (nth_tab++ == 1) {
                 m_ctl_tab = hwnd;
-                SetTabIndex(hwnd, 2);
             }
         }
 
@@ -116,6 +141,7 @@ void TalkInterface::setupControls()
         cast_name = std::regex_replace(cast_name, std::wregex(L"^VOICEROID{ ", std::regex_constants::icase), L"");
         cast_name = std::regex_replace(cast_name, std::wregex(L" EX$", std::regex_constants::icase), L"");
         cast_name = std::regex_replace(cast_name, std::wregex(L"Talk$", std::regex_constants::icase), L"");
+        cast_name = std::regex_replace(cast_name, std::wregex(L"–¯ˆÀ‚Æ‚à‚¦"), L"Œ·Šªƒ}ƒL");
 
         m_cast.name = rt::ToMBS(cast_name);
         m_cast.params.clear();

@@ -29,6 +29,8 @@ public:
     // impl
     void setAudioCallback(const std::function<void(const rt::AudioData&)>& callback);
 
+    bool isMainWindowVisible();
+    bool prepareUI();
     void setupControls();
     void onSoundPlay();
     void onSoundStop();
