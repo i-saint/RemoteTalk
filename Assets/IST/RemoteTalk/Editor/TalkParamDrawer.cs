@@ -17,10 +17,14 @@ namespace IST.RemoteTalk
             var rmin = property.FindPropertyRelative("rangeMin").floatValue;
             var rmax = property.FindPropertyRelative("rangeMax").floatValue;
 
+            EditorGUI.BeginChangeCheck();
+            float v = 0.0f;
             if (rmax > rmin)
-                val.floatValue = EditorGUI.Slider(position, name.stringValue, val.floatValue, rmin, rmax);
+                v = EditorGUI.Slider(position, name.stringValue, val.floatValue, rmin, rmax);
             else
-                val.floatValue = EditorGUI.FloatField(position, name.stringValue, val.floatValue);
+                v = EditorGUI.FloatField(position, name.stringValue, val.floatValue);
+            if (EditorGUI.EndChangeCheck())
+                val.floatValue = v;
         }
     }
 }

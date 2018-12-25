@@ -135,11 +135,17 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
 {
     URI uri(request.getURI());
 
+    std::string path = uri.getPath();
+    if (path=="/") {
+        // show stats by default for now
+        path = "/stats";
+    }
+
     bool handled = false;
-    if (uri.getPath() == "/ready") {
+    if (path == "/ready") {
         ServeText(response, m_server->isReady() ? "1" : "0", HTTPResponse::HTTPStatus::HTTP_OK);
     }
-    else if (uri.getPath() == "/talk") {
+    else if (path == "/talk") {
         auto mes = std::make_shared<TalkServer::TalkMessage>();
 
         auto qparams = uri.getQueryParameters();
@@ -182,14 +188,14 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
         if (mes->wait())
             handled = true;
     }
-    else if (uri.getPath() == "/stop") {
+    else if (path == "/stop") {
         auto mes = std::make_shared<TalkServer::StopMessage>();
         m_server->addMessage(mes);
         if (mes->wait())
             handled = true;
         ServeText(response, "ok", HTTPResponse::HTTPStatus::HTTP_OK);
     }
-    else if (uri.getPath() == "/stats") {
+    else if (path == "/stats") {
         auto mes = std::make_shared<TalkServer::StatsMessage>();
         m_server->addMessage(mes);
         if (mes->wait())
@@ -197,7 +203,7 @@ void TalkServerRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
         ServeText(response, mes->to_json(), HTTPResponse::HTTPStatus::HTTP_OK, "application/json");
     }
 #ifdef rtDebug
-    else if (uri.getPath() == "/debug") {
+    else if (path == "/debug") {
         auto mes = std::make_shared<TalkServer::DebugMessage>();
         auto qparams = uri.getQueryParameters();
         for (auto& pair : qparams)

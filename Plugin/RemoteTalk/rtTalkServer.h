@@ -22,7 +22,7 @@ struct TalkServerSettings
 {
     int max_queue = 256;
     int max_threads = 8;
-    uint16_t port = 8081;
+    uint16_t port = 8100;
 };
 using TalkServerSettingsTable = std::map<std::string, TalkServerSettings>;
 bool SaveServerSettings(const TalkServerSettingsTable& src, const std::string& path);
