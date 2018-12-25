@@ -37,7 +37,7 @@ class WindowMessageHandler : public rt::WindowMessageHandlerBase
 using super = rt::WindowMessageHandlerBase;
 public:
     rtDefSingleton(WindowMessageHandler);
-    void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
+    void onGetMessageA(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
 
     const int interval = 33;
     int frame = 0;

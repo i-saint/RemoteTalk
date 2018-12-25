@@ -116,9 +116,9 @@ void DSoundHandler::onIDirectSoundBuffer_SetCurrentPosition(IDirectSoundBuffer *
 }
 
 
-void WindowMessageHandler::onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
+void WindowMessageHandler::onGetMessageA(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret)
 {
-    super::onGetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
+    super::onGetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret);
 
     if (!rt::IsInMainThread())
         return;
@@ -128,7 +128,6 @@ void WindowMessageHandler::onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFil
         timer_id = ::SetTimer(nullptr, 0, interval, nullptr);
     }
     else if (msg.message == WM_TIMER && msg.wParam == timer_id) {
-        timer_id = ::SetTimer(nullptr, 0, interval, nullptr);
         ++frame;
 
         auto& server = TalkServer::getInstance();

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "rtFoundation.h"
+#include "rtRawVector.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
 #include "rtHookFileIO.h"
@@ -7,9 +8,10 @@
 
 namespace rt {
 
-static std::vector<FileIOHandlerBase*>& GetFileIOHandlers()
+using FileIOHandlers = FixedVector<FileIOHandlerBase*, MaxHookChain>;
+static FileIOHandlers& GetFileIOHandlers()
 {
-    static std::vector<FileIOHandlerBase*> s_handlers;
+    static FileIOHandlers s_handlers;
     return s_handlers;
 }
 #define Call(Name, ...) GetFileIOHandlers().back()->Name(__VA_ARGS__);

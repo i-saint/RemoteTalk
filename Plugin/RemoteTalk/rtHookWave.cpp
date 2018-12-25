@@ -1,15 +1,17 @@
 #include "pch.h"
-#ifdef _WIN32
+#include "rtRawVector.h"
 #include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
 #include "rtHookWave.h"
+#ifdef _WIN32
 
 namespace rt {
 
-static std::vector<WaveOutHandlerBase*>& GetWaveOutHandlers()
+using WaveOutHandlers = FixedVector<WaveOutHandlerBase*, MaxHookChain>;
+static WaveOutHandlers& GetWaveOutHandlers()
 {
-    static std::vector<WaveOutHandlerBase*> s_handlers;
+    static WaveOutHandlers s_handlers;
     return s_handlers;
 }
 #define Call(Name, ...) GetWaveOutHandlers().back()->Name(__VA_ARGS__);

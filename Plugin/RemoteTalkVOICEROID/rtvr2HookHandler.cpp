@@ -136,7 +136,6 @@ void WindowMessageHandler::onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFil
         timer_id = ::SetTimer(nullptr, 0, interval, nullptr);
     }
     else if (msg.message == WM_TIMER && msg.wParam == timer_id) {
-        timer_id = ::SetTimer(nullptr, 0, interval, nullptr);
         ++frame;
 
         auto& server = TalkServer::getInstance();

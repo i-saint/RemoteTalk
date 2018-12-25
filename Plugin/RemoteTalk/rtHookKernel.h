@@ -10,14 +10,14 @@ public:
 
     virtual ~LoadLibraryHandlerBase() {}
 
-    virtual void onLoadLibraryA(LPCSTR& lpFileName, HMODULE& ret) { prev->onLoadLibraryA(lpFileName, ret); }
-    virtual void onLoadLibraryW(LPWSTR& lpFileName, HMODULE& ret) { prev->onLoadLibraryW(lpFileName, ret); }
-    virtual void onLoadLibraryExA(LPCSTR& lpFileName, HANDLE& hFile, DWORD& dwFlags, HMODULE& ret) { prev->onLoadLibraryExA(lpFileName, hFile, dwFlags, ret); }
-    virtual void onLoadLibraryExW(LPWSTR& lpFileName, HANDLE& hFile, DWORD& dwFlags, HMODULE& ret) { prev->onLoadLibraryExW(lpFileName, hFile, dwFlags, ret); }
+    virtual void onLoadLibraryA(LPCSTR& lpFileName, HMODULE& ret) { if (prev) prev->onLoadLibraryA(lpFileName, ret); }
+    virtual void onLoadLibraryW(LPWSTR& lpFileName, HMODULE& ret) { if (prev) prev->onLoadLibraryW(lpFileName, ret); }
+    virtual void onLoadLibraryExA(LPCSTR& lpFileName, HANDLE& hFile, DWORD& dwFlags, HMODULE& ret) { if (prev) prev->onLoadLibraryExA(lpFileName, hFile, dwFlags, ret); }
+    virtual void onLoadLibraryExW(LPWSTR& lpFileName, HANDLE& hFile, DWORD& dwFlags, HMODULE& ret) { if (prev) prev->onLoadLibraryExW(lpFileName, hFile, dwFlags, ret); }
 
-    virtual void onLoadLibrary(HMODULE& ret) { prev->onLoadLibrary(ret); }
-    virtual void onFreeLibrary(HMODULE& mod, BOOL& ret) { prev->onFreeLibrary(mod, ret); }
-    virtual void onGetProcAddress(HMODULE& hModule, LPCSTR& lpProcName, FARPROC& ret) { prev->onGetProcAddress(hModule, lpProcName, ret); }
+    virtual void onLoadLibrary(HMODULE& ret) { if (prev) prev->onLoadLibrary(ret); }
+    virtual void onFreeLibrary(HMODULE& mod, BOOL& ret) { if (prev) prev->onFreeLibrary(mod, ret); }
+    virtual void onGetProcAddress(HMODULE& hModule, LPCSTR& lpProcName, FARPROC& ret) { if (prev) prev->onGetProcAddress(hModule, lpProcName, ret); }
 };
 
 class CoCreateHandlerBase
@@ -26,8 +26,8 @@ public:
     CoCreateHandlerBase *prev = nullptr;
 
     virtual ~CoCreateHandlerBase() {}
-    virtual void onCoCreateInstance(REFCLSID rclsid, LPUNKNOWN& pUnkOuter, DWORD& dwClsContext, REFIID riid, LPVOID *&ppv, HRESULT& ret) { prev->onCoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv, ret); }
-    virtual void onCoCreateInstanceEx(REFCLSID rclsid, LPUNKNOWN& pUnkOuter, DWORD& dwClsContext, COSERVERINFO *&pServerInfo, DWORD& dwCount, MULTI_QI *&pResults, HRESULT& ret) { prev->onCoCreateInstanceEx(rclsid, pUnkOuter, dwClsContext, pServerInfo, dwCount, pResults, ret); }
+    virtual void onCoCreateInstance(REFCLSID rclsid, LPUNKNOWN& pUnkOuter, DWORD& dwClsContext, REFIID riid, LPVOID *&ppv, HRESULT& ret) { if (prev) prev->onCoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv, ret); }
+    virtual void onCoCreateInstanceEx(REFCLSID rclsid, LPUNKNOWN& pUnkOuter, DWORD& dwClsContext, COSERVERINFO *&pServerInfo, DWORD& dwCount, MULTI_QI *&pResults, HRESULT& ret) { if (prev) prev->onCoCreateInstanceEx(rclsid, pUnkOuter, dwClsContext, pServerInfo, dwCount, pResults, ret); }
 };
 
 class WindowMessageHandlerBase
@@ -36,8 +36,8 @@ public:
     WindowMessageHandlerBase *prev = nullptr;
 
     virtual ~WindowMessageHandlerBase() {}
-    virtual void onGetMessageA(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) { prev->onGetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret); }
-    virtual void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) { prev->onGetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret); }
+    virtual void onGetMessageA(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) { if (prev) prev->onGetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret); }
+    virtual void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) { if (prev) prev->onGetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, ret); }
 };
 
 

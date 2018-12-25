@@ -35,10 +35,6 @@ class WindowMessageHandler : public rt::WindowMessageHandlerBase
 public:
     rtDefSingleton(WindowMessageHandler);
     void onGetMessageW(LPMSG& lpMsg, HWND& hWnd, UINT& wMsgFilterMin, UINT& wMsgFilterMax, BOOL& ret) override;
-
-    const int interval = 33;
-    int frame = 0;
-    UINT_PTR timer_id = 0;
 };
 
 } // namespace rtcv

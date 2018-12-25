@@ -268,4 +268,43 @@ private:
     size_t m_capacity = 0;
 };
 
+
+template<class T, size_t N>
+class FixedVector
+{
+public:
+    bool empty() const { return m_size == 0; }
+    size_t size() const { return m_size; }
+    size_t capacity() const { return N; }
+
+    T& at(size_t i) { return m_data[i]; }
+    const T& at(size_t i) const { return m_data[i]; }
+    T& operator[](size_t i) { return at(i); }
+    const T& operator[](size_t i) const { return at(i); }
+
+    T& front() { return m_data[0]; }
+    const T& front() const { return m_data[0]; }
+    T& back() { return m_data[m_size - 1]; }
+    const T& back() const { return m_data[m_size - 1]; }
+
+    void push_back(const T& v)
+    {
+        if (m_size == N)
+            throw std::runtime_error("FixedVector::push_back()");
+        ++m_size;
+        back() = v;
+    }
+
+    void pop_back()
+    {
+        if (m_size == 0)
+            throw std::runtime_error("FixedVector::pop_back()");
+        --m_size;
+    }
+
+private:
+    T m_data[N];
+    size_t m_size = 0;
+};
+
 } // namespace rt

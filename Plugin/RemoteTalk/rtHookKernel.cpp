@@ -2,14 +2,16 @@
 #include "rtFoundation.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
+#include "rtRawVector.h"
 #ifdef _WIN32
 
 namespace rt {
 
 #pragma region LoadLibraryHandler
-static std::vector<LoadLibraryHandlerBase*>& GetLoadLibraryHandlers()
+using LoadLibraryHandlers = FixedVector<LoadLibraryHandlerBase*, MaxHookChain>;
+static LoadLibraryHandlers& GetLoadLibraryHandlers()
 {
-    static std::vector<LoadLibraryHandlerBase*> s_handlers;
+    static LoadLibraryHandlers s_handlers;
     return s_handlers;
 }
 #define Call(Name, ...) GetLoadLibraryHandlers().back()->Name(__VA_ARGS__);
@@ -162,9 +164,10 @@ void AddLoadLibraryHandler(LoadLibraryHandlerBase *handler)
 
 
 #pragma region CoCreateHandler
-static std::vector<CoCreateHandlerBase*>& GetCoCreateHandlers()
+using CoCreateHandlers = FixedVector<CoCreateHandlerBase*, MaxHookChain>;
+static CoCreateHandlers& GetCoCreateHandlers()
 {
-    static std::vector<CoCreateHandlerBase*> s_handlers;
+    static CoCreateHandlers s_handlers;
     return s_handlers;
 }
 #define Call(Name, ...) GetCoCreateHandlers().back()->Name(__VA_ARGS__);
@@ -267,9 +270,10 @@ void AddCoCreateHandler(CoCreateHandlerBase *handler)
 
 
 #pragma region WindowMessageHandler
-static std::vector<WindowMessageHandlerBase*>& GetWindowMessageHandlers()
+using WindowMessageHandlers = FixedVector<WindowMessageHandlerBase*, MaxHookChain>;
+static WindowMessageHandlers& GetWindowMessageHandlers()
 {
-    static std::vector<WindowMessageHandlerBase*> s_handlers;
+    static WindowMessageHandlers s_handlers;
     return s_handlers;
 }
 #define Call(Name, ...) GetWindowMessageHandlers().back()->Name(__VA_ARGS__);

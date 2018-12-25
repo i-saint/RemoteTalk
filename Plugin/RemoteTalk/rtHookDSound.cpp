@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "rtFoundation.h"
+#include "rtRawVector.h"
 #include "rtHook.h"
 #include "rtHookKernel.h"
 #include "rtHookDSound.h"
@@ -8,9 +9,10 @@
 
 namespace rt {
 
-static std::vector<DSoundHandlerBase*>& GetDSoundHandlers()
+using DSoundHandlers = FixedVector<DSoundHandlerBase*, MaxHookChain>;
+static DSoundHandlers& GetDSoundHandlers()
 {
-    static std::vector<DSoundHandlerBase*> s_handlers;
+    static DSoundHandlers s_handlers;
     return s_handlers;
 }
 #define Call(Name, ...) GetDSoundHandlers().back()->Name(__VA_ARGS__);

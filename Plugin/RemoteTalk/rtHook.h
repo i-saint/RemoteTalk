@@ -51,10 +51,14 @@ void EnumerateThreads(const std::function<void(DWORD)> &proc);
 DWORD GetMainThreadID();
 bool IsInMainThread();
 
+
 enum class HookType
 {
     ATOverride,
     Hotpatch,
 };
+
+const size_t MaxHookChain = 16;
+
 } // namespace rt
 #endif // _WIN32
