@@ -127,9 +127,6 @@ bool TalkInterfaceManaged::setCast(int v)
 
 bool TalkInterfaceManaged::setParams(const rt::TalkParams& params)
 {
-    if (m_lv_casts)
-        setCast(params.cast);
-
     for (int i = 0; i < rt::TalkParams::MaxParams; ++i) {
         if (params.isSet(i) && i < m_sl_params->Count)
             UpdateValue(m_sl_params[i], params[i]);

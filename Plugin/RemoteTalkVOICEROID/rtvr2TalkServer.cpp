@@ -65,9 +65,8 @@ TalkServer::Status TalkServer::onTalk(TalkMessage& mes)
     if (ifs->isPlaying())
         return Status::Failed;
 
-    if (!ifs->prepareUI()) {
+    if (!ifs->setCast(mes.params.cast) || !ifs->prepareUI())
         return Status::Pending;
-    }
 
     ifs->setParams(mes.params);
     ifs->setText(mes.text.c_str());
