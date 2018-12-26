@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using UnityEditor;
+using UnityEditor.Timeline;
 
 namespace IST.RemoteTalk
 {
@@ -13,6 +14,7 @@ namespace IST.RemoteTalk
     {
         public string path;
         public bool parCastTrack = true;
+        public double clipMargin = 0.1;
 
         [MenuItem("Assets/RemoteTalk/Import Text")]
         static void Init()
@@ -33,27 +35,21 @@ namespace IST.RemoteTalk
             EditorGUI.BeginDisabledGroup(true);
             GUILayout.TextField(path);
             EditorGUI.EndDisabledGroup();
-            parCastTrack =  EditorGUILayout.Toggle("Tracks for each cast", parCastTrack);
+            parCastTrack = EditorGUILayout.Toggle("Tracks For Each Cast", parCastTrack);
+            clipMargin = EditorGUILayout.DoubleField("Clip Margin", clipMargin);
 
             if (GUILayout.Button("Create Timeline Track"))
             {
                 var talks = RemoteTalkScript.TextFileToTalks(path);
 
-                TimelineAsset timeline = null;
-                PlayableDirector director = null;
-                var go = Selection.activeGameObject;
-                if (go != null)
-                {
-                    director = go.GetComponent<PlayableDirector>();
-                    if (director != null)
-                        timeline = director.playableAsset as TimelineAsset;
-                }
+                TimelineAsset timeline = TimelineEditor.inspectedAsset;
+                PlayableDirector director = TimelineEditor.inspectedDirector;
 
-                if (timeline == null)
+                if (timeline == null || director == null)
                 {
                     timeline = ScriptableObject.CreateInstance<TimelineAsset>();
                     AssetDatabase.CreateAsset(timeline, "Assets/RemoteTalkTimeline.asset");
-                    go = new GameObject();
+                    var go = new GameObject();
                     go.name = "RemoteTalkTimeline";
                     director = go.AddComponent<PlayableDirector>();
                     director.playableAsset = timeline;
@@ -67,7 +63,7 @@ namespace IST.RemoteTalk
 
         TimelineAsset CreateTracks(PlayableDirector director, TimelineAsset timeline, IEnumerable<Talk> talks)
         {
-            double time = 0.0;
+            double time = 1.0;
             if (parCastTrack)
             {
                 var tracks = new Dictionary<string, RemoteTalkTrack>();
@@ -87,7 +83,7 @@ namespace IST.RemoteTalk
                     }
                     var clip = track.AddClip(talk);
                     clip.start = time;
-                    time += clip.duration;
+                    time += clip.duration + clipMargin;
                 }
             }
             else
@@ -104,7 +100,7 @@ namespace IST.RemoteTalk
                 {
                     var clip = track.AddClip(talk);
                     clip.start = time;
-                    time += clip.duration;
+                    time += clip.duration + clipMargin;
                 }
             }
             return timeline;

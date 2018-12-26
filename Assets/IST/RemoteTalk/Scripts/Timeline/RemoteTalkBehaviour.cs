@@ -20,34 +20,19 @@ namespace IST.RemoteTalk
         public AudioClip audioClip;
         public RemoteTalkProvider remoteTalk;
 
+        bool m_pending;
         bool m_export;
 
 
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
-            var output = track.audioSource;
-            if (output != null)
-            {
-                if (audioClip != null)
-                    output.PlayOneShot(audioClip);
-                else
-                {
-                    var provider = talk.provider;
-                    if (provider != null)
-                    {
-                        provider.output = output;
-                        if (provider.Play(talk))
-                        {
-                            m_export = true;
-                            track.OnTalk(this, info);
-                        }
-                    }
-                }
-            }
+            m_pending = true;
         }
 
         public override void OnBehaviourPause(Playable playable, FrameData info)
         {
+            m_pending = false;
+
             var output = track.audioSource;
             if (output != null)
             {
@@ -57,6 +42,40 @@ namespace IST.RemoteTalk
                 //    talk.Stop();
             }
         }
+
+        public override void ProcessFrame(Playable playable, FrameData info, object playerData)
+        {
+            if (!m_pending)
+                return;
+
+            var output = playerData as AudioSource;
+            if (output == null)
+            {
+                m_pending = false;
+                return;
+            }
+
+            if (audioClip != null)
+            {
+                output.PlayOneShot(audioClip);
+                m_pending = false;
+            }
+            else
+            {
+                var provider = talk.provider;
+                if (provider != null)
+                {
+                    provider.output = output;
+                    if (provider.Play(talk))
+                    {
+                        m_pending = false;
+                        m_export = true;
+                        track.OnTalk(this, info);
+                    }
+                }
+            }
+        }
+
 
         public void OnAudioClipImport(Talk t, AudioClip ac)
         {

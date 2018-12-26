@@ -18,8 +18,16 @@ namespace IST.RemoteTalk
     [TrackClipType(typeof(RemoteTalkClip))]
     public class RemoteTalkTrack : TrackAsset
     {
+        public enum ArrangeMode
+        {
+            None,
+            OnlySelf,
+            RemoteTalkTracks,
+            AllTracks,
+        }
+
         public bool fitDuration = true;
-        public bool rearrange = true;
+        public ArrangeMode arrangeMode = ArrangeMode.AllTracks;
         public bool pauseWhenExport = true;
         bool m_resumeRequested;
 
@@ -109,23 +117,61 @@ namespace IST.RemoteTalk
             if (fitDuration)
             {
                 clip.duration = duration;
-                if (rearrange)
-                {
-                    bool doArrange = false;
-                    foreach(var c in GetClips())
-                    {
-                        if (doArrange)
-                            c.start = c.start + gap;
-                        else
-                            doArrange = c == clip;
-                    }
-                }
+                ArrangeClips(clip.start, gap);
             }
             if (pauseWhenExport && m_resumeRequested)
             {
-                director.time = director.time + duration;
+                director.time = clip.end;
                 director.Resume();
                 m_resumeRequested = false;
+            }
+        }
+
+        public void EnumerateAllTracksImpl(TrackAsset track, Action<TrackAsset> act)
+        {
+            act(track);
+            foreach (var child in track.GetChildTracks())
+                EnumerateAllTracksImpl(child, act);
+        }
+
+        public void EnumerateAllTracks(Action<TrackAsset> act)
+        {
+            foreach (var track in timelineAsset.GetRootTracks())
+                EnumerateAllTracksImpl(track, act);
+        }
+
+        public void ArrangeClips(double time, double gap)
+        {
+            if (arrangeMode == ArrangeMode.None)
+                return;
+
+            var tracks = new List<TrackAsset>();
+            switch (arrangeMode)
+            {
+                case ArrangeMode.OnlySelf:
+                    tracks.Add(this);
+                    break;
+                case ArrangeMode.RemoteTalkTracks:
+                    EnumerateAllTracks(track=> {
+                        var rtt = track as RemoteTalkTrack;
+                        if (rtt != null)
+                            tracks.Add(rtt);
+                    });
+                    break;
+                case ArrangeMode.AllTracks:
+                    EnumerateAllTracks(track => tracks.Add(track));
+                    break;
+                default:
+                    break;
+            }
+
+            foreach(var track in tracks)
+            {
+                foreach (var clip in track.GetClips())
+                {
+                    if (clip.start > time)
+                        clip.start = clip.start + gap;
+                }
             }
         }
 
