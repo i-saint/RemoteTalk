@@ -14,7 +14,8 @@ namespace IST.RemoteTalk
     {
         public string path;
         public bool parCastTrack = true;
-        public double clipMargin = 0.1;
+        public double startTime = 0.5;
+        public double interval = 0.5;
 
         [MenuItem("Assets/RemoteTalk/Import Text")]
         static void Init()
@@ -36,7 +37,8 @@ namespace IST.RemoteTalk
             GUILayout.TextField(path);
             EditorGUI.EndDisabledGroup();
             parCastTrack = EditorGUILayout.Toggle("Tracks For Each Cast", parCastTrack);
-            clipMargin = EditorGUILayout.DoubleField("Clip Margin", clipMargin);
+            startTime = EditorGUILayout.DoubleField("Start Time", startTime);
+            interval = EditorGUILayout.DoubleField("Clip Margin", interval);
 
             if (GUILayout.Button("Create Timeline Track"))
             {
@@ -63,7 +65,7 @@ namespace IST.RemoteTalk
 
         TimelineAsset CreateTracks(PlayableDirector director, TimelineAsset timeline, IEnumerable<Talk> talks)
         {
-            double time = 1.0;
+            double time = startTime;
             if (parCastTrack)
             {
                 var tracks = new Dictionary<string, RemoteTalkTrack>();
@@ -77,13 +79,12 @@ namespace IST.RemoteTalk
                         track.name = talk.castName;
                         tracks[talk.castName] = track;
 
-                        var audio = new GameObject();
-                        audio.name = talk.castName;
-                        track.audioSource = audio.AddComponent<AudioSource>();
+                        var audio = Misc.FindOrCreateGameObject(talk.castName + "_AudioSource");
+                        track.audioSource = Misc.GetOrAddComponent<AudioSource>(audio);
                     }
                     var clip = track.AddClip(talk);
                     clip.start = time;
-                    time += clip.duration + clipMargin;
+                    time += clip.duration + interval;
                 }
             }
             else
@@ -92,15 +93,14 @@ namespace IST.RemoteTalk
                 track.director = director;
                 track.name = "RemoteTalkTrack";
 
-                var audio = new GameObject();
-                audio.name = "RemoteTalkAudioSource";
-                track.audioSource = audio.AddComponent<AudioSource>();
+                var audio = Misc.FindOrCreateGameObject("RemoteTalkAudioSource");
+                track.audioSource = Misc.GetOrAddComponent<AudioSource>(audio);
 
                 foreach (var talk in talks)
                 {
                     var clip = track.AddClip(talk);
                     clip.start = time;
-                    time += clip.duration + clipMargin;
+                    time += clip.duration + interval;
                 }
             }
             return timeline;

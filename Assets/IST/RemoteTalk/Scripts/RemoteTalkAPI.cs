@@ -41,6 +41,17 @@ namespace IST.RemoteTalk
             }
         }
 
+        public static GameObject FindOrCreateGameObject(string name)
+        {
+            var ret = GameObject.Find(name);
+            if (ret == null)
+            {
+                ret = new GameObject();
+                ret.name = name;
+            }
+            return ret;
+        }
+
         public static T GetOrAddComponent<T>(GameObject go) where T : Component
         {
             if (go == null)

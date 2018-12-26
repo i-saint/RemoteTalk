@@ -40,8 +40,11 @@ namespace IST.RemoteTalk
             if (provider != null)
             {
                 var ac = provider.FindClip(talk);
-                audioClip.defaultValue = ac;
-                return ac != null;
+                if (audioClip.defaultValue != ac)
+                {
+                    audioClip.defaultValue = ac;
+                    return ac != null;
+                }
             }
             return false;
         }

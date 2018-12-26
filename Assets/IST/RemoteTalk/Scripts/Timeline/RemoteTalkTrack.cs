@@ -59,9 +59,13 @@ namespace IST.RemoteTalk
         public TimelineClip AddClip(Talk talk)
         {
             var ret = CreateDefaultClip();
+            ret.displayName = talk.text + "_" + talk.castName;
             var asset = ret.asset as RemoteTalkClip;
             asset.talk = talk;
             asset.audioClip.defaultValue = talk.audioClip;
+            asset.UpdateCachedClip();
+            if (!double.IsInfinity(asset.duration))
+                ret.duration = asset.duration;
             return ret;
         }
 
