@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using IST.RemoteTalk;
 
 
 [ExecuteInEditMode]
@@ -32,6 +28,11 @@ public class DecibelCalculator : MonoBehaviour
         get { return Mathf.Pow(2, 10 * cutoff - 10) * 15000; }
     }
 
+    void Start()
+    {
+        Update();
+    }
+
     void Update()
     {
         if (m_sampleCount > 0)
@@ -55,7 +56,11 @@ public class DecibelCalculator : MonoBehaviour
     {
         for (var i = 0; i < data.Length; i += channels)
         {
-            var s = data[i];
+            float s = 0.0f;
+            for (int c = 0; c < channels; ++c)
+                s += data[i];
+            s /= channels;
+
             if (bandPassFilter)
             {
                 var vZ1 = 0.5f * s;

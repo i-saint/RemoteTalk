@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace IST.RemoteTalk
 {
-    [CustomEditor(typeof(RemoteTalkTrack))]
+    [CustomEditor(typeof(RemoteTalkTrack)), CanEditMultipleObjects]
     public class RemoteTalkTrackEditor : Editor
     {
         public override void OnInspectorGUI()

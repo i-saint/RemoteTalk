@@ -21,25 +21,30 @@ namespace IST.RemoteTalk
         public bool fitDuration = true;
         public bool rearrange = true;
         public bool pauseWhenExport = true;
-
-        PlayableDirector m_director;
         bool m_resumeRequested;
 
+        public PlayableDirector director { get; set; }
 
         public AudioSource audioSource
         {
             get
             {
-                if (m_director != null)
+                if (director != null)
                 {
                     foreach (var output in outputs)
                     {
-                        var ret = m_director.GetGenericBinding(output.sourceObject) as AudioSource;
+                        var ret = director.GetGenericBinding(output.sourceObject) as AudioSource;
                         if (ret != null)
                             return ret;
                     }
                 }
                 return null;
+            }
+
+            set
+            {
+                if (director != null)
+                    director.SetGenericBinding(this, value);
             }
         }
 
@@ -67,7 +72,7 @@ namespace IST.RemoteTalk
 
             var output = audioSource;
             if (output != null)
-                m_director.SetGenericBinding(audioTrack, output);
+                director.SetGenericBinding(audioTrack, output);
 
             foreach (var srcClip in GetClips())
             {
@@ -118,8 +123,8 @@ namespace IST.RemoteTalk
             }
             if (pauseWhenExport && m_resumeRequested)
             {
-                m_director.time = m_director.time + duration;
-                m_director.Resume();
+                director.time = director.time + duration;
+                director.Resume();
                 m_resumeRequested = false;
             }
         }
@@ -172,7 +177,7 @@ namespace IST.RemoteTalk
 
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
-            m_director = go.GetComponent<PlayableDirector>();
+            director = go.GetComponent<PlayableDirector>();
 
             var playable = ScriptPlayable<RemoteTalkMixerBehaviour>.Create(graph, inputCount);
             var mixer = playable.GetBehaviour();
