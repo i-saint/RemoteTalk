@@ -35,7 +35,7 @@ namespace IST.RemoteTalk
         }
 
 #if UNITY_EDITOR
-        [MenuItem("GameObject/RemoteTalk/Create Client", false, 10)]
+        [MenuItem("GameObject/Remote Talk/Create Client", false, 10)]
         public static void CreateRemoteTalkClient(MenuCommand menuCommand)
         {
             var audio = new GameObject();

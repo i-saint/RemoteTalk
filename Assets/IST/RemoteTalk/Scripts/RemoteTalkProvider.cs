@@ -33,10 +33,11 @@ namespace IST.RemoteTalk
 
         public static TalkParam[] Clone(TalkParam[] src)
         {
-            var ret = new TalkParam[src.Length];
-            for (int i = 0; i < ret.Length; ++i)
-                ret[i] = src[i].Clone();
-            return ret;
+            return src.Select(a => a.Clone()).ToArray();
+        }
+        public static List<TalkParam> Clone(List<TalkParam> src)
+        {
+            return src.Select(a => a.Clone()).ToList();
         }
 
         public static int Merge(TalkParam[] dst, IEnumerable<TalkParam> src)
@@ -53,6 +54,29 @@ namespace IST.RemoteTalk
                     dp.value = sp.value;
                     dp.Validate();
                     ++ret;
+                }
+            }
+            return ret;
+        }
+
+        public static int Merge(List<TalkParam> dst, IEnumerable<TalkParam> src)
+        {
+            if (dst == null || src == null)
+                return 0;
+            int ret = 0;
+            foreach (var sp in src)
+            {
+                var i = dst.FindIndex(a => a.name == sp.name);
+                if (i != -1)
+                {
+                    var dp = dst[i];
+                    dp.value = sp.value;
+                    dp.Validate();
+                    ++ret;
+                }
+                else
+                {
+                    dst.Add(sp);
                 }
             }
             return ret;

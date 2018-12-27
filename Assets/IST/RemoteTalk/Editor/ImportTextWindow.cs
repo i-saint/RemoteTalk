@@ -1,12 +1,7 @@
 #if UNITY_EDITOR
 #if UNITY_2017_1_OR_NEWER
-using System.Linq;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Playables;
-using UnityEngine.Timeline;
 using UnityEditor;
-using UnityEditor.Timeline;
 
 namespace IST.RemoteTalk
 {
@@ -15,7 +10,7 @@ namespace IST.RemoteTalk
         public string path;
         RemoteTalkTrack.TextImportOptions options = new RemoteTalkTrack.TextImportOptions();
 
-        [MenuItem("Assets/RemoteTalk/Import Text")]
+        [MenuItem("GameObject/Remote Talk/Import Text")]
         public static void Open()
         {
             var path = EditorUtility.OpenFilePanel("Import Text", ".", "txt");

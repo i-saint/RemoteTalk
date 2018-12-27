@@ -67,6 +67,35 @@ namespace IST.RemoteTalk
             }
         }
 
+        static List<TalkParam> ExtractTalkParams(ref string line, bool clearParamBlock = false)
+        {
+            var rxParamBlock = new Regex(@"\{([^ }]+)\}\s*", RegexOptions.Compiled);
+            var rxParam = new Regex(@"([^ ]+?)\s*:\s*([\d.]+)", RegexOptions.Compiled);
+
+            var ret = new List<TalkParam>();
+            var block = rxParamBlock.Match(line);
+            if (block.Success)
+            {
+                var pairs = block.Groups[1].Value.Split(',');
+                foreach (var pair in pairs)
+                {
+                    var matcheParam = rxParam.Match(pair);
+                    if (matcheParam.Success)
+                    {
+                        ret.Add(new TalkParam
+                        {
+                            name = matcheParam.Groups[1].Value,
+                            value = float.Parse(matcheParam.Groups[2].Value),
+                        });
+                    }
+                }
+
+                if (clearParamBlock)
+                    line = rxParamBlock.Replace(line, "");
+            }
+            return ret;
+        }
+
         public static List<Talk> TextFileToTalks(string path)
         {
             List<Talk> talks = null;
@@ -74,48 +103,37 @@ namespace IST.RemoteTalk
             {
                 talks = new List<Talk>();
                 var rxName = new Regex(@"^\[(.+?)\]", RegexOptions.Compiled);
-                var rxParamBlock = new Regex(@"\{(.+?)\}", RegexOptions.Compiled);
-                var rxParam = new Regex(@"([^ ]+?)\s*:\s*([\d.]+)", RegexOptions.Compiled);
                 var rxEmptyLine = new Regex(@"^\s*$", RegexOptions.Compiled);
+
+                var castName = "";
+                var baseParam = new List<TalkParam>();
 
                 var sr = new StreamReader(fin);
                 string line;
-                Talk talk = new Talk();
                 while ((line = sr.ReadLine()) != null)
                 {
                     var matcheName = rxName.Match(line);
                     if (matcheName.Success)
                     {
-                        talk = new Talk();
-                        talk.castName = matcheName.Groups[1].Value;
+                        castName = matcheName.Groups[1].Value;
 
-                        var param = new List<TalkParam>();
-                        var matcheParamBlock = rxParamBlock.Match(line);
-                        if (matcheParamBlock.Success)
-                        {
-                            var pairs = matcheParamBlock.Groups[1].Value.Split(',');
-                            foreach (var pair in pairs)
-                            {
-                                var matcheParam = rxParam.Match(pair);
-                                if(matcheParam.Success)
-                                {
-                                    param.Add(new TalkParam {
-                                        name = matcheParam.Groups[1].Value,
-                                        value = float.Parse(matcheParam.Groups[2].Value),
-                                    });
-                                }
-                            }
-                        }
-
-                        if (talk.ValidateParams())
-                            TalkParam.Merge(talk.param, param);
+                        var cast = RemoteTalkProvider.FindCast(castName);
+                        if (cast != null)
+                            baseParam = TalkParam.Clone(cast.paramInfo).ToList();
                         else
-                            talk.param = param.ToArray();
+                            baseParam.Clear();
+                        TalkParam.Merge(baseParam, ExtractTalkParams(ref line));
                     }
-                    else if (talk != null && !rxEmptyLine.IsMatch(line))
+                    else if (!rxEmptyLine.IsMatch(line))
                     {
+                        var param = TalkParam.Clone(baseParam);
+                        TalkParam.Merge(param, ExtractTalkParams(ref line, true));
+
+                        var talk = new Talk();
+                        talk.castName = castName;
                         talk.text = line;
-                        talks.Add(talk.Clone());
+                        talk.param = param.ToArray();
+                        talks.Add(talk);
                     }
                 }
             }
