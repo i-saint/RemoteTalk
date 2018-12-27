@@ -13,12 +13,10 @@ namespace IST.RemoteTalk
     public class ImportTextWindow : EditorWindow
     {
         public string path;
-        public bool parCastTrack = true;
-        public double startTime = 0.5;
-        public double interval = 0.5;
+        RemoteTalkTrack.TextImportOptions options = new RemoteTalkTrack.TextImportOptions();
 
         [MenuItem("Assets/RemoteTalk/Import Text")]
-        static void Init()
+        public static void Open()
         {
             var path = EditorUtility.OpenFilePanel("Import Text", ".", "txt");
             if (path.Length != 0)
@@ -27,7 +25,6 @@ namespace IST.RemoteTalk
                 window.titleContent = new GUIContent("Import Text");
                 window.path = path;
                 window.Show();
-
             }
         }
 
@@ -36,74 +33,15 @@ namespace IST.RemoteTalk
             EditorGUI.BeginDisabledGroup(true);
             GUILayout.TextField(path);
             EditorGUI.EndDisabledGroup();
-            parCastTrack = EditorGUILayout.Toggle("Tracks For Each Cast", parCastTrack);
-            startTime = EditorGUILayout.DoubleField("Start Time", startTime);
-            interval = EditorGUILayout.DoubleField("Clip Margin", interval);
+            options.parCastTrack = EditorGUILayout.Toggle("Tracks For Each Cast", options.parCastTrack);
+            options.startTime = EditorGUILayout.DoubleField("Start Time", options.startTime);
+            options.interval = EditorGUILayout.DoubleField("Clip Margin", options.interval);
 
             if (GUILayout.Button("Create Timeline Track"))
             {
-                var talks = RemoteTalkScript.TextFileToTalks(path);
-
-                TimelineAsset timeline = TimelineEditor.inspectedAsset;
-                PlayableDirector director = TimelineEditor.inspectedDirector;
-
-                if (timeline == null || director == null)
-                {
-                    timeline = ScriptableObject.CreateInstance<TimelineAsset>();
-                    AssetDatabase.CreateAsset(timeline, "Assets/RemoteTalkTimeline.asset");
-                    var go = new GameObject();
-                    go.name = "RemoteTalkTimeline";
-                    director = go.AddComponent<PlayableDirector>();
-                    director.playableAsset = timeline;
-                }
-                CreateTracks(director, timeline, talks);
-                RemoteTalkTrack.RefreshTimelineWindow();
-
+                RemoteTalkTrack.ImportText(path, options);
                 Close();
             }
-        }
-
-        TimelineAsset CreateTracks(PlayableDirector director, TimelineAsset timeline, IEnumerable<Talk> talks)
-        {
-            double time = startTime;
-            if (parCastTrack)
-            {
-                var tracks = new Dictionary<string, RemoteTalkTrack>();
-                foreach (var talk in talks)
-                {
-                    RemoteTalkTrack track = null;
-                    if (!tracks.TryGetValue(talk.castName, out track))
-                    {
-                        track = timeline.CreateTrack<RemoteTalkTrack>(null, "RemoteTalk");
-                        track.director = director;
-                        track.name = talk.castName;
-                        tracks[talk.castName] = track;
-
-                        var audio = Misc.FindOrCreateGameObject(talk.castName + "_AudioSource");
-                        track.audioSource = Misc.GetOrAddComponent<AudioSource>(audio);
-                    }
-                    var clip = track.AddClip(talk);
-                    clip.start = time;
-                    time += clip.duration + interval;
-                }
-            }
-            else
-            {
-                var track = timeline.CreateTrack<RemoteTalkTrack>(null, "RemoteTalk");
-                track.director = director;
-                track.name = "RemoteTalkTrack";
-
-                var audio = Misc.FindOrCreateGameObject("RemoteTalkAudioSource");
-                track.audioSource = Misc.GetOrAddComponent<AudioSource>(audio);
-
-                foreach (var talk in talks)
-                {
-                    var clip = track.AddClip(talk);
-                    clip.start = time;
-                    time += clip.duration + interval;
-                }
-            }
-            return timeline;
         }
     }
 }

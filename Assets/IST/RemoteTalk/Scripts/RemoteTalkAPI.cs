@@ -10,7 +10,6 @@ using UnityEditor;
 
 namespace IST.RemoteTalk
 {
-
     public static partial class Misc
     {
         public const int InvalidID = -1;

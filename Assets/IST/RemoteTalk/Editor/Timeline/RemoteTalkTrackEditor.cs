@@ -18,14 +18,21 @@ namespace IST.RemoteTalk
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Import Text"))
-                t.ImportText(EditorUtility.OpenFilePanel("Import Text", ".", "txt"));
+            {
+                ImportTextWindow.Open();
+            }
             if (GUILayout.Button("Export Text"))
-                t.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", t.name, "txt"));
+            {
+                RemoteTalkTrack.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", t.timelineAsset.name, "txt"));
+            }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
             if(GUILayout.Button("Convet To AudioTrack"))
+            {
                 t.ConvertToAudioTrack();
+                Misc.RefreshTimelineWindow();
+            }
         }
     }
 
