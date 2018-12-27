@@ -83,7 +83,20 @@ namespace IST.RemoteTalk
         {
             m_audioSource = GetComponent<AudioSource>();
             m_audioSource.playOnAwake = false;
+#if UNITY_EDITOR
+            if (!EditorApplication.isPlaying)
+                EditorApplication.update += Update;
+#endif
         }
+
+        void OnDisable()
+        {
+#if UNITY_EDITOR
+            if (!EditorApplication.isPlaying)
+                EditorApplication.update -= Update;
+#endif
+        }
+
 
         void Update()
         {

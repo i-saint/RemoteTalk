@@ -31,6 +31,7 @@ namespace IST.RemoteTalk
         public static bool fitDuration = true;
         public static ArrangeScope arrangeClips = ArrangeScope.AllRemoteTalkTracks;
         bool m_resumeRequested;
+        double m_timeResumeRequested;
 
         public PlayableDirector director { get; set; }
 
@@ -89,8 +90,9 @@ namespace IST.RemoteTalk
         {
             if (pauseWhenExport && (info.evaluationType == FrameData.EvaluationType.Playback && info.deltaTime > 0))
             {
-                behaviour.director.Pause();
+                director.Pause();
                 m_resumeRequested = true;
+                m_timeResumeRequested = director.time;
             }
         }
 
@@ -102,7 +104,7 @@ namespace IST.RemoteTalk
             double duration = rtc.duration;
             double gap = duration - prev;
 
-            if (fitDuration)
+            if (fitDuration && !double.IsInfinity(prev))
             {
 #if UNITY_EDITOR
                 Undo.RecordObject(this, "RemoteTalk");
@@ -110,7 +112,7 @@ namespace IST.RemoteTalk
                 clip.duration = duration;
                 ArrangeClips(clip.start, gap);
             }
-            if (pauseWhenExport && m_resumeRequested)
+            if (pauseWhenExport && m_resumeRequested && director.time == m_timeResumeRequested)
             {
                 director.time = clip.end;
                 director.Resume();

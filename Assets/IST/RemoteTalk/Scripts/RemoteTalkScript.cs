@@ -239,17 +239,6 @@ namespace IST.RemoteTalk
         }
 
 
-        void Start()
-        {
-            if (m_playOnStart)
-                Start();
-        }
-
-        void Update()
-        {
-            UpdateTalk();
-        }
-
         void OnEnable()
         {
 #if UNITY_EDITOR
@@ -264,6 +253,17 @@ namespace IST.RemoteTalk
             if (!EditorApplication.isPlaying)
                 EditorApplication.update -= UpdateTalk;
 #endif
+        }
+
+        void Start()
+        {
+            if (m_playOnStart)
+                Start();
+        }
+
+        void Update()
+        {
+            UpdateTalk();
         }
 
     }

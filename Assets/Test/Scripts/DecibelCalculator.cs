@@ -1,4 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 
 [ExecuteInEditMode]
@@ -26,6 +29,22 @@ public class DecibelCalculator : MonoBehaviour
     public float CutoffFrequency
     {
         get { return Mathf.Pow(2, 10 * cutoff - 10) * 15000; }
+    }
+
+    void OnEnable()
+    {
+#if UNITY_EDITOR
+        if (!EditorApplication.isPlaying)
+            EditorApplication.update += Update;
+#endif
+    }
+
+    void OnDisable()
+    {
+#if UNITY_EDITOR
+        if (!EditorApplication.isPlaying)
+            EditorApplication.update -= Update;
+#endif
     }
 
     void Start()

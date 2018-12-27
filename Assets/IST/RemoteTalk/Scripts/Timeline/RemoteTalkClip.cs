@@ -49,7 +49,7 @@ namespace IST.RemoteTalk
             get
             {
                 var ac = audioClip.defaultValue as AudioClip;
-                if (audioClip.defaultValue == null)
+                if (ac == null)
                     return base.duration;
                 return (double)ac.samples / (double)ac.frequency;
             }

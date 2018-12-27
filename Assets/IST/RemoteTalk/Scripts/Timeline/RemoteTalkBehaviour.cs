@@ -21,7 +21,7 @@ namespace IST.RemoteTalk
         public RemoteTalkProvider remoteTalk;
 
         bool m_pending;
-        bool m_export;
+        bool m_exporting;
 
 
         public override void OnBehaviourPlay(Playable playable, FrameData info)
@@ -68,8 +68,12 @@ namespace IST.RemoteTalk
                     provider.output = output;
                     if (provider.Play(talk))
                     {
+                        var rtc = (RemoteTalkClip)clip.asset;
+                        rtc.audioClip.defaultValue = null;
+                        audioClip = null;
+
                         m_pending = false;
-                        m_export = true;
+                        m_exporting = true;
                         track.OnTalk(this, info);
                     }
                 }
@@ -79,9 +83,9 @@ namespace IST.RemoteTalk
 
         public void OnAudioClipImport(Talk t, AudioClip ac)
         {
-            if (!m_export)
+            if (!m_exporting)
                 return;
-            m_export = false;
+            m_exporting = false;
 
             var rtc = (RemoteTalkClip)clip.asset;
             if (rtc.UpdateCachedClip())
