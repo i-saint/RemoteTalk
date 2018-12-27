@@ -151,7 +151,7 @@ namespace IST.RemoteTalk
             return talks;
         }
 
-        public static bool TalksToTextFile(string path, List<Talk> talks)
+        public static bool TalksToTextFile(string path, IEnumerable<Talk> talks)
         {
             bool ret = false;
             using (var fo = new FileStream(path, FileMode.Create, FileAccess.Write))

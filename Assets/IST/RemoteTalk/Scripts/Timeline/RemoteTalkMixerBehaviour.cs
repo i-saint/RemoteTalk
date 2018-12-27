@@ -1,15 +1,36 @@
 #if UNITY_2017_1_OR_NEWER
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Timeline;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace IST.RemoteTalk
 {
     public class RemoteTalkMixerBehaviour : PlayableBehaviour
     {
-        // nothing to do for now
+#if UNITY_EDITOR
+        void OnUndoRedo()
+        {
+            var active = Selection.activeObject;
+            if (active != null && active.GetType().FullName == "UnityEditor.Timeline.EditorClip")
+            {
+                // force refresh timeline window and inspector
+                Misc.RefreshTimelineWindow();
+                Selection.activeObject = null;
+            }
+        }
+
+        public override void OnPlayableCreate(Playable playable)
+        {
+            Undo.undoRedoPerformed += OnUndoRedo;
+        }
+
+        public override void OnPlayableDestroy(Playable playable)
+        {
+            Undo.undoRedoPerformed -= OnUndoRedo;
+        }
+#endif
     }
 }
 #endif

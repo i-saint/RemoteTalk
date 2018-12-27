@@ -280,10 +280,14 @@ namespace IST.RemoteTalk
             if (!timeline)
                 return false;
 
-            var talks = new List<Talk>();
-            foreach (var clip in Misc.GetRemoteTalkClips(timeline).OrderBy(a => a.start))
-                talks.Add(((RemoteTalkClip)clip.asset).talk);
-
+            var clips = Misc.GetRemoteTalkClips(timeline).OrderBy(a => a.start).ToList();
+            var talks = clips.Select(a => ((RemoteTalkClip)a.asset).talk.Clone()).ToList();
+            for (int i = 1; i < talks.Count; ++i)
+            {
+                var currentClip = clips[i - 1];
+                var nextClip = clips[i];
+                talks[i - 1].wait = Mathf.Max(0.0f, (float)(nextClip.start - currentClip.end));
+            }
             return RemoteTalkScript.TalksToTextFile(path, talks);
         }
 
