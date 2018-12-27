@@ -96,6 +96,20 @@ namespace IST.RemoteTalk
             EditorGUI.EndDisabledGroup();
 
             so.ApplyModifiedProperties();
+
+            EditorGUILayout.Space();
+            DrawHorizontalLine();
+
+            RemoteTalkTrack.fold = EditorGUILayout.Foldout(RemoteTalkTrack.fold, "Track Settings");
+            if (RemoteTalkTrack.fold)
+                RemoteTalkTrackEditor.DrawRemoteTalkTrackSettings();
+        }
+
+        void DrawHorizontalLine(int thickness = 1)
+        {
+            Rect rect = EditorGUILayout.GetControlRect(false, thickness);
+            rect.height = thickness;
+            EditorGUI.DrawRect(rect, Color.gray);
         }
     }
 }

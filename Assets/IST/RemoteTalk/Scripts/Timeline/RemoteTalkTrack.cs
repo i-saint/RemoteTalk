@@ -18,17 +18,18 @@ namespace IST.RemoteTalk
     [TrackClipType(typeof(RemoteTalkClip))]
     public class RemoteTalkTrack : TrackAsset
     {
-        public enum ArrangeTarget
+        public enum ArrangeScope
         {
             None,
-            OnlySelf,
+            CurrentTrack,
             AllRemoteTalkTracks,
             AllTracks,
         }
 
-        public bool fitDuration = true;
-        public ArrangeTarget arrangeTarget = ArrangeTarget.AllTracks;
-        public bool pauseWhenExport = true;
+        public static bool fold = true;
+        public static bool pauseWhenExport = true;
+        public static bool fitDuration = true;
+        public static ArrangeScope arrangeClips = ArrangeScope.AllRemoteTalkTracks;
         bool m_resumeRequested;
 
         public PlayableDirector director { get; set; }
@@ -119,19 +120,19 @@ namespace IST.RemoteTalk
 
         public void ArrangeClips(double time, double gap)
         {
-            if (arrangeTarget == ArrangeTarget.None)
+            if (arrangeClips == ArrangeScope.None)
                 return;
 
             var tracks = new List<TrackAsset>();
-            switch (arrangeTarget)
+            switch (arrangeClips)
             {
-                case ArrangeTarget.OnlySelf:
+                case ArrangeScope.CurrentTrack:
                     tracks.Add(this);
                     break;
-                case ArrangeTarget.AllRemoteTalkTracks:
+                case ArrangeScope.AllRemoteTalkTracks:
                     Misc.EnumerateRemoteTalkTracks(timelineAsset, track => { tracks.Add(track); });
                     break;
-                case ArrangeTarget.AllTracks:
+                case ArrangeScope.AllTracks:
                     Misc.EnumerateTracks(timelineAsset, track => tracks.Add(track));
                     break;
                 default:
@@ -203,8 +204,11 @@ namespace IST.RemoteTalk
                 return false;
 
             double time = opt.startTime;
+            var oldArrange = arrangeClips;
+            arrangeClips = ArrangeScope.CurrentTrack;
             if (opt.parCastTrack)
             {
+
                 var tracks = new Dictionary<string, RemoteTalkTrack>();
                 foreach (var talk in talks)
                 {
@@ -212,7 +216,6 @@ namespace IST.RemoteTalk
                     if (!tracks.TryGetValue(talk.castName, out track))
                     {
                         track = timeline.CreateTrack<RemoteTalkTrack>(null, "RemoteTalk");
-                        track.arrangeTarget = ArrangeTarget.OnlySelf;
                         track.director = director;
                         track.name = talk.castName;
                         tracks[talk.castName] = track;
@@ -224,15 +227,10 @@ namespace IST.RemoteTalk
                     clip.start = time;
                     time += clip.duration + opt.interval;
                 }
-                foreach (var kvp in tracks)
-                {
-                    kvp.Value.arrangeTarget = ArrangeTarget.AllTracks;
-                }
             }
             else
             {
                 var track = timeline.CreateTrack<RemoteTalkTrack>(null, "RemoteTalk");
-                track.arrangeTarget = ArrangeTarget.OnlySelf;
                 track.director = director;
                 track.name = "RemoteTalkTrack";
 
@@ -245,8 +243,8 @@ namespace IST.RemoteTalk
                     clip.start = time;
                     time += clip.duration + opt.interval;
                 }
-                track.arrangeTarget = ArrangeTarget.AllTracks;
             }
+            arrangeClips = oldArrange;
 
             Misc.RefreshTimelineWindow();
             return false;

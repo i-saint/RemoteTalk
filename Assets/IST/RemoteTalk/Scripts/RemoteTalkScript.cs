@@ -74,43 +74,45 @@ namespace IST.RemoteTalk
             {
                 talks = new List<Talk>();
                 var rxName = new Regex(@"^\[(.+?)\]", RegexOptions.Compiled);
-                var rxSpace = new Regex(@"^\s*$", RegexOptions.Compiled);
-                var rxParams = new Regex(@"([^ \{]+?)\s*:\s*([\d.]+)", RegexOptions.Compiled);
+                var rxParamBlock = new Regex(@"\{(.+?)\}", RegexOptions.Compiled);
+                var rxParam = new Regex(@"([^ ]+?)\s*:\s*([\d.]+)", RegexOptions.Compiled);
+                var rxEmptyLine = new Regex(@"^\s*$", RegexOptions.Compiled);
 
                 var sr = new StreamReader(fin);
                 string line;
                 Talk talk = new Talk();
                 while ((line = sr.ReadLine()) != null)
                 {
-                    var matcheName = rxName.Matches(line);
-                    if (matcheName.Count > 0)
+                    var matcheName = rxName.Match(line);
+                    if (matcheName.Success)
                     {
                         talk = new Talk();
-                        talk.castName = matcheName[0].Groups[1].Value;
+                        talk.castName = matcheName.Groups[1].Value;
 
-                        var matcheParams = rxParams.Matches(line);
+                        var param = new List<TalkParam>();
+                        var matcheParamBlock = rxParamBlock.Match(line);
+                        if (matcheParamBlock.Success)
+                        {
+                            var pairs = matcheParamBlock.Groups[1].Value.Split(',');
+                            foreach (var pair in pairs)
+                            {
+                                var matcheParam = rxParam.Match(pair);
+                                if(matcheParam.Success)
+                                {
+                                    param.Add(new TalkParam {
+                                        name = matcheParam.Groups[1].Value,
+                                        value = float.Parse(matcheParam.Groups[2].Value),
+                                    });
+                                }
+                            }
+                        }
+
                         if (talk.ValidateParams())
-                        {
-                            for (int i = 0; i < matcheParams.Count; ++i)
-                            {
-                                var p = talk.FindParam(matcheParams[i].Groups[1].Value);
-                                if (p != null)
-                                    p.value = float.Parse(matcheParams[i].Groups[2].Value);
-                            }
-                        }
+                            TalkParam.Merge(talk.param, param);
                         else
-                        {
-                            talk.param = new TalkParam[matcheParams.Count];
-                            for (int i = 0; i < matcheParams.Count; ++i)
-                            {
-                                if (talk.param[i] == null)
-                                    talk.param[i] = new TalkParam();
-                                talk.param[i].name = matcheParams[i].Groups[1].Value;
-                                talk.param[i].value = float.Parse(matcheParams[i].Groups[2].Value);
-                            }
-                        }
+                            talk.param = param.ToArray();
                     }
-                    else if (talk != null && !rxSpace.IsMatch(line))
+                    else if (talk != null && !rxEmptyLine.IsMatch(line))
                     {
                         talk.text = line;
                         talks.Add(talk.Clone());
@@ -129,9 +131,12 @@ namespace IST.RemoteTalk
                 foreach (var t in talks)
                 {
                     sb.Append("[" + t.castName + "]");
-                    sb.Append(" {");
-                    sb.Append(String.Join(", ", t.param.Select(p => p.name + ":" + p.value)));
-                    sb.Append("}\r\n");
+                    if (t.param.Length > 0)
+                    {
+                        sb.Append(" {");
+                        sb.Append(String.Join(", ", t.param.Select(p => p.name + ":" + p.value)));
+                        sb.Append("}\r\n");
+                    }
                     sb.Append(t.text);
                     sb.Append("\r\n\r\n");
                 }

@@ -1,7 +1,8 @@
 #if UNITY_EDITOR
 #if UNITY_2017_1_OR_NEWER
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
+using UnityEditor.Timeline;
 
 namespace IST.RemoteTalk
 {
@@ -11,8 +12,30 @@ namespace IST.RemoteTalk
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+            DrawRemoteTalkTrackSettings();
+        }
 
-            var t = target as RemoteTalkTrack;
+        public static void DrawRemoteTalkTrackSettings()
+        {
+            EditorGUI.BeginChangeCheck();
+            var pauseWhenExport = EditorGUILayout.Toggle("Pause When Export", RemoteTalkTrack.pauseWhenExport);
+            if (EditorGUI.EndChangeCheck())
+                RemoteTalkTrack.pauseWhenExport = pauseWhenExport;
+
+            EditorGUI.BeginChangeCheck();
+            var fitDuration = EditorGUILayout.Toggle("Fit Duration", RemoteTalkTrack.fitDuration);
+            if (EditorGUI.EndChangeCheck())
+                RemoteTalkTrack.fitDuration = fitDuration;
+
+            if (fitDuration)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUI.BeginChangeCheck();
+                var arrangeScope = (RemoteTalkTrack.ArrangeScope)EditorGUILayout.EnumPopup("Arrange Clips", RemoteTalkTrack.arrangeClips);
+                if (EditorGUI.EndChangeCheck())
+                    RemoteTalkTrack.arrangeClips = arrangeScope;
+                EditorGUI.indentLevel--;
+            }
 
             EditorGUILayout.Space();
 
@@ -23,12 +46,15 @@ namespace IST.RemoteTalk
             }
             if (GUILayout.Button("Export Text"))
             {
-                RemoteTalkTrack.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", t.timelineAsset.name, "txt"));
+                var filename = "RemoteTalkTimeline";
+                if (TimelineEditor.inspectedAsset)
+                    filename = TimelineEditor.inspectedAsset.name;
+                RemoteTalkTrack.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", filename, "txt"));
             }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
-            if(GUILayout.Button("Convet To AudioTrack"))
+            if (GUILayout.Button("Convet To AudioTrack"))
             {
                 RemoteTalkTrack.ConvertToAudioTrack();
                 Misc.RefreshTimelineWindow();

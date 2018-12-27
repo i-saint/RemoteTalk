@@ -39,7 +39,7 @@ namespace IST.RemoteTalk
             return ret;
         }
 
-        public static int Merge(TalkParam[] dst, TalkParam[] src)
+        public static int Merge(TalkParam[] dst, IEnumerable<TalkParam> src)
         {
             if (dst == null || src == null)
                 return 0;
@@ -58,7 +58,7 @@ namespace IST.RemoteTalk
             return ret;
         }
 
-        public static bool Compare(TalkParam[] dst, TalkParam[] src)
+        public static bool Compare(TalkParam[] dst, IEnumerable<TalkParam> src)
         {
             if (dst == null || src == null)
                 return false;

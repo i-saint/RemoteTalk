@@ -35,7 +35,7 @@ namespace IST.RemoteTalk
             EditorGUI.EndDisabledGroup();
             options.parCastTrack = EditorGUILayout.Toggle("Tracks For Each Cast", options.parCastTrack);
             options.startTime = EditorGUILayout.DoubleField("Start Time", options.startTime);
-            options.interval = EditorGUILayout.DoubleField("Clip Margin", options.interval);
+            options.interval = EditorGUILayout.DoubleField("Interval", options.interval);
 
             if (GUILayout.Button("Create Timeline Track"))
             {
