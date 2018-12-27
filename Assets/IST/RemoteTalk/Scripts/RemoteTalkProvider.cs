@@ -71,6 +71,7 @@ namespace IST.RemoteTalk
             return true;
         }
 
+#if UNITY_EDITOR
         public static void Copy(SerializedProperty dst, TalkParam src)
         {
             dst.FindPropertyRelative("name").stringValue = src.name;
@@ -78,6 +79,7 @@ namespace IST.RemoteTalk
             dst.FindPropertyRelative("rangeMin").floatValue = src.rangeMin;
             dst.FindPropertyRelative("rangeMax").floatValue = src.rangeMax;
         }
+#endif
     }
 
     [Serializable]
@@ -185,7 +187,15 @@ namespace IST.RemoteTalk
 
         public static List<RemoteTalkProvider> instances { get { return s_instances; } }
 
+#if UNITY_EDITOR
         public static event AudioClipImportCallback onAudioClipImport;
+
+        public static void FireOnAudioClipImport(Talk t, AudioClip ac)
+        {
+            if (onAudioClipImport != null)
+                onAudioClipImport(t, ac);
+        }
+#endif
 
         public static IEnumerable<Cast> allCasts
         {
@@ -217,12 +227,6 @@ namespace IST.RemoteTalk
             {
                 return p.casts.FirstOrDefault(c => c.name == castName) != null;
             });
-        }
-
-        public static void FireOnAudioClipImport(Talk t, AudioClip ac)
-        {
-            if (onAudioClipImport != null)
-                onAudioClipImport(t, ac);
         }
 
 

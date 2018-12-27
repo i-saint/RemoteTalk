@@ -91,6 +91,7 @@ namespace IST.RemoteTalk
             }
         }
 
+#if UNITY_EDITOR
         public override void OnPlayableCreate(Playable playable)
         {
             RemoteTalkProvider.onAudioClipImport += OnAudioClipImport;
@@ -100,6 +101,7 @@ namespace IST.RemoteTalk
         {
             RemoteTalkProvider.onAudioClipImport -= OnAudioClipImport;
         }
+#endif
     }
 }
 #endif

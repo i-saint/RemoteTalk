@@ -185,16 +185,20 @@ namespace IST.RemoteTalk
 
         protected override Playable CreatePlayable(PlayableGraph graph, GameObject go, TimelineClip clip)
         {
+            var rtc = (RemoteTalkClip)clip.asset;
+            clip.displayName = rtc.talk.text + "_" + rtc.talk.castName;
+            bool audipClipUpdated = rtc.UpdateCachedClip();
+
             var ret = base.CreatePlayable(graph, go, clip);
             var playable = (ScriptPlayable<RemoteTalkBehaviour>)ret;
             var behaviour = playable.GetBehaviour();
             behaviour.director = go.GetComponent<PlayableDirector>();
             behaviour.track = this;
             behaviour.clip = clip;
-
-            var rtc = (RemoteTalkClip)clip.asset;
-            clip.displayName = rtc.talk.text + "_" + rtc.talk.castName;
-
+            behaviour.talk = rtc.talk;
+            behaviour.audioClip = rtc.audioClip.Resolve(graph.GetResolver());
+            if (audipClipUpdated)
+                OnAudioClipUpdated(behaviour);
             return ret;
         }
 
@@ -206,6 +210,7 @@ namespace IST.RemoteTalk
             public double interval = 0.5;
         }
 
+#if UNITY_EDITOR
         public static bool ImportText(string path, TextImportOptions opt)
         {
             var timeline = TimelineEditor.inspectedAsset;
@@ -224,6 +229,7 @@ namespace IST.RemoteTalk
             return ImportText(path, opt, timeline, director);
         }
 
+#endif
         public static bool ImportText(string path, TextImportOptions opt, TimelineAsset timeline, PlayableDirector director)
         {
             if (timeline == null || director == null)
@@ -276,10 +282,12 @@ namespace IST.RemoteTalk
         }
 
 
+#if UNITY_EDITOR
         public static bool ExportText(string path)
         {
             return ExportText(path, TimelineEditor.inspectedAsset);
         }
+#endif
 
         public static bool ExportText(string path, TimelineAsset timeline)
         {

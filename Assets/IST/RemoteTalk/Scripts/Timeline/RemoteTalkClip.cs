@@ -24,13 +24,7 @@ namespace IST.RemoteTalk
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
             talk.ValidateParams();
-            UpdateCachedClip();
-
-            var playable = ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);
-            var clone = playable.GetBehaviour();
-            clone.talk = talk;
-            clone.audioClip = audioClip.Resolve(graph.GetResolver());
-            return playable;
+            return ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);
         }
 
 

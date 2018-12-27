@@ -48,6 +48,8 @@ namespace IST.RemoteTalk
             var rtc = client.AddComponent<RemoteTalkClient>();
             rtc.output = output;
 
+            Selection.activeGameObject = client;
+
             Undo.RegisterCreatedObjectUndo(audio, "RemoteTalk");
             Undo.RegisterCreatedObjectUndo(client, "RemoteTalk");
         }
