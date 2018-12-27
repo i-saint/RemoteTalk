@@ -19,7 +19,7 @@ namespace IST.RemoteTalk
             var param = property.FindPropertyRelative("param");
             totalHeight += lineHeight; // fold params
             if (property.FindPropertyRelative("foldParams").boolValue)
-                totalHeight += param.arraySize * lineHeight; // params
+                totalHeight += (param.arraySize + 1) * lineHeight; // params + wait
 
             totalHeight += TextHeight; // text
             totalHeight += 8.0f; // margin
@@ -78,6 +78,9 @@ namespace IST.RemoteTalk
                         position.y += lineHeight;
                     }
                     EditorGUI.indentLevel--;
+
+                    EditorGUI.PropertyField(position, property.FindPropertyRelative("wait"));
+                    position.y += lineHeight;
                 }
 
                 // text box

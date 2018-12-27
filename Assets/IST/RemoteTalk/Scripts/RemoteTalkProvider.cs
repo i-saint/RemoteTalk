@@ -125,6 +125,7 @@ namespace IST.RemoteTalk
     {
         public string castName = "";
         public TalkParam[] param = new TalkParam[0];
+        [Range(0, 10)] public float wait = 0.0f;
         public string text = "";
 #if UNITY_EDITOR
         public bool foldParams;
@@ -155,30 +156,6 @@ namespace IST.RemoteTalk
                     }
                 }
                 return null;
-            }
-        }
-
-        public bool Play()
-        {
-            //cast?.provider?.Talk(this);
-            var c = cast;
-            if (c != null)
-            {
-                var prov = c.provider;
-                if (prov != null)
-                    return prov.Play(this);
-            }
-            return false;
-        }
-
-        public void Stop()
-        {
-            var c = cast;
-            if (c != null)
-            {
-                var prov = c.provider;
-                if (prov != null)
-                    prov.Stop();
             }
         }
 

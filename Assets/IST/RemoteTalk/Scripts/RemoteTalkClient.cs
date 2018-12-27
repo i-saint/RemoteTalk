@@ -35,7 +35,6 @@ namespace IST.RemoteTalk
         [SerializeField] rtOggSettings m_oggSettings = rtOggSettings.defaultValue;
         [SerializeField] bool m_useExportedClips = true;
         [SerializeField] [Range(1024, 65536)] int m_sampleGranularity = 8192;
-        [SerializeField] bool m_logging = false;
 
         rtHTTPClient m_client;
         rtAsync m_asyncStats;
@@ -52,15 +51,16 @@ namespace IST.RemoteTalk
         string m_cacheFileName;
 
 #if UNITY_EDITOR
+        public bool m_logging = false;
         public bool m_foldVoice = true;
         public bool m_foldAudio = true;
         public bool m_foldTools = true;
         string m_exportingAssetPath;
 #endif
-        #endregion
+#endregion
 
 
-        #region Properties
+#region Properties
         public string serverAddress
         {
             get { return m_serverAddress; }
@@ -147,10 +147,10 @@ namespace IST.RemoteTalk
 
         public int sampleLength { get { return m_client.buffer.sampleLength; } }
         public string assetPath { get { return "Assets/" + m_exportDir; } }
-        #endregion
+#endregion
 
 
-        #region Public Methods
+#region Public Methods
 
         public bool Play()
         {
@@ -229,10 +229,10 @@ namespace IST.RemoteTalk
             m_client.Setup(m_serverAddress, m_serverPort);
             m_asyncStats = m_client.UpdateServerStatus();
         }
-        #endregion
+#endregion
 
 
-        #region Impl
+#region Impl
         void UseOutput(Action<RemoteTalkAudio> act)
         {
             var rta = m_output != null ? Misc.GetOrAddComponent<RemoteTalkAudio>(m_output.gameObject) : null;
@@ -306,7 +306,7 @@ namespace IST.RemoteTalk
                     castID = 0;
 
                 m_isServerReady = m_hostName != "Server Not Found";
-                Misc.ForceRepaint();
+                Misc.RefreshWindows();
             }
 
             var playing = isPlaying;
@@ -354,7 +354,7 @@ namespace IST.RemoteTalk
 
             if (m_wasPlaying && !playing)
             {
-                Misc.ForceRepaint();
+                Misc.RefreshWindows();
             }
             m_wasPlaying = playing;
 
@@ -362,7 +362,7 @@ namespace IST.RemoteTalk
             {
                 m_isServerTalking = false;
                 m_asyncStop.Release();
-                Misc.ForceRepaint();
+                Misc.RefreshWindows();
             }
         }
 
@@ -437,6 +437,6 @@ namespace IST.RemoteTalk
         {
             UpdateState();
         }
-        #endregion
+#endregion
     }
 }

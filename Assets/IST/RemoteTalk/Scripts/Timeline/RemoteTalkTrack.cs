@@ -225,7 +225,7 @@ namespace IST.RemoteTalk
                     }
                     var clip = track.AddClip(talk);
                     clip.start = time;
-                    time += clip.duration + opt.interval;
+                    time += clip.duration + talk.wait + opt.interval;
                 }
             }
             else
@@ -241,7 +241,7 @@ namespace IST.RemoteTalk
                 {
                     var clip = track.AddClip(talk);
                     clip.start = time;
-                    time += clip.duration + opt.interval;
+                    time += clip.duration + talk.wait + opt.interval;
                 }
             }
             arrangeClips = oldArrange;

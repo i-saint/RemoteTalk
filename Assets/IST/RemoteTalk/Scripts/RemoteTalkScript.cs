@@ -22,8 +22,11 @@ namespace IST.RemoteTalk
         [SerializeField] List<Talk> m_talks = new List<Talk>();
         [SerializeField] bool m_playOnStart;
         [SerializeField] int m_startPos;
-        bool m_isPlaying;
         int m_talkPos = 0;
+        float m_wait = 0.0f;
+#if UNITY_EDITOR
+        double m_prevTime;
+#endif
         Talk m_current;
         RemoteTalkProvider m_prevProvider;
 
@@ -43,33 +46,31 @@ namespace IST.RemoteTalk
             get { return Mathf.Clamp(m_talkPos - 1, 0, m_talks.Count); }
             set { m_talkPos = value; }
         }
-        public bool isPlaying
-        {
-            get { return m_isPlaying; }
-        }
+        public bool isPlaying { get; private set; }
 
 
         public void Play()
         {
-            m_isPlaying = true;
+            isPlaying = true;
             m_talkPos = m_startPos;
+            m_wait = 0.0f;
         }
 
         public void Stop()
         {
-            if (m_isPlaying)
+            if (isPlaying)
             {
                 if (m_prevProvider != null)
                     m_prevProvider.Stop();
-                m_isPlaying = false;
+                isPlaying = false;
                 m_current = null;
                 m_prevProvider = null;
             }
         }
 
-        static List<TalkParam> ExtractTalkParams(ref string line, bool clearParamBlock = false)
+        static List<TalkParam> ExtractTalkParams(ref string line, ref float wait, bool clearParamBlock = false)
         {
-            var rxParamBlock = new Regex(@"\{([^ }]+)\}\s*", RegexOptions.Compiled);
+            var rxParamBlock = new Regex(@"\{([^}]+)\}\s*", RegexOptions.Compiled);
             var rxParam = new Regex(@"([^ ]+?)\s*:\s*([\d.]+)", RegexOptions.Compiled);
 
             var ret = new List<TalkParam>();
@@ -82,11 +83,16 @@ namespace IST.RemoteTalk
                     var matcheParam = rxParam.Match(pair);
                     if (matcheParam.Success)
                     {
-                        ret.Add(new TalkParam
-                        {
-                            name = matcheParam.Groups[1].Value,
-                            value = float.Parse(matcheParam.Groups[2].Value),
-                        });
+                        var name = matcheParam.Groups[1].Value;
+                        var value = float.Parse(matcheParam.Groups[2].Value);
+                        if (name == "wait")
+                            wait = Mathf.Max(0.0f, value);
+                        else
+                            ret.Add(new TalkParam
+                            {
+                                name = name,
+                                value = value,
+                            });
                     }
                 }
 
@@ -107,6 +113,7 @@ namespace IST.RemoteTalk
 
                 var castName = "";
                 var baseParam = new List<TalkParam>();
+                float baseWait = 0.0f;
 
                 var sr = new StreamReader(fin);
                 string line;
@@ -122,17 +129,21 @@ namespace IST.RemoteTalk
                             baseParam = TalkParam.Clone(cast.paramInfo).ToList();
                         else
                             baseParam.Clear();
-                        TalkParam.Merge(baseParam, ExtractTalkParams(ref line));
+                        TalkParam.Merge(baseParam, ExtractTalkParams(ref line, ref baseWait));
                     }
                     else if (!rxEmptyLine.IsMatch(line))
                     {
                         var param = TalkParam.Clone(baseParam);
-                        TalkParam.Merge(param, ExtractTalkParams(ref line, true));
+                        float wait = -1.0f;
+                        TalkParam.Merge(param, ExtractTalkParams(ref line, ref wait, true));
+                        if (wait < 0.0f)
+                            wait = baseWait;
 
                         var talk = new Talk();
                         talk.castName = castName;
-                        talk.text = line;
                         talk.param = param.ToArray();
+                        talk.wait = wait;
+                        talk.text = line;
                         talks.Add(talk);
                     }
                 }
@@ -146,16 +157,19 @@ namespace IST.RemoteTalk
             using (var fo = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
                 var sb = new StringBuilder();
-                foreach (var t in talks)
+                foreach (var talk in talks)
                 {
-                    sb.Append("[" + t.castName + "]");
-                    if (t.param.Length > 0)
+                    sb.Append("[" + talk.castName + "]");
+                    if (talk.param.Length > 0)
                     {
                         sb.Append(" {");
-                        sb.Append(String.Join(", ", t.param.Select(p => p.name + ":" + p.value)));
+                        var parray = talk.param.Select(p => p.name + ":" + p.value).ToList();
+                        if (talk.wait > 0.0f)
+                            parray.Add("wait:" + talk.wait);
+                        sb.Append(String.Join(", ", parray));
                         sb.Append("}\r\n");
                     }
-                    sb.Append(t.text);
+                    sb.Append(talk.text);
                     sb.Append("\r\n\r\n");
                 }
                 byte[] data = new UTF8Encoding(true).GetBytes(sb.ToString());
@@ -181,53 +195,46 @@ namespace IST.RemoteTalk
             return TalksToTextFile(path, m_talks);
         }
 
-#if UNITY_2017_1_OR_NEWER
-        public bool ConvertToRemoteTalkTrack()
-        {
-            var director = Misc.GetOrAddComponent<PlayableDirector>(gameObject);
-            if (director == null)
-                return false;
-
-            var timeline = director.playableAsset as TimelineAsset;
-            if (timeline == null)
-                return false;
-
-            var track = timeline.CreateTrack<RemoteTalkTrack>(null, name);
-            double timeOffset = 0.0;
-            foreach (var talk in m_talks)
-            {
-                var dstClip = track.AddClip(talk);
-                dstClip.start = timeOffset;
-                timeOffset += dstClip.duration;
-            }
-            Misc.RefreshTimelineWindow();
-
-            return true;
-        }
-#endif
-
         void UpdateTalk()
         {
-            if (!m_isPlaying || !isActiveAndEnabled)
+            if (!isPlaying || !isActiveAndEnabled)
                 return;
+
+#if UNITY_EDITOR
+            var delta = (float)(EditorApplication.timeSinceStartup - m_prevTime);
+            m_prevTime = EditorApplication.timeSinceStartup;
+#else
+            var delta = Time.deltaTime;
+#endif
 
             if (m_prevProvider == null || m_prevProvider.isReady)
             {
                 if(m_talkPos >= m_talks.Count)
                 {
-                    m_isPlaying = false;
+                    isPlaying = false;
                 }
                 else
                 {
-                    m_current = m_talks[m_talkPos++];
-                    if (m_current != null)
+                    if (m_current != null && m_wait < m_current.wait)
                     {
-                        var provider = m_current.provider;
-                        if (provider != null)
-                            provider.Play(m_current);
-                        m_prevProvider = provider;
+                        m_wait += delta;
+                    }
+                    else
+                    {
+                        m_current = m_talks[m_talkPos++];
+                        if (m_current != null)
+                        {
+                            var provider = m_current.provider;
+                            if (provider != null)
+                                provider.Play(m_current);
+                            m_prevProvider = provider;
+                            m_wait = 0.0f;
+                        }
                     }
                 }
+#if UNITY_EDITOR
+                Misc.RefreshWindows();
+#endif
             }
         }
 

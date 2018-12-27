@@ -61,7 +61,7 @@ namespace IST.RemoteTalk
             return ret;
         }
 
-        public static void ForceRepaint()
+        public static void RefreshWindows()
         {
 #if UNITY_EDITOR
             SceneView.RepaintAll();

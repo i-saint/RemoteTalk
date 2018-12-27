@@ -43,7 +43,6 @@ namespace IST.RemoteTalk
             }
             serializedObject.ApplyModifiedProperties();
 
-
             EditorGUILayout.Space();
 
             if(t.isPlaying)
@@ -65,13 +64,6 @@ namespace IST.RemoteTalk
             if (GUILayout.Button("Export Text"))
                 t.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", t.name, "txt"));
             EditorGUILayout.EndHorizontal();
-
-#if UNITY_2017_1_OR_NEWER
-            EditorGUILayout.Space();
-
-            if (GUILayout.Button("Convert To Timeline Track"))
-                t.ConvertToRemoteTalkTrack();
-#endif
         }
     }
 }
