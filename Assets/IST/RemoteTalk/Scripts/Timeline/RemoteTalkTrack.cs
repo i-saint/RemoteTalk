@@ -86,7 +86,7 @@ namespace IST.RemoteTalk
 
         public void OnTalk(RemoteTalkBehaviour behaviour, FrameData info)
         {
-            if (pauseWhenExport && info.evaluationType == FrameData.EvaluationType.Playback)
+            if (pauseWhenExport && (info.evaluationType == FrameData.EvaluationType.Playback && info.deltaTime > 0))
             {
                 behaviour.director.Pause();
                 m_resumeRequested = true;
@@ -103,6 +103,9 @@ namespace IST.RemoteTalk
 
             if (fitDuration)
             {
+#if UNITY_EDITOR
+                Undo.RecordObject(this, "RemoteTalk");
+#endif
                 clip.duration = duration;
                 ArrangeClips(clip.start, gap);
             }
@@ -161,8 +164,15 @@ namespace IST.RemoteTalk
         protected override Playable CreatePlayable(PlayableGraph graph, GameObject go, TimelineClip clip)
         {
             var rtc = (RemoteTalkClip)clip.asset;
+
+            bool audipClipUpdated = rtc.UpdateCachedClip(true);
+#if UNITY_EDITOR
+            if (audipClipUpdated)
+                Undo.RecordObject(this, "RemoteTalk");
+#endif
+
             clip.displayName = rtc.talk.text + "_" + rtc.talk.castName;
-            bool audipClipUpdated = rtc.UpdateCachedClip();
+            rtc.UpdateCachedClip();
 
             var ret = base.CreatePlayable(graph, go, clip);
             var playable = (ScriptPlayable<RemoteTalkBehaviour>)ret;

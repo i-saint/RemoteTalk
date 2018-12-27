@@ -73,20 +73,18 @@ namespace IST.RemoteTalk
             using (var fin = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
                 talks = new List<Talk>();
-                var rxName = new Regex(@"\[(.+?)\]", RegexOptions.Compiled);
-                var rxParams = new Regex(@" (.+?)=([\d\.])", RegexOptions.Compiled);
+                var rxName = new Regex(@"^\[(.+?)\]", RegexOptions.Compiled);
+                var rxSpace = new Regex(@"^\s*$", RegexOptions.Compiled);
+                var rxParams = new Regex(@"([^ \{]+?)\s*:\s*([\d.]+)", RegexOptions.Compiled);
 
                 var sr = new StreamReader(fin);
                 string line;
-                Talk talk = null;
+                Talk talk = new Talk();
                 while ((line = sr.ReadLine()) != null)
                 {
                     var matcheName = rxName.Matches(line);
                     if (matcheName.Count > 0)
                     {
-                        if (talk != null)
-                            talks.Add(talk);
-
                         talk = new Talk();
                         talk.castName = matcheName[0].Groups[1].Value;
 
@@ -112,11 +110,12 @@ namespace IST.RemoteTalk
                             }
                         }
                     }
-                    else if (talk != null)
-                        talk.text += line;
+                    else if (talk != null && !rxSpace.IsMatch(line))
+                    {
+                        talk.text = line;
+                        talks.Add(talk.Clone());
+                    }
                 }
-                if (talk.text.Length > 0)
-                    talks.Add(talk);
             }
             return talks;
         }
@@ -130,9 +129,9 @@ namespace IST.RemoteTalk
                 foreach (var t in talks)
                 {
                     sb.Append("[" + t.castName + "]");
-                    foreach (var p in t.param)
-                        sb.Append(" " + p.name + "=" + p.value);
-                    sb.Append("\r\n");
+                    sb.Append(" {");
+                    sb.Append(String.Join(", ", t.param.Select(p => p.name + ":" + p.value)));
+                    sb.Append("}\r\n");
                     sb.Append(t.text);
                     sb.Append("\r\n\r\n");
                 }

@@ -176,6 +176,15 @@ namespace IST.RemoteTalk
             var i = Array.FindIndex(param, a => a.name == key);
             return i != -1 ? param[i] : null;
         }
+
+        public Talk Clone()
+        {
+            return new Talk {
+                castName = (string)castName.Clone(),
+                param = TalkParam.Clone(param),
+                text = (string)text.Clone(),
+            };
+        }
     }
 
     public delegate void AudioClipImportCallback(Talk talk, AudioClip clip);

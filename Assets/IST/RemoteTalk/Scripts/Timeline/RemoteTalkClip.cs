@@ -28,7 +28,7 @@ namespace IST.RemoteTalk
         }
 
 
-        public bool UpdateCachedClip()
+        public bool UpdateCachedClip(bool dryRun = false)
         {
             var provider = talk.provider;
             if (provider != null)
@@ -36,7 +36,8 @@ namespace IST.RemoteTalk
                 var ac = provider.FindClip(talk);
                 if (audioClip.defaultValue != ac)
                 {
-                    audioClip.defaultValue = ac;
+                    if (!dryRun)
+                        audioClip.defaultValue = ac;
                     return ac != null;
                 }
             }
