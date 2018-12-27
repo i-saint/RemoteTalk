@@ -84,30 +84,6 @@ namespace IST.RemoteTalk
             return ret;
         }
 
-        public AudioTrack ConvertToAudioTrack()
-        {
-            var timeline = timelineAsset;
-            var audioTrack = timeline.CreateTrack<AudioTrack>(null, name);
-
-            var output = audioSource;
-            if (output != null)
-                director.SetGenericBinding(audioTrack, output);
-
-            foreach (var srcClip in GetClips())
-            {
-                var srcAsset = (RemoteTalkClip)srcClip.asset;
-                var ac = srcAsset.audioClip.defaultValue;
-                if (ac == null)
-                    continue;
-
-                var dstClip = audioTrack.CreateClip((AudioClip)ac);
-                dstClip.displayName = srcClip.displayName;
-                dstClip.start = srcClip.start;
-                dstClip.duration = srcClip.duration;
-            }
-            return audioTrack;
-        }
-
         public void OnTalk(RemoteTalkBehaviour behaviour, FrameData info)
         {
             if (pauseWhenExport && info.evaluationType == FrameData.EvaluationType.Playback)
@@ -150,11 +126,7 @@ namespace IST.RemoteTalk
                     tracks.Add(this);
                     break;
                 case ArrangeTarget.AllRemoteTalkTracks:
-                    Misc.EnumerateTracks(timelineAsset, track=> {
-                        var rtt = track as RemoteTalkTrack;
-                        if (rtt != null)
-                            tracks.Add(rtt);
-                    });
+                    Misc.EnumerateRemoteTalkTracks(timelineAsset, track => { tracks.Add(track); });
                     break;
                 case ArrangeTarget.AllTracks:
                     Misc.EnumerateTracks(timelineAsset, track => tracks.Add(track));
@@ -165,6 +137,9 @@ namespace IST.RemoteTalk
 
             foreach(var track in tracks)
             {
+#if UNITY_EDITOR
+                Undo.RecordObject(track, "RemoteTalk");
+#endif
                 foreach (var clip in track.GetClips())
                 {
                     if (clip.start > time)
@@ -209,27 +184,6 @@ namespace IST.RemoteTalk
             public double startTime = 0.5;
             public double interval = 0.5;
         }
-
-#if UNITY_EDITOR
-        public static bool ImportText(string path, TextImportOptions opt)
-        {
-            var timeline = TimelineEditor.inspectedAsset;
-            var director = TimelineEditor.inspectedDirector;
-            if (timeline == null || director == null)
-            {
-                timeline = ScriptableObject.CreateInstance<TimelineAsset>();
-                AssetDatabase.CreateAsset(timeline, "Assets/RemoteTalkTimeline.asset");
-                var go = new GameObject();
-                go.name = "RemoteTalkTimeline";
-                director = go.AddComponent<PlayableDirector>();
-                director.playableAsset = timeline;
-
-                Selection.activeGameObject = go;
-            }
-            return ImportText(path, opt, timeline, director);
-        }
-
-#endif
         public static bool ImportText(string path, TextImportOptions opt, TimelineAsset timeline, PlayableDirector director)
         {
             if (timeline == null || director == null)
@@ -248,6 +202,7 @@ namespace IST.RemoteTalk
                     if (!tracks.TryGetValue(talk.castName, out track))
                     {
                         track = timeline.CreateTrack<RemoteTalkTrack>(null, "RemoteTalk");
+                        track.arrangeTarget = ArrangeTarget.OnlySelf;
                         track.director = director;
                         track.name = talk.castName;
                         tracks[talk.castName] = track;
@@ -259,10 +214,15 @@ namespace IST.RemoteTalk
                     clip.start = time;
                     time += clip.duration + opt.interval;
                 }
+                foreach (var kvp in tracks)
+                {
+                    kvp.Value.arrangeTarget = ArrangeTarget.AllTracks;
+                }
             }
             else
             {
                 var track = timeline.CreateTrack<RemoteTalkTrack>(null, "RemoteTalk");
+                track.arrangeTarget = ArrangeTarget.OnlySelf;
                 track.director = director;
                 track.name = "RemoteTalkTrack";
 
@@ -275,19 +235,37 @@ namespace IST.RemoteTalk
                     clip.start = time;
                     time += clip.duration + opt.interval;
                 }
+                track.arrangeTarget = ArrangeTarget.AllTracks;
             }
 
             Misc.RefreshTimelineWindow();
             return false;
         }
 
-
 #if UNITY_EDITOR
-        public static bool ExportText(string path)
+        public static bool ImportText(string path, TextImportOptions opt)
         {
-            return ExportText(path, TimelineEditor.inspectedAsset);
+            var timeline = TimelineEditor.inspectedAsset;
+            var director = TimelineEditor.inspectedDirector;
+            if (timeline != null && director != null)
+            {
+                Undo.RecordObject(timeline, "RemoteTalk");
+            }
+            else
+            {
+                timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+                AssetDatabase.CreateAsset(timeline, "Assets/RemoteTalkTimeline.asset");
+                var go = new GameObject();
+                go.name = "RemoteTalkTimeline";
+                director = go.AddComponent<PlayableDirector>();
+                director.playableAsset = timeline;
+
+                Selection.activeGameObject = go;
+            }
+            return ImportText(path, opt, timeline, director);
         }
 #endif
+
 
         public static bool ExportText(string path, TimelineAsset timeline)
         {
@@ -301,6 +279,68 @@ namespace IST.RemoteTalk
             return RemoteTalkScript.TalksToTextFile(path, talks);
         }
 
+#if UNITY_EDITOR
+        public static bool ExportText(string path)
+        {
+            return ExportText(path, TimelineEditor.inspectedAsset);
+        }
+#endif
+
+
+        public AudioTrack GenAudioTrack(TimelineAsset dstTimeline)
+        {
+            if (dstTimeline == null)
+                return null;
+
+            var audioTrack = dstTimeline.CreateTrack<AudioTrack>(
+                parent != null ? parent as TrackAsset : null,
+                name);
+
+            var output = audioSource;
+            if (output != null)
+                director.SetGenericBinding(audioTrack, output);
+
+            foreach (var srcClip in GetClips())
+            {
+                var srcAsset = (RemoteTalkClip)srcClip.asset;
+                var ac = srcAsset.audioClip.defaultValue;
+                if (ac == null)
+                    continue;
+
+                var dstClip = audioTrack.CreateClip((AudioClip)ac);
+                dstClip.displayName = srcClip.displayName;
+                dstClip.start = srcClip.start;
+                dstClip.duration = srcClip.duration;
+            }
+            return audioTrack;
+        }
+
+        public static List<AudioTrack> GenAudioTracks(TimelineAsset dstTimeline, TimelineAsset srcTimeline)
+        {
+            if (dstTimeline == null || srcTimeline == null)
+                return null;
+
+            var ret = new List<AudioTrack>();
+            Misc.EnumerateRemoteTalkTracks(srcTimeline, track =>
+            {
+#if UNITY_EDITOR
+                Undo.RecordObject(track, "RemoteTalk");
+#endif
+                track.muted = true;
+                var audioTrack = track.GenAudioTrack(dstTimeline);
+                ret.Add(audioTrack);
+            });
+            return ret;
+        }
+
+#if UNITY_EDITOR
+        public static bool ConvertToAudioTrack()
+        {
+            var timeline = TimelineEditor.inspectedAsset;
+            Undo.RecordObject(timeline, "RemoteTalk");
+            return GenAudioTracks(timeline, timeline) != null;
+        }
+#endif
     }
 }
 #endif

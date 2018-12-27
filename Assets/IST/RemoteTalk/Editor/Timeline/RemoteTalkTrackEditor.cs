@@ -30,7 +30,7 @@ namespace IST.RemoteTalk
             EditorGUILayout.Space();
             if(GUILayout.Button("Convet To AudioTrack"))
             {
-                t.ConvertToAudioTrack();
+                RemoteTalkTrack.ConvertToAudioTrack();
                 Misc.RefreshTimelineWindow();
             }
         }

@@ -28,6 +28,25 @@ namespace IST.RemoteTalk
                 EnumerateTracks(track, act);
         }
 
+        public static void EnumerateRemoteTalkTracks(TrackAsset track, Action<RemoteTalkTrack> act)
+        {
+            EnumerateTracks(track, t =>
+            {
+                var rtt = t as RemoteTalkTrack;
+                if (rtt != null)
+                    act(rtt);
+            });
+        }
+
+        public static void EnumerateRemoteTalkTracks(TimelineAsset timeline, Action<RemoteTalkTrack> act)
+        {
+            EnumerateTracks(timeline, t => {
+                var rtt = t as RemoteTalkTrack;
+                if (rtt != null)
+                    act(rtt);
+            });
+        }
+
         public static IEnumerable<TimelineClip> GetRemoteTalkClips(TimelineAsset timeline)
         {
             IEnumerable<TimelineClip> ret = null;
