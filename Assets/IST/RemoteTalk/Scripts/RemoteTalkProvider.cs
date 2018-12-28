@@ -186,10 +186,14 @@ namespace IST.RemoteTalk
                 text = (string)text.Clone(),
             };
         }
+
+        public override int GetHashCode()
+        {
+            var tparam = rtTalkParams.defaultValue;
+            tparam.Assign(param);
+            return castName.GetHashCode() ^ text.GetHashCode() ^ (int)tparam.hash;
+        }
     }
-
-    public delegate void AudioClipImportCallback(Talk talk, AudioClip clip);
-
 
     public abstract class RemoteTalkProvider : MonoBehaviour
     {
@@ -197,10 +201,25 @@ namespace IST.RemoteTalk
 
         public static List<RemoteTalkProvider> instances { get { return s_instances; } }
 
-#if UNITY_EDITOR
-        public static event AudioClipImportCallback onAudioClipImport;
 
-        public static void FireOnAudioClipImport(Talk t, AudioClip ac)
+        public static event Action<Talk> onTalkStart;
+        public static event Action<Talk, bool> onTalkFinish;
+#if UNITY_EDITOR
+        public static event Action<Talk, AudioClip> onAudioClipImport;
+#endif
+
+        protected static void FireOnTalkStart(Talk t)
+        {
+            if (onTalkStart != null)
+                onTalkStart(t);
+        }
+        protected static void FireOnTalkFinish(Talk t, bool succeeded)
+        {
+            if (onTalkFinish != null)
+                onTalkFinish(t, succeeded);
+        }
+#if UNITY_EDITOR
+        protected static void FireOnAudioClipImport(Talk t, AudioClip ac)
         {
             if (onAudioClipImport != null)
                 onAudioClipImport(t, ac);

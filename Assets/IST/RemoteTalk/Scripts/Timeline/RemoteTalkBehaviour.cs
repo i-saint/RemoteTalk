@@ -14,6 +14,7 @@ namespace IST.RemoteTalk
     [Serializable]
     public class RemoteTalkBehaviour : PlayableBehaviour
     {
+        public PlayableDirector director;
         public RemoteTalkTrack track;
         public RemoteTalkMixerBehaviour mixer;
         public TimelineClip clip;
@@ -26,6 +27,7 @@ namespace IST.RemoteTalk
 
         bool m_pending;
         bool m_exporting;
+        double m_timePause;
 
 
         public override void OnBehaviourPlay(Playable playable, FrameData info)
@@ -33,27 +35,29 @@ namespace IST.RemoteTalk
             if (mixer == null)
             {
                 mixer = Misc.FindOutput<RemoteTalkMixerBehaviour>(playable);
+                director = mixer.director;
                 track = mixer.track;
                 clip = mixer.FindClip(clipHash);
-
-                if (clip != null)
-                {
-                    var rtc = (RemoteTalkClip)clip.asset;
-                    audioClip = rtc.GetAudioClip();
-                    bool audipClipUpdated = rtc.UpdateCachedClip(true);
-#if UNITY_EDITOR
-                    if (audipClipUpdated)
-                        Undo.RecordObject(track, "RemoteTalk");
-#endif
-
-                    clip.displayName = rtc.GetDisplayName();
-                    rtc.UpdateCachedClip();
-
-                    if (audipClipUpdated)
-                        track.OnAudioClipUpdated(this);
-                }
             }
 
+            if (clip != null)
+            {
+                var rtc = (RemoteTalkClip)clip.asset;
+                bool audipClipUpdated = rtc.UpdateCachedClip(true);
+#if UNITY_EDITOR
+                if (audipClipUpdated)
+                    Undo.RecordObject(track, "RemoteTalk");
+#endif
+
+                clip.displayName = rtc.GetDisplayName();
+                rtc.UpdateCachedClip();
+                audioClip = rtc.GetAudioClip();
+
+                if (audipClipUpdated)
+                    OnAudioClipUpdated();
+            }
+
+            m_exporting = false;
             m_pending = true;
         }
 
@@ -102,40 +106,101 @@ namespace IST.RemoteTalk
                         rtc.audioClip.defaultValue = null;
 
                         m_pending = false;
+#if UNITY_EDITOR
                         if (provider.exportAudio)
                         {
                             m_exporting = true;
-                            track.OnTalk(this, info);
+                            if (RemoteTalkTrack.pauseWhenExport && info.evaluationType == FrameData.EvaluationType.Playback)
+                            {
+                                // note:
+                                // on 2017.x, PlayableDirector.Pause() seems don't pause playback in editor.
+                                // so, emulate pause by updating PlayableDirector.time.
+                                m_timePause = director.time;
+                                director.Pause();
+                            }
                         }
+#endif
                     }
                 }
             }
+
+#if UNITY_EDITOR
+            if (m_exporting && m_timePause > 0)
+            {
+                if (info.evaluationType != FrameData.EvaluationType.Playback)
+                    m_timePause = 0;
+                if (m_timePause > 0)
+                {
+                    // see above note
+                    director.time = m_timePause;
+                }
+            }
+#endif
         }
 
 
 #if UNITY_EDITOR
-        public void OnAudioClipImport(Talk t, AudioClip ac)
+        public void OnTalkFinished(Talk t, bool succeeded)
         {
-            if (!m_exporting)
+            if (!m_exporting || m_timePause == 0)
                 return;
-            m_exporting = false;
 
-            var rtc = (RemoteTalkClip)clip.asset;
-            if (rtc.UpdateCachedClip())
+            if (!succeeded)
             {
-                audioClip = rtc.audioClip.defaultValue as AudioClip;
-                if (track != null)
-                    track.OnAudioClipUpdated(this);
+                m_exporting = false;
+                m_timePause = 0;
+                director.Resume();
             }
         }
 
+        public void OnAudioClipImport(Talk t, AudioClip ac)
+        {
+            if (!m_exporting || m_timePause == 0)
+                return;
+
+            m_exporting = false;
+            var rtc = (RemoteTalkClip)clip.asset;
+            if (rtc.UpdateCachedClip())
+            {
+                OnAudioClipUpdated();
+            }
+
+            if (director.time == m_timePause)
+            {
+                m_timePause = 0;
+                director.time = clip.end;
+                director.Resume();
+            }
+        }
+#endif
+
+        public void OnAudioClipUpdated()
+        {
+            var rtc = (RemoteTalkClip)clip.asset;
+            double prev = clip.duration;
+            double duration = rtc.duration;
+            double gap = duration - prev;
+
+            if (RemoteTalkTrack.fitDuration && !double.IsInfinity(prev))
+            {
+#if UNITY_EDITOR
+                Undo.RecordObject(track, "RemoteTalk");
+#endif
+                clip.duration = duration;
+                track.ArrangeClips(clip.start, gap);
+            }
+        }
+
+#if UNITY_EDITOR
         public override void OnPlayableCreate(Playable playable)
         {
+            RemoteTalkProvider.onTalkFinish += OnTalkFinished;
             RemoteTalkProvider.onAudioClipImport += OnAudioClipImport;
         }
 
         public override void OnPlayableDestroy(Playable playable)
         {
+            RemoteTalkProvider.onTalkFinish -= OnTalkFinished;
             RemoteTalkProvider.onAudioClipImport -= OnAudioClipImport;
         }
 #endif

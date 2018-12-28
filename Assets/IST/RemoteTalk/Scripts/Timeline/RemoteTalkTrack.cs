@@ -85,40 +85,6 @@ namespace IST.RemoteTalk
             return ret;
         }
 
-        public void OnTalk(RemoteTalkBehaviour behaviour, FrameData info)
-        {
-            if (pauseWhenExport && (info.evaluationType == FrameData.EvaluationType.Playback && info.deltaTime > 0))
-            {
-                director.Pause();
-                m_resumeRequested = true;
-                m_timeResumeRequested = director.time;
-            }
-        }
-
-        public void OnAudioClipUpdated(RemoteTalkBehaviour behaviour)
-        {
-            var clip = behaviour.clip;
-            var rtc = (RemoteTalkClip)clip.asset;
-            double prev = clip.duration;
-            double duration = rtc.duration;
-            double gap = duration - prev;
-
-            if (fitDuration && !double.IsInfinity(prev))
-            {
-#if UNITY_EDITOR
-                Undo.RecordObject(this, "RemoteTalk");
-#endif
-                clip.duration = duration;
-                ArrangeClips(clip.start, gap);
-            }
-            if (pauseWhenExport && m_resumeRequested && director.time == m_timeResumeRequested)
-            {
-                director.time = clip.end;
-                director.Resume();
-                m_resumeRequested = false;
-            }
-        }
-
         public void ArrangeClips(double time, double gap)
         {
             if (arrangeClips == ArrangeScope.None)

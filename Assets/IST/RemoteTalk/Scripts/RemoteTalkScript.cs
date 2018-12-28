@@ -70,8 +70,8 @@ namespace IST.RemoteTalk
 
         static List<TalkParam> ExtractTalkParams(ref string line, ref float wait, bool clearParamBlock = false)
         {
-            var rxParamBlock = new Regex(@"\{([^}]+)\}\s*", RegexOptions.Compiled);
-            var rxParam = new Regex(@"([^ ]+?)\s*:\s*([\d.]+)", RegexOptions.Compiled);
+            var rxParamBlock = new Regex(@"\{([^}]+)\}\s*");
+            var rxParam = new Regex(@"([^ ]+?)\s*:\s*([\d.]+)");
 
             var ret = new List<TalkParam>();
             var block = rxParamBlock.Match(line);
@@ -108,8 +108,8 @@ namespace IST.RemoteTalk
             using (var fin = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
                 talks = new List<Talk>();
-                var rxName = new Regex(@"^\[(.+?)\]", RegexOptions.Compiled);
-                var rxEmptyLine = new Regex(@"^\s*$", RegexOptions.Compiled);
+                var rxName = new Regex(@"^\[(.+?)\]");
+                var rxEmptyLine = new Regex(@"^\s*$");
 
                 var castName = "";
                 var baseParam = new List<TalkParam>();
@@ -166,7 +166,7 @@ namespace IST.RemoteTalk
                         var parray = talk.param.Select(p => p.name + ":" + p.value).ToList();
                         if (talk.wait > 0.0f)
                             parray.Add("wait:" + talk.wait);
-                        sb.Append(String.Join(", ", parray));
+                        sb.Append(String.Join(", ", parray.ToArray()));
                         sb.Append("}\r\n");
                     }
                     sb.Append(talk.text);

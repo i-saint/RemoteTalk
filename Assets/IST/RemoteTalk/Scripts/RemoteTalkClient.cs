@@ -29,7 +29,7 @@ namespace IST.RemoteTalk
         [SerializeField] TalkParam[] m_talkParams;
         [SerializeField] string m_talkText;
 
-        [SerializeField] bool m_exportAudio = false;
+        [SerializeField] bool m_exportAudio = true;
         [SerializeField] string m_exportDir = "RemoteTalkAssets";
         [SerializeField] AudioFileFormat m_exportFileFormat = AudioFileFormat.Ogg;
         [SerializeField] rtOggSettings m_oggSettings = rtOggSettings.defaultValue;
@@ -291,6 +291,8 @@ namespace IST.RemoteTalk
 
         void UpdateState()
         {
+            bool talkSucceeded = false;
+
             if (m_asyncStats.isFinished)
             {
                 m_asyncStats.Release();
@@ -320,20 +322,23 @@ namespace IST.RemoteTalk
                         (buf.sampleLength > 0 && m_asyncTalk.isFinished && m_asyncTalk.boolValue))
                     {
                         UseOutput(audio => { audio.Play(buf, SyncBuffers); });
+                        FireOnTalkStart(m_currentTalk);
                     }
                 }
 
                 if (m_asyncTalk.isFinished)
                 {
                     m_client.SyncBuffers();
-                    bool result = m_asyncTalk.boolValue;
+                    talkSucceeded = m_asyncTalk.boolValue;
+                    FireOnTalkFinish(m_currentTalk, talkSucceeded);
+
                     m_asyncTalk.Release();
                     m_isServerTalking = false;
 #if UNITY_EDITOR
-                    if (!result)
+                    if (!talkSucceeded)
                         UpdateStats();
 
-                    if (result && m_exportAudio)
+                    if (talkSucceeded && m_exportAudio)
                     {
                         MakeSureAssetDirectoryExists();
                         FinishExportClip(true);
@@ -407,7 +412,7 @@ namespace IST.RemoteTalk
                 {
                     AssetDatabase.ImportAsset(m_exportingAssetPath);
                     var ac = AssetDatabase.LoadAssetAtPath<AudioClip>(m_exportingAssetPath);
-                    RemoteTalkProvider.FireOnAudioClipImport(m_currentTalk, ac);
+                    FireOnAudioClipImport(m_currentTalk, ac);
                 });
             }
         }

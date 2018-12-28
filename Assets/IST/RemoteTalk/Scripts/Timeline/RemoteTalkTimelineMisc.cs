@@ -17,6 +17,7 @@ namespace IST.RemoteTalk
 {
     public static partial class Misc
     {
+#if UNITY_EDITOR
         public static TimelineAsset currentTimeline
         {
             get
@@ -24,7 +25,7 @@ namespace IST.RemoteTalk
 #if UNITY_2018_1_OR_NEWER
                 return TimelineEditor.inspectedAsset;
 #else
-                var director = GetCurrentDirector();
+                var director = currentDirector;
                 if (director != null)
                     return director.playableAsset as TimelineAsset;
                 return null;
@@ -45,6 +46,7 @@ namespace IST.RemoteTalk
 #endif
             }
         }
+#endif
 
         public static T FindOutput<T>(Playable h, bool recursive = false) where T : PlayableBehaviour, new()
         {
