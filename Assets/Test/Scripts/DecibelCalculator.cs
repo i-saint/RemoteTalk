@@ -62,6 +62,10 @@ public class DecibelCalculator : MonoBehaviour
             m_squareSum = 0;
             m_sampleCount = 0;
         }
+        else
+        {
+            dB -= 0.5f;
+        }
 
         if (bandPassFilter)
         {

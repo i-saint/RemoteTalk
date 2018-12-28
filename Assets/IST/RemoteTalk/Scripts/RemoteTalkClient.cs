@@ -145,7 +145,7 @@ namespace IST.RemoteTalk
         public override string hostName { get { return m_hostName; } }
         public override Cast[] casts { get { return m_casts; } }
 
-        public int sampleLength { get { return m_client.buffer.sampleLength; } }
+        public override bool exportAudio { get { return m_exportAudio; } }
         public string assetPath { get { return "Assets/" + m_exportDir; } }
 #endregion
 

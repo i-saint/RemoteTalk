@@ -2,7 +2,6 @@
 #if UNITY_2017_1_OR_NEWER
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Timeline;
 
 namespace IST.RemoteTalk
 {
@@ -47,8 +46,8 @@ namespace IST.RemoteTalk
             if (GUILayout.Button("Export Text"))
             {
                 var filename = "RemoteTalkTimeline";
-                if (TimelineEditor.inspectedAsset)
-                    filename = TimelineEditor.inspectedAsset.name;
+                if (Misc.currentTimeline)
+                    filename = Misc.currentTimeline.name;
                 RemoteTalkTrack.ExportText(EditorUtility.SaveFilePanel("Export Text", ".", filename, "txt"));
             }
             EditorGUILayout.EndHorizontal();

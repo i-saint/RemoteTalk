@@ -245,6 +245,7 @@ namespace IST.RemoteTalk
         public abstract bool isPlaying { get; }
         public abstract bool isReady { get; }
         public abstract AudioSource output { get; set; }
+        public abstract bool exportAudio { get; }
 
         public abstract bool Play(Talk talk);
         public abstract void Stop();

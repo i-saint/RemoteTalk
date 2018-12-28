@@ -70,11 +70,13 @@ namespace IST.RemoteTalk
                     {
                         var rtc = (RemoteTalkClip)clip.asset;
                         rtc.audioClip.defaultValue = null;
-                        audioClip = null;
 
                         m_pending = false;
-                        m_exporting = true;
-                        track.OnTalk(this, info);
+                        if (provider.exportAudio)
+                        {
+                            m_exporting = true;
+                            track.OnTalk(this, info);
+                        }
                     }
                 }
             }

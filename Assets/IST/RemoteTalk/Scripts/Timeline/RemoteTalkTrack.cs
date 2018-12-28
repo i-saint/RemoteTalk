@@ -8,7 +8,6 @@ using UnityEngine.Timeline;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.Timeline;
 #endif
 
 namespace IST.RemoteTalk
@@ -255,8 +254,8 @@ namespace IST.RemoteTalk
 #if UNITY_EDITOR
         public static bool ImportText(string path, TextImportOptions opt)
         {
-            var timeline = TimelineEditor.inspectedAsset;
-            var director = TimelineEditor.inspectedDirector;
+            var timeline = Misc.currentTimeline;
+            var director = Misc.currentDirector;
             if (timeline != null && director != null)
             {
                 Undo.RecordObject(timeline, "RemoteTalk");
@@ -296,7 +295,7 @@ namespace IST.RemoteTalk
 #if UNITY_EDITOR
         public static bool ExportText(string path)
         {
-            return ExportText(path, TimelineEditor.inspectedAsset);
+            return ExportText(path, Misc.currentTimeline);
         }
 #endif
 
@@ -350,7 +349,7 @@ namespace IST.RemoteTalk
 #if UNITY_EDITOR
         public static bool ConvertToAudioTrack()
         {
-            var timeline = TimelineEditor.inspectedAsset;
+            var timeline = Misc.currentTimeline;
             Undo.RecordObject(timeline, "RemoteTalk");
             return GenAudioTracks(timeline, timeline) != null;
         }

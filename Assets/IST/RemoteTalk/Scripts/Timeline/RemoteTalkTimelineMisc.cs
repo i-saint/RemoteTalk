@@ -8,13 +8,44 @@ using UnityEngine.Timeline;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor;
+#if UNITY_2018_1_OR_NEWER
 using UnityEditor.Timeline;
+#endif
 #endif
 
 namespace IST.RemoteTalk
 {
     public static partial class Misc
     {
+        public static TimelineAsset currentTimeline
+        {
+            get
+            {
+#if UNITY_2018_1_OR_NEWER
+                return TimelineEditor.inspectedAsset;
+#else
+                var director = GetCurrentDirector();
+                if (director != null)
+                    return director.playableAsset as TimelineAsset;
+                return null;
+#endif
+            }
+        }
+        public static PlayableDirector currentDirector
+        {
+            get
+            {
+#if UNITY_2018_1_OR_NEWER
+                return TimelineEditor.inspectedDirector;
+#else
+                var go = Selection.activeGameObject;
+                if (go != null)
+                    return go.GetComponent<PlayableDirector>();
+                return null;
+#endif
+            }
+        }
+
         public static void EnumerateTracks(TrackAsset track, Action<TrackAsset> act)
         {
             act(track);
