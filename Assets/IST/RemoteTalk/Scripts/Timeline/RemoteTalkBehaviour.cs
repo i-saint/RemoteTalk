@@ -5,15 +5,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace IST.RemoteTalk
 {
     [Serializable]
     public class RemoteTalkBehaviour : PlayableBehaviour
     {
-        public PlayableDirector director;
         public RemoteTalkTrack track;
+        public RemoteTalkMixerBehaviour mixer;
         public TimelineClip clip;
+        public int clipHash;
 
         public Talk talk = new Talk();
         public AudioSource audioSource;
@@ -26,12 +30,38 @@ namespace IST.RemoteTalk
 
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
+            if (mixer == null)
+            {
+                mixer = Misc.FindOutput<RemoteTalkMixerBehaviour>(playable);
+                track = mixer.track;
+                clip = mixer.FindClip(clipHash);
+
+                if (clip != null)
+                {
+                    var rtc = (RemoteTalkClip)clip.asset;
+                    audioClip = rtc.GetAudioClip();
+                    bool audipClipUpdated = rtc.UpdateCachedClip(true);
+#if UNITY_EDITOR
+                    if (audipClipUpdated)
+                        Undo.RecordObject(track, "RemoteTalk");
+#endif
+
+                    clip.displayName = rtc.GetDisplayName();
+                    rtc.UpdateCachedClip();
+
+                    if (audipClipUpdated)
+                        track.OnAudioClipUpdated(this);
+                }
+            }
+
             m_pending = true;
         }
 
         public override void OnBehaviourPause(Playable playable, FrameData info)
         {
             m_pending = false;
+            if (track == null)
+                return;
 
             var output = track.audioSource;
             if (output != null)
@@ -49,7 +79,7 @@ namespace IST.RemoteTalk
                 return;
 
             var output = playerData as AudioSource;
-            if (output == null)
+            if (output == null || clip == null)
             {
                 m_pending = false;
                 return;
@@ -83,6 +113,7 @@ namespace IST.RemoteTalk
         }
 
 
+#if UNITY_EDITOR
         public void OnAudioClipImport(Talk t, AudioClip ac)
         {
             if (!m_exporting)
@@ -93,11 +124,11 @@ namespace IST.RemoteTalk
             if (rtc.UpdateCachedClip())
             {
                 audioClip = rtc.audioClip.defaultValue as AudioClip;
-                track.OnAudioClipUpdated(this);
+                if (track != null)
+                    track.OnAudioClipUpdated(this);
             }
         }
 
-#if UNITY_EDITOR
         public override void OnPlayableCreate(Playable playable)
         {
             RemoteTalkProvider.onAudioClipImport += OnAudioClipImport;

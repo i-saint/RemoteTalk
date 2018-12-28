@@ -1,6 +1,9 @@
 #if UNITY_2017_1_OR_NEWER
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Timeline;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -9,6 +12,16 @@ namespace IST.RemoteTalk
 {
     public class RemoteTalkMixerBehaviour : PlayableBehaviour
     {
+        public PlayableDirector director;
+        public RemoteTalkTrack track;
+
+        public IEnumerable<TimelineClip> clips { get { return track.GetClips(); } }
+
+        public TimelineClip FindClip(int hash)
+        {
+            return clips.FirstOrDefault(a => ((RemoteTalkClip)a.asset).GetHashCode() == hash);
+        }
+
 #if UNITY_EDITOR
         void OnUndoRedo()
         {

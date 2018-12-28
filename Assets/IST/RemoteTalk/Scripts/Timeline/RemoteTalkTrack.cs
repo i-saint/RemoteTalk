@@ -160,9 +160,13 @@ namespace IST.RemoteTalk
 
             var playable = ScriptPlayable<RemoteTalkMixerBehaviour>.Create(graph, inputCount);
             var mixer = playable.GetBehaviour();
+            mixer.director = director;
+            mixer.track = this;
             return playable;
         }
 
+        /*
+         * elegant way, but available only on 2018.3 or newer...
         protected override Playable CreatePlayable(PlayableGraph graph, GameObject go, TimelineClip clip)
         {
             var rtc = (RemoteTalkClip)clip.asset;
@@ -188,7 +192,7 @@ namespace IST.RemoteTalk
                 OnAudioClipUpdated(behaviour);
             return ret;
         }
-
+        */
 
         public class TextImportOptions
         {

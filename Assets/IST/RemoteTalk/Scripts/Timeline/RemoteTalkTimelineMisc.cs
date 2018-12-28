@@ -46,6 +46,69 @@ namespace IST.RemoteTalk
             }
         }
 
+        public static T FindOutput<T>(Playable h, bool recursive = false) where T : PlayableBehaviour, new()
+        {
+            if (!h.IsValid())
+                return null;
+
+            for (int port = 0; port < h.GetOutputCount(); ++port)
+            {
+                var playable = h.GetOutput(port);
+                if (playable.IsValid())
+                {
+                    var type = playable.GetPlayableType();
+                    if (type == typeof(T))
+                        return ((ScriptPlayable<T>)playable).GetBehaviour();
+                    else if (recursive)
+                        return FindOutput<T>(playable, recursive);
+                }
+            }
+            return null;
+        }
+        public static T FindOutput<T>(PlayableGraph graph, bool recursive = false) where T : PlayableBehaviour, new()
+        {
+            int outputs = graph.GetRootPlayableCount();
+            for (int i = 0; i < outputs; i++)
+            {
+                var found = FindOutput<T>(graph.GetRootPlayable(i), recursive);
+                if (found != null)
+                    return found;
+            }
+            return null;
+        }
+
+        public static T FindInput<T>(Playable h, bool recursive = false) where T : PlayableBehaviour, new()
+        {
+            if (!h.IsValid())
+                return null;
+
+            for (int port = 0; port < h.GetInputCount(); ++port)
+            {
+                var playable = h.GetInput(port);
+                if (playable.IsValid())
+                {
+                    var type = playable.GetPlayableType();
+                    if (type == typeof(T))
+                        return ((ScriptPlayable<T>)playable).GetBehaviour();
+                    else if (recursive)
+                        return FindInput<T>(playable, recursive);
+                }
+            }
+            return null;
+        }
+        public static T FindInput<T>(PlayableGraph graph, bool recursive = false) where T : PlayableBehaviour, new()
+        {
+            int outputs = graph.GetRootPlayableCount();
+            for (int i = 0; i < outputs; i++)
+            {
+                var found = FindInput<T>(graph.GetRootPlayable(i), recursive);
+                if (found != null)
+                    return found;
+            }
+            return null;
+        }
+
+
         public static void EnumerateTracks(TrackAsset track, Action<TrackAsset> act)
         {
             act(track);

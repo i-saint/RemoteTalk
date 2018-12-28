@@ -21,10 +21,24 @@ namespace IST.RemoteTalk
             get { return ClipCaps.None; }
         }
 
+        public AudioClip GetAudioClip()
+        {
+            return audioClip.defaultValue as AudioClip;
+        }
+
+        public string GetDisplayName()
+        {
+            return talk.text + "_" + talk.castName;
+        }
+
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
             talk.ValidateParams();
-            return ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);
+            var ret = ScriptPlayable<RemoteTalkBehaviour>.Create(graph, template);
+            var behaviour = ret.GetBehaviour();
+            behaviour.talk = talk;
+            behaviour.clipHash = GetHashCode();
+            return ret;
         }
 
 
