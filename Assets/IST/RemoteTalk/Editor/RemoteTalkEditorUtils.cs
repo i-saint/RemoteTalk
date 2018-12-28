@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
@@ -34,7 +33,6 @@ namespace IST.RemoteTalk
             return ret;
         }
 
-#if UNITY_EDITOR
         [MenuItem("GameObject/Remote Talk/Create Client", false, 10)]
         public static void CreateRemoteTalkClient(MenuCommand menuCommand)
         {
@@ -69,7 +67,5 @@ namespace IST.RemoteTalk
             }
             Debug.Log(result);
         }
-#endif
     }
 }
-#endif

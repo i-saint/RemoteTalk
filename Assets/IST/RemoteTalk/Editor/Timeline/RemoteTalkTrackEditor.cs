@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 #if UNITY_2017_1_OR_NEWER
 using UnityEngine;
 using UnityEditor;
@@ -62,5 +61,4 @@ namespace IST.RemoteTalk
     }
 
 }
-#endif
 #endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 #if UNITY_2017_1_OR_NEWER
 using System.Linq;
 using UnityEditor;
@@ -13,7 +12,6 @@ namespace IST.RemoteTalk
         {
             //DrawDefaultInspector();
 
-            var t = target as RemoteTalkClip;
             var so = serializedObject;
 
             // TalkDrawer doesn't work well with multiple objects
@@ -113,5 +111,4 @@ namespace IST.RemoteTalk
         }
     }
 }
-#endif
 #endif
