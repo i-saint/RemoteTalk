@@ -25,9 +25,10 @@ namespace IST.RemoteTalk
         public AudioClip audioClip;
         public RemoteTalkProvider remoteTalk;
 
+        const double NullTime = -1;
         bool m_pending;
         bool m_exporting;
-        double m_timePause;
+        double m_timePause = NullTime;
 
 
         public override void OnBehaviourPlay(Playable playable, FrameData info)
@@ -44,20 +45,19 @@ namespace IST.RemoteTalk
             {
                 var rtc = (RemoteTalkClip)clip.asset;
                 bool audipClipUpdated = rtc.UpdateCachedClip(true);
-#if UNITY_EDITOR
                 if (audipClipUpdated)
+                {
+#if UNITY_EDITOR
                     Undo.RecordObject(track, "RemoteTalk");
+                    clip.displayName = rtc.GetDisplayName();
 #endif
-
-                clip.displayName = rtc.GetDisplayName();
-                rtc.UpdateCachedClip();
+                    rtc.UpdateCachedClip();
+                }
                 audioClip = rtc.GetAudioClip();
-
                 if (audipClipUpdated)
                     OnAudioClipUpdated();
             }
 
-            m_exporting = false;
             m_pending = true;
         }
 
@@ -113,7 +113,7 @@ namespace IST.RemoteTalk
                             if (RemoteTalkTrack.pauseWhenExport && info.evaluationType == FrameData.EvaluationType.Playback)
                             {
                                 // note:
-                                // on 2017.x, PlayableDirector.Pause() seems don't pause playback in editor.
+                                // on 2017.x, PlayableDirector.Pause() seems don't pause playback if not playing in editor.
                                 // so, emulate pause by updating PlayableDirector.time.
                                 m_timePause = director.time;
                                 director.Pause();
@@ -125,11 +125,11 @@ namespace IST.RemoteTalk
             }
 
 #if UNITY_EDITOR
-            if (m_exporting && m_timePause > 0)
+            if (m_exporting && m_timePause > NullTime)
             {
                 if (info.evaluationType != FrameData.EvaluationType.Playback)
-                    m_timePause = 0;
-                if (m_timePause > 0)
+                    m_timePause = NullTime;
+                if (m_timePause > NullTime)
                 {
                     // see above note
                     director.time = m_timePause;
@@ -142,20 +142,20 @@ namespace IST.RemoteTalk
 #if UNITY_EDITOR
         public void OnTalkFinished(Talk t, bool succeeded)
         {
-            if (!m_exporting || m_timePause == 0)
+            if (!m_exporting || m_timePause == NullTime || !talk.Equals(t))
                 return;
 
             if (!succeeded)
             {
                 m_exporting = false;
-                m_timePause = 0;
+                m_timePause = NullTime;
                 director.Resume();
             }
         }
 
         public void OnAudioClipImport(Talk t, AudioClip ac)
         {
-            if (!m_exporting || m_timePause == 0)
+            if (!m_exporting || m_timePause == NullTime || !talk.Equals(t))
                 return;
 
             m_exporting = false;
@@ -165,9 +165,11 @@ namespace IST.RemoteTalk
                 OnAudioClipUpdated();
             }
 
-            if (director.time == m_timePause)
+            // on 2017.x, director.time can be advanced by delta time
+            const double MaxAllowdDelta = 0.2;
+            if (Math.Abs(director.time - m_timePause) < MaxAllowdDelta)
             {
-                m_timePause = 0;
+                m_timePause = NullTime;
                 director.time = clip.end;
                 director.Resume();
             }

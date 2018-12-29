@@ -121,7 +121,7 @@ namespace IST.RemoteTalk
     }
 
     [Serializable]
-    public class Talk
+    public class Talk : IEquatable<Talk>
     {
         public string castName = "";
         public TalkParam[] param = new TalkParam[0];
@@ -192,6 +192,11 @@ namespace IST.RemoteTalk
             var tparam = rtTalkParams.defaultValue;
             tparam.Assign(param);
             return castName.GetHashCode() ^ text.GetHashCode() ^ (int)tparam.hash;
+        }
+
+        public bool Equals(Talk v)
+        {
+            return v.GetHashCode() == GetHashCode();
         }
     }
 

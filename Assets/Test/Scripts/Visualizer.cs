@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Experimental.VFX;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -8,21 +9,13 @@ using UnityEditor;
 [ExecuteInEditMode]
 public class Visualizer : MonoBehaviour
 {
-    public DecibelCalculator sourceSound;
-    public Material dstMaterial;
-    public Transform dstTransform;
+    public VisualEffect visualEffect;
+    public DecibelCalculator[] sourceSound;
+    public float spawn = 4000.0f;
 
-    Material m_material;
-    public Color m_emission;
 
     void OnEnable()
     {
-        m_material = new Material(dstMaterial);
-        var renderer = GetComponent<MeshRenderer>();
-        renderer.sharedMaterial = m_material;
-
-        m_emission = m_material.GetColor("_EmissionColor");
-
 #if UNITY_EDITOR
         if (!EditorApplication.isPlaying)
             EditorApplication.update += Update;
@@ -39,8 +32,14 @@ public class Visualizer : MonoBehaviour
 
     void Update()
     {
-        float v = Mathf.Clamp((sourceSound.dB / 150.0f + 0.5f) * 2.0f, 0.0f, 3.0f);
-        m_material.SetColor("_EmissionColor", m_emission * v);
-        dstTransform.localScale = new Vector3(v, v, v);
+        if (sourceSound != null && sourceSound.Length > 0 && visualEffect != null)
+        {
+            float db = sourceSound[0].dB;
+            for (int i = 1; i < sourceSound.Length; ++i)
+                db = Mathf.Max(db, sourceSound[i].dB);
+
+            float v = (Mathf.Clamp(db / 150.0f, -1.0f, 1.0f) * 0.5f + 0.5f) * spawn;
+            visualEffect.SetFloat("Spawn", v);
+        }
     }
 }

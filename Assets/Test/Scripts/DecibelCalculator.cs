@@ -64,7 +64,7 @@ public class DecibelCalculator : MonoBehaviour
         }
         else
         {
-            dB -= 0.5f;
+            dB -= 5.0f;
         }
 
         if (bandPassFilter)

@@ -52,7 +52,7 @@ namespace IST.RemoteTalk
                 {
                     if (!dryRun)
                         audioClip.defaultValue = ac;
-                    return ac != null;
+                    return true;
                 }
             }
             return false;

@@ -8,7 +8,7 @@ using UnityEngine.Timeline;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor;
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_2017_2_OR_NEWER
 using UnityEditor.Timeline;
 #endif
 #endif
@@ -22,8 +22,10 @@ namespace IST.RemoteTalk
         {
             get
             {
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_2_OR_NEWER
                 return TimelineEditor.inspectedAsset;
+#elif UNITY_2017_2_OR_NEWER
+                return TimelineEditor.timelineAsset;
 #else
                 var director = currentDirector;
                 if (director != null)
@@ -36,8 +38,10 @@ namespace IST.RemoteTalk
         {
             get
             {
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_2_OR_NEWER
                 return TimelineEditor.inspectedDirector;
+#elif UNITY_2017_2_OR_NEWER
+                return TimelineEditor.playableDirector;
 #else
                 var go = Selection.activeGameObject;
                 if (go != null)
