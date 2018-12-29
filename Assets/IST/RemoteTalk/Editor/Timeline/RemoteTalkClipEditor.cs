@@ -2,8 +2,9 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using IST.RemoteTalk;
 
-namespace IST.RemoteTalk
+namespace IST.RemoteTalkEditor
 {
     [CustomEditor(typeof(RemoteTalkClip)), CanEditMultipleObjects]
     public class RemoteTalkClipEditor : Editor

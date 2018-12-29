@@ -40,7 +40,7 @@ TestLocal/
 TestLocal.meta
 
 Assembly-CSharp*
-RemoteTalk.csproj
+IST.RemoteTalk*.csproj
 RemoteTalk.sln
 Assets/RemoteTalkAssets/
 Assets/DefaultPlayables*

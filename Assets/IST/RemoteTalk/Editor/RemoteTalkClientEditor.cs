@@ -1,8 +1,9 @@
 ﻿using System.Linq;
 using UnityEngine;
 using UnityEditor;
+using IST.RemoteTalk;
 
-namespace IST.RemoteTalk
+namespace IST.RemoteTalkEditor
 {
     [CustomEditor(typeof(RemoteTalkClient))]
     public class RemoteTalkClientEditor : Editor

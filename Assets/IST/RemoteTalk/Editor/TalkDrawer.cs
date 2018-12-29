@@ -1,8 +1,9 @@
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
+using IST.RemoteTalk;
 
-namespace IST.RemoteTalk
+namespace IST.RemoteTalkEditor
 {
     [CustomPropertyDrawer(typeof(Talk))]
     public class TalkDrawer : PropertyDrawer

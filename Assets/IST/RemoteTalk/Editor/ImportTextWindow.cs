@@ -1,8 +1,9 @@
 #if UNITY_2017_1_OR_NEWER
 using UnityEngine;
 using UnityEditor;
+using IST.RemoteTalk;
 
-namespace IST.RemoteTalk
+namespace IST.RemoteTalkEditor
 {
     public class ImportTextWindow : EditorWindow
     {

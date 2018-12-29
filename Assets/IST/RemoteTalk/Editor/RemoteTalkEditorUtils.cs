@@ -2,8 +2,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
+using IST.RemoteTalk;
 
-namespace IST.RemoteTalk
+namespace IST.RemoteTalkEditor
 {
     public static class RemoteTalkEditorUtils
     {
