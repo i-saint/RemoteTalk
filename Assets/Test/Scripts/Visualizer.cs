@@ -12,6 +12,7 @@ public class Visualizer : MonoBehaviour
     public VisualEffect visualEffect;
     public DecibelCalculator[] sourceSound;
     public float spawn = 4000.0f;
+    public float radius = 0.5f;
 
 
     void OnEnable()
@@ -38,8 +39,10 @@ public class Visualizer : MonoBehaviour
             for (int i = 1; i < sourceSound.Length; ++i)
                 db = Mathf.Max(db, sourceSound[i].dB);
 
-            float v = (Mathf.Clamp(db / 150.0f, -1.0f, 1.0f) * 0.5f + 0.5f) * spawn;
-            visualEffect.SetFloat("Spawn", v);
+            float n = Mathf.Pow(Mathf.Clamp((db + 250.0f) / 250.0f, 0.0f, 1.0f), 2.0f);
+            visualEffect.SetFloat("Spawn", n * spawn);
+            visualEffect.SetFloat("Radius", n * radius);
+            visualEffect.SetFloat("Octave", 3.0f + n * 4.0f);
         }
     }
 }

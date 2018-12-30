@@ -1,7 +1,7 @@
 #pragma once
 
-#define rtPluginVersion 20181227
-#define rtPluginVersionStr "20181227"
+#define rtPluginVersion 20181231
+#define rtPluginVersionStr "20181231"
 #define rtProtocolVersion 100
 
 

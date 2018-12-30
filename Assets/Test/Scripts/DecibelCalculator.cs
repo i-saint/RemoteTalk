@@ -64,7 +64,7 @@ public class DecibelCalculator : MonoBehaviour
         }
         else
         {
-            dB -= 5.0f;
+            dB = Mathf.Max(dB - 5.0f, -260.0f);
         }
 
         if (bandPassFilter)
