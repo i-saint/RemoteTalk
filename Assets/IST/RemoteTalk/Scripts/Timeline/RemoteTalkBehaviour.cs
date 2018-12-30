@@ -45,18 +45,20 @@ namespace IST.RemoteTalk
             if (clip != null)
             {
                 var rtc = (RemoteTalkClip)clip.asset;
+#if UNITY_EDITOR
                 bool audipClipUpdated = rtc.UpdateCachedClip(true);
                 if (audipClipUpdated)
                 {
-#if UNITY_EDITOR
                     Undo.RecordObject(track, "RemoteTalk");
                     clip.displayName = rtc.GetDisplayName();
-#endif
                     rtc.UpdateCachedClip();
                 }
+#endif
                 audioClip = rtc.GetAudioClip();
+#if UNITY_EDITOR
                 if (audipClipUpdated)
                     OnAudioClipUpdated();
+#endif
             }
 
             m_pending = true;
@@ -172,7 +174,6 @@ namespace IST.RemoteTalk
             }
             m_timePaused = NullTime;
         }
-#endif
 
         public void OnAudioClipUpdated()
         {
@@ -183,15 +184,12 @@ namespace IST.RemoteTalk
 
             if (RemoteTalkTrack.fitDuration && !double.IsInfinity(prev) && !double.IsInfinity(duration))
             {
-#if UNITY_EDITOR
                 Undo.RecordObject(track, "RemoteTalk");
-#endif
                 clip.duration = duration;
                 track.ArrangeClips(clip.start, gap);
             }
         }
 
-#if UNITY_EDITOR
         public override void OnPlayableCreate(Playable playable)
         {
             RemoteTalkProvider.onTalkFinish += OnTalkFinished;
