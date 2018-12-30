@@ -140,36 +140,37 @@ namespace IST.RemoteTalk
 #if UNITY_EDITOR
         public void OnTalkFinished(Talk t, bool succeeded)
         {
-            if (!m_exporting || m_timePaused == NullTime || !talk.Equals(t))
+            if (!m_exporting || !talk.Equals(t))
                 return;
 
             if (!succeeded)
             {
                 m_exporting = false;
+
+                // on 2017.x, director.time can be advanced by delta time
+                if (m_timePaused != NullTime && Math.Abs(director.time - m_timePaused) < MaxAllowedDelta)
+                    director.Resume();
                 m_timePaused = NullTime;
-                director.Resume();
             }
         }
 
         public void OnAudioClipImport(Talk t, AudioClip ac)
         {
-            if (!m_exporting || m_timePaused == NullTime || !talk.Equals(t))
+            if (!m_exporting || !talk.Equals(t))
                 return;
 
             m_exporting = false;
             var rtc = (RemoteTalkClip)clip.asset;
             if (rtc.UpdateCachedClip())
-            {
                 OnAudioClipUpdated();
-            }
 
-            // on 2017.x, director.time can be advanced by delta time
-            if (Math.Abs(director.time - m_timePaused) < MaxAllowedDelta)
+            // same as above
+            if (m_timePaused != NullTime && Math.Abs(director.time - m_timePaused) < MaxAllowedDelta)
             {
-                m_timePaused = NullTime;
                 director.time = clip.end + 0.001;
                 director.Resume();
             }
+            m_timePaused = NullTime;
         }
 #endif
 

@@ -318,6 +318,8 @@ namespace IST.RemoteTalk
         public static bool ConvertToAudioTrack()
         {
             var timeline = Misc.currentTimeline;
+            if (timeline == null)
+                return false;
             Undo.RecordObject(timeline, "RemoteTalk");
             return GenAudioTracks(timeline, timeline) != null;
         }

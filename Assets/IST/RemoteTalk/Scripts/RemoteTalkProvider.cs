@@ -194,6 +194,7 @@ namespace IST.RemoteTalk
             return castName.GetHashCode() ^ text.GetHashCode() ^ (int)tparam.hash;
         }
 
+        // compare cast name, text and param values (param names, ranges and other fields are ignored)
         public bool Equals(Talk v)
         {
             return v.GetHashCode() == GetHashCode();

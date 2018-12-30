@@ -219,34 +219,37 @@ namespace IST.RemoteTalk
             }
         }
 
-        public void Assign(TalkParam[] src)
+        public void Assign(IEnumerable<TalkParam> src)
         {
             flags = 0;
             if (src == null)
                 return;
-            int n = Mathf.Clamp(src.Length, 0, MaxParams);
-            for (int i = 0; i < n; ++i)
+            int i = 0;
+            foreach (var p in src)
             {
-                if (src[i] == null)
-                    continue;
-                switch (i)
+                if (p != null)
                 {
-                    case 0: p0 = src[0].value; break;
-                    case 1: p1 = src[1].value; break;
-                    case 2: p2 = src[2].value; break;
-                    case 3: p3 = src[3].value; break;
-                    case 4: p4 = src[4].value; break;
-                    case 5: p5 = src[5].value; break;
-                    case 6: p6 = src[6].value; break;
-                    case 7: p7 = src[7].value; break;
-                    case 8: p8 = src[8].value; break;
-                    case 9: p9 = src[9].value; break;
-                    case 10: p10 = src[10].value; break;
-                    case 11: p11 = src[11].value; break;
-                    case 12: p12 = src[12].value; break;
-                    case 13: p13 = src[13].value; break;
+                    switch (i)
+                    {
+                        case 0: p0 = p.value; break;
+                        case 1: p1 = p.value; break;
+                        case 2: p2 = p.value; break;
+                        case 3: p3 = p.value; break;
+                        case 4: p4 = p.value; break;
+                        case 5: p5 = p.value; break;
+                        case 6: p6 = p.value; break;
+                        case 7: p7 = p.value; break;
+                        case 8: p8 = p.value; break;
+                        case 9: p9 = p.value; break;
+                        case 10: p10 = p.value; break;
+                        case 11: p11 = p.value; break;
+                        case 12: p12 = p.value; break;
+                        case 13: p13 = p.value; break;
+                    }
+                    flags |= (1 << i);
                 }
-                flags |= (1 << i);
+                if (++i == MaxParams)
+                    break;
             }
         }
 
