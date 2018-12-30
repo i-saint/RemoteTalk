@@ -35,7 +35,7 @@ Unity は 5.6 以降で動作します。ただし、5.6 には Timeline があ�
 - Timeline ウィンドウの "Add" から Ist.RemoteTalk -> Remote Talk Track で専用の Track を追加します
 - "Add Remote Talk Clip" で Clip を追加、Clip を選択するとキャストやテキストの編集メニューが表示されます。
 - テキストファイルから Track や Clip を作成することもできます。長文の場合こちらの方が便利でしょう。
-  - Clip 選択時の "Import Text" ボタン、もしくは GameObject -> Remote Talk -> Import Text でインポートします。
+  - Clip 選択時の "Import Text" ボタン、もしくは GameObject -> Remote Talk -> Create Timeline From Text File でインポートします。
   - テキストの内容は [DemoTalk.txt](Assets/Test/Animations/DemoTalks.txt) がいい例になると思われます。
   - 行頭に [キャスト名] があると、以降はそのキャストが発話するテキストになります。
   - {パラメータ名:数値} があると、そのパラメータが適用されます。これは [キャスト名] の後にある場合には以降そのキャストのデフォルトパラメータとして使用され、それ以外の行にある場合はその行のみのパラメータとして扱われます。複数指定する場合 "," で区切ります。例: {高さ:0.8, 抑揚:0.8}
@@ -46,10 +46,9 @@ Unity は 5.6 以降で動作します。ただし、5.6 には Timeline があ�
 
 ![timline](https://user-images.githubusercontent.com/1488611/50542180-77bb3d80-0bfa-11e9-8966-c9e54f9c116d.png)
 
-
 ## RemoteTalkScript
-RemoteTalkScript というコンポーネントでも自動再生が可能です。
-Timeline がない Unity 5.x でも使用可能で、テキストファイルから Clip の生成にも対応しています。  
+<img align="right" src="https://user-images.githubusercontent.com/1488611/50543296-8bc16800-0c17-11e9-8207-665e790b4886.png" width=300>
+RemoteTalkScript というコンポーネントでも自動再生が可能です。Timeline がない Unity 5.x でも使用可能で、テキストファイルから Clip の生成にも対応しています。 GameObject -> RemoteTalk -> Create Script で作成できます。  
 ただ、2017 以降では Timeline の方がおすすめです。Timeline と比べると、AudioTrack 変換相当機能がない、一括編集できない、他のオブジェクトと連動させるのが大変、などのデメリットがあります。
 
 

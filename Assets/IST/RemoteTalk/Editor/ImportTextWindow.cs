@@ -10,7 +10,7 @@ namespace IST.RemoteTalkEditor
         public string path;
         RemoteTalkTrack.TextImportOptions options = new RemoteTalkTrack.TextImportOptions();
 
-        [MenuItem("GameObject/Remote Talk/Import Text")]
+        [MenuItem("GameObject/Remote Talk/Create Timeline From Text File")]
         public static void Open()
         {
             var path = EditorUtility.OpenFilePanel("Import Text", ".", "txt");

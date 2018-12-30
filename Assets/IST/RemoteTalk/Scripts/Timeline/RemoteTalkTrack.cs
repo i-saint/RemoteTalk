@@ -29,8 +29,6 @@ namespace IST.RemoteTalk
         public static bool pauseWhenExport = true;
         public static bool fitDuration = true;
         public static ArrangeScope arrangeClips = ArrangeScope.AllRemoteTalkTracks;
-        bool m_resumeRequested;
-        double m_timeResumeRequested;
 
         public PlayableDirector director { get; set; }
 
