@@ -58,7 +58,7 @@ namespace IST.RemoteTalkEditor
         {
             var go = new GameObject();
             go.name = "RemoteTalkScript";
-            var rts = go.AddComponent<RemoteTalkScript>();
+            go.AddComponent<RemoteTalkScript>();
 
             Undo.RegisterCreatedObjectUndo(go, "RemoteTalk");
         }
