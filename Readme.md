@@ -5,9 +5,9 @@ VOICEROID や CeVIO Creative Studio などの音声を Unity の AudioSource と
 パラメータの設定、テキストの入力、読み上げを Unity 側からコントロールでき、読み上げた音声は自動的にファイル (wav, ogg) にエクスポートできます。また、Timeline との強力な連携機能も備えています。
 
 現在動作の確認が取れているツールは以下になります。VOICEROID シリーズは他のキャラクターでも動作する可能性は高いと思われますが、未確認です。
-- VOICEROID2 (Version 2.0.4.0 結月ゆかり、継星あかり)
-- VOICEROID EX+ (Version 1.7.3 民安ともえ=弦巻マキ)
-- CeVIO Creative Studio 6 (Version 6.1.29.0)
+- VOICEROID2: Version 2.0.4.0 - 2.0.5.0 + 結月ゆかり、継星あかり、民安ともえ(EX からのインポート)
+- VOICEROID EX+: Version 1.7.3 民安ともえ
+- CeVIO Creative Studio: Version 6.1.29.0
 - Windows SAPI (Windows に標準搭載されている読み上げ機能)
 
 Unity は 5.6 以降で動作します。ただし、5.6 には Timeline がありません。2017 系以降は Timeline が使えますが、2017 系と 2018 系で動作に若干違いがあります。2018 の方が望ましい動作になります。

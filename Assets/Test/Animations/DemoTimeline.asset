@@ -563,7 +563,7 @@ MonoBehaviour:
     foldParams: 0
   audioClip:
     exposedName: 
-    defaultValue: {fileID: 8300000, guid: ed20291f0b5083343970d8090ff9f489, type: 3}
+    defaultValue: {fileID: 8300000, guid: 703619960de2ea0479c6273e7fbc5cdc, type: 3}
 --- !u!114 &114182998828794304
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1148,7 +1148,7 @@ MonoBehaviour:
   m_Parent: {fileID: 114988311583186396}
   m_Children: []
   m_Clips:
-  - m_Start: 22.450022675736964
+  - m_Start: 22.47151927437642
     m_ClipIn: 0
     m_Asset: {fileID: 114468340266303316}
     m_Duration: 0.53
@@ -1416,7 +1416,7 @@ MonoBehaviour:
   m_Parent: {fileID: 114988311583186396}
   m_Children: []
   m_Clips:
-  - m_Start: 19.920022675736963
+  - m_Start: 19.941519274376418
     m_ClipIn: 0
     m_Asset: {fileID: 114954226980530356}
     m_Duration: 2.03
@@ -1741,7 +1741,7 @@ MonoBehaviour:
   m_Name: RemoteTalkClip
   m_EditorClassIdentifier: 
   talk:
-    castName: "\u5F26\u5DFB\u30DE\u30AD"
+    castName: "\u6C11\u5B89\u3068\u3082\u3048"
     param:
     - name: "\u97F3\u91CF"
       value: 1
@@ -1764,7 +1764,7 @@ MonoBehaviour:
     foldParams: 0
   audioClip:
     exposedName: 
-    defaultValue: {fileID: 8300000, guid: d70aba963d835e94c8522c4f8a1d3eac, type: 3}
+    defaultValue: {fileID: 8300000, guid: 212731c87c2261345a2888a61bea8ae2, type: 3}
 --- !u!114 &114682343724488550
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2240,7 +2240,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u73FE\u5728\u52D5\u4F5C\u306E\u78BA\u8A8D\u304C\u53D6\u308C\u3066\u3044\u308B\u306E\u306F\u3001VOICEROID2\u3088\u308A\u79C1\u3001\u7D50\u6708\u3086\u304B\u308A\u3002_\u7D50\u6708\u3086\u304B\u308A"
     m_Version: 1
-  - m_Start: 23.98002267573697
+  - m_Start: 24.001519274376424
     m_ClipIn: 0
     m_Asset: {fileID: 114361217626930322}
     m_Duration: 6.5
@@ -2309,7 +2309,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u306A\u3069\u3067\u3059\u3002\u672A\u78BA\u8A8D\u3067\u306F\u3042\u308A\u307E\u3059\u304C\u3001\u4ED6\u306E\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u3067\u3082\u52D5\u4F5C\u3059\u308B\u53EF\u80FD\u6027\u306F\u9AD8\u3044\u3068\u601D\u308F\u308C\u307E\u3059\u3002_\u7D50\u6708\u3086\u304B\u308A"
     m_Version: 1
-  - m_Start: 30.980022675736972
+  - m_Start: 31.001519274376427
     m_ClipIn: 0
     m_Asset: {fileID: 114394886721115272}
     m_Duration: 5.03
@@ -2378,7 +2378,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u30C6\u30AD\u30B9\u30C8\u306E\u5165\u529B\u3084\u30D1\u30E9\u30E1\u30FC\u30BF\u306E\u8A2D\u5B9A\u306F\u3001\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u304B\u3089\u884C\u3046\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002_\u7D50\u6708\u3086\u304B\u308A"
     m_Version: 1
-  - m_Start: 36.51002267573697
+  - m_Start: 36.53151927437643
     m_ClipIn: 0
     m_Asset: {fileID: 114771022957461130}
     m_Duration: 3.6
@@ -2447,7 +2447,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u3053\u306E\u3088\u3046\u306B\u3001\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u56FA\u6709\u306E\u30D1\u30E9\u30E1\u30FC\u30BF\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002_\u7D50\u6708\u3086\u304B\u308A"
     m_Version: 1
-  - m_Start: 63.32002268765788
+  - m_Start: 63.34151928629734
     m_ClipIn: 0
     m_Asset: {fileID: 114384020094116286}
     m_Duration: 4.82
@@ -2516,7 +2516,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u305D\u3057\u3066\u3001\u3053\u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u306E\u771F\u4FA1\u306F\u81EA\u52D5\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3068\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3\u9023\u52D5\u306B\u3042\u308A\u307E\u3059\u3002_\u7D50\u6708\u3086\u304B\u308A"
     m_Version: 1
-  - m_Start: 68.64002268765789
+  - m_Start: 68.66151928629733
     m_ClipIn: 0
     m_Asset: {fileID: 114505727027374006}
     m_Duration: 6.96
@@ -2585,7 +2585,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3\u306B\u30C8\u30E9\u30C3\u30AF\u3092\u4F5C\u6210\u3057\u3001\u30C6\u30AD\u30B9\u30C8\u3092\u914D\u7F6E\u3059\u308B\u3068\u3001\u521D\u56DE\u518D\u751F\u6642\u306B\u97F3\u58F0\u304C\u30D5\u30A1\u30A4\u30EB\u306B\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3055\u308C\u307E\u3059\u3002_\u7D50\u6708\u3086\u304B\u308A"
     m_Version: 1
-  - m_Start: 76.10002268765788
+  - m_Start: 76.12151928629733
     m_ClipIn: 0
     m_Asset: {fileID: 114172849188118220}
     m_Duration: 5.49
@@ -2777,7 +2777,7 @@ MonoBehaviour:
   - m_Start: 13.5
     m_ClipIn: 0
     m_Asset: {fileID: 114675056772101782}
-    m_Duration: 3.5100226757369613
+    m_Duration: 3.5315192743764174
     m_TimeScale: 1
     m_ParentTrack: {fileID: 114861592726427236}
     m_EaseInDuration: 0
@@ -2841,7 +2841,7 @@ MonoBehaviour:
     m_PreExtrapolationMode: 0
     m_PostExtrapolationTime: 0
     m_PreExtrapolationTime: 0
-    m_DisplayName: "VOICEROID EX\u30D7\u30E9\u30B9\u3088\u308A\u3001\u5F26\u5DFB\u30DE\u30AD\u3060\u3088\u30FC\uFF1F_\u5F26\u5DFB\u30DE\u30AD"
+    m_DisplayName: "VOICEROID EX\u30D7\u30E9\u30B9\u3088\u308A\u3001\u5F26\u5DFB\u30DE\u30AD\u3060\u3088\u30FC\uFF1F_\u6C11\u5B89\u3068\u3082\u3048"
     m_Version: 1
   m_Version: 2
 --- !u!114 &114862907057034934
@@ -2863,7 +2863,7 @@ MonoBehaviour:
   m_Parent: {fileID: 114988311583186396}
   m_Children: []
   m_Clips:
-  - m_Start: 17.510022675736963
+  - m_Start: 17.531519274376418
     m_ClipIn: 0
     m_Asset: {fileID: 114179323281686970}
     m_Duration: 1.91
@@ -3207,7 +3207,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u540C\u3058\u304F\u7D32\u661F\u3042\u304B\u308A\u3002_\u7D32\u661F\u3042\u304B\u308A"
     m_Version: 1
-  - m_Start: 40.61002267573697
+  - m_Start: 40.63151927437643
     m_ClipIn: 0
     m_Asset: {fileID: 114734242916833650}
     m_Duration: 6.8
@@ -3276,7 +3276,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u30E6\u30CB\u30C6\u30A3\u30FC\u5074\u3067\u306F\u672C\u5F53\u306B\u305F\u3060\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30BD\u30FC\u30B9\u306A\u306E\u3067\u3001\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u306B\u97F3\u306B\u52A0\u5DE5\u3084\u89E3\u6790\u3092\u65BD\u3059\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002_\u7D32\u661F\u3042\u304B\u308A"
     m_Version: 1
-  - m_Start: 47.91002267573697
+  - m_Start: 47.93151927437643
     m_ClipIn: 0
     m_Asset: {fileID: 114425652060504830}
     m_Duration: 3.4
@@ -3345,7 +3345,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u4F8B\u3048\u3070\u3001\u3053\u308C\u306F\u30AA\u30FC\u30C7\u30A3\u30AA\u30D5\u30A3\u30EB\u30BF\u3001\u30EA\u30D0\u30FC\u30D6\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002_\u7D32\u661F\u3042\u304B\u308A"
     m_Version: 1
-  - m_Start: 52.31002267573695
+  - m_Start: 52.33151927437641
     m_ClipIn: 0
     m_Asset: {fileID: 114029029407449240}
     m_Duration: 1.42
@@ -3414,7 +3414,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u3053\u308C\u306F\u30A8\u30B3\u30FC\u306E\u30C6\u30B9\u30C8\u3067\u3059\u3002_\u7D32\u661F\u3042\u304B\u308A"
     m_Version: 1
-  - m_Start: 55.730022675736954
+  - m_Start: 55.75151927437641
     m_ClipIn: 0
     m_Asset: {fileID: 114251458040504772}
     m_Duration: 6.29
@@ -3483,7 +3483,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u307E\u305F\u3001\u3053\u306E\u80CC\u666F\u306E\u30A8\u30D5\u30A7\u30AF\u30C8\u306F\u3001VFX\u30B0\u30E9\u30D5\u306B\u97F3\u58F0\u306E\u30D1\u30E9\u30E1\u30FC\u30BF\u3092\u4E0E\u3048\u308B\u3053\u3068\u3067\u9023\u52D5\u3055\u305B\u3066\u3044\u307E\u3059\u3002_\u7D32\u661F\u3042\u304B\u308A"
     m_Version: 1
-  - m_Start: 82.09002268765788
+  - m_Start: 82.11151928629732
     m_ClipIn: 0
     m_Asset: {fileID: 114900878124240478}
     m_Duration: 5.54
@@ -3552,7 +3552,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u5168\u3066\u306E\u30AF\u30EA\u30C3\u30D7\u3092\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3057\u305F\u3042\u3068\u306F\u3001\u30E6\u30CB\u30C6\u30A3\u30FC\u6A19\u6E96\u306E\u30AA\u30FC\u30C7\u30A3\u30AA\u30C8\u30E9\u30C3\u30AF\u3078\u5909\u63DB\u3059\u308B\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002_\u7D32\u661F\u3042\u304B\u308A"
     m_Version: 1
-  - m_Start: 88.13002268765788
+  - m_Start: 88.15151928629733
     m_ClipIn: 0
     m_Asset: {fileID: 114150287714411770}
     m_Duration: 4.98
@@ -3621,7 +3621,7 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: "\u5909\u63DB\u5F8C\u306F\u8907\u6570\u97F3\u58F0\u306E\u30D6\u30EC\u30F3\u30C9\u3068\u3044\u3063\u305F\u3001\u3088\u308A\u67D4\u8EDF\u306A\u7DE8\u96C6\u304C\u53EF\u80FD\u306B\u306A\u308A\u307E\u3059\u3002_\u7D32\u661F\u3042\u304B\u308A"
     m_Version: 1
-  - m_Start: 94.41002269957882
+  - m_Start: 94.43151929821826
     m_ClipIn: 0
     m_Asset: {fileID: 114166845756284256}
     m_Duration: 7.25
