@@ -17,7 +17,7 @@ Unity は 5.6 以降で動作します。ただし、5.6 には Timeline があ�
 ## 基本的な使い方
 <img align="right" src="https://user-images.githubusercontent.com/1488611/50464656-8379ea80-09d5-11e9-838e-b88579d372a5.png" width=300>
 
-- Releases から RemoteTalk.unitypackage をダウンロードしてプロジェクトにインポート
+- [Releases](https://github.com/i-saint/RemoteTalk/releases) から RemoteTalk.unitypackage をダウンロードしてプロジェクトにインポート
 - GameObject -> RemoteTalk -> Create Client でクライアントを作成
 - RemoteTalkClient の "Connection" からツールに接続
   - VOICEROID2: ボタンを押せば自動的に起動するはずですが、ツールを検出できなかった場合は VoiceroidEditor.exe の場所を指定するためのダイアログを出します。起動済みの場合は起動中のツールへ接続します
