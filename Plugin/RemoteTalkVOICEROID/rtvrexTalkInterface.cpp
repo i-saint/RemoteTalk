@@ -141,7 +141,6 @@ void TalkInterface::setupControls()
         cast_name = std::regex_replace(cast_name, std::wregex(L"^VOICEROID{ ", std::regex_constants::icase), L"");
         cast_name = std::regex_replace(cast_name, std::wregex(L" EX$", std::regex_constants::icase), L"");
         cast_name = std::regex_replace(cast_name, std::wregex(L"Talk$", std::regex_constants::icase), L"");
-        cast_name = std::regex_replace(cast_name, std::wregex(L"–¯ˆÀ‚Æ‚à‚¦"), L"Œ·Šªƒ}ƒL");
 
         m_cast.name = rt::ToMBS(cast_name);
         m_cast.params.clear();

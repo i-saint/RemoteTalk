@@ -48,12 +48,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmd, int show)
                 // try to get install dir from registry
                 char tmp[MAX_PATH + 1];
                 DWORD tmp_size = sizeof(tmp);
-                if (::RegGetValueA(HKEY_LOCAL_MACHINE,
+                const char *targets[] = {
                     "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{6F962085-923C-4AEE-BFC2-D64FAEE9B82D}",
-                    "InstallLocation", RRF_RT_REG_SZ, NULL, tmp, &tmp_size) == ERROR_SUCCESS)
-                {
-                    exe_path = std::string(tmp, tmp_size - 1);
-                    exe_path += rtvr2HostExe;
+                    "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{A5AB1665-A2AB-445C-952C-810C00788253}",
+                };
+                for (auto target : targets) {
+                    if (::RegGetValueA(HKEY_LOCAL_MACHINE, target, "InstallLocation", RRF_RT_REG_SZ, NULL, tmp, &tmp_size) == ERROR_SUCCESS)
+                    {
+                        exe_path = std::string(tmp, tmp_size - 1);
+                        exe_path += rtvr2HostExe;
+                        break;
+                    }
+                }
+
+                // try to open Program Files
+                if (exe_path.empty()) {
+                    auto n = ::GetEnvironmentVariableA("ProgramFiles(x86)", tmp, tmp_size);
+                    if (n > 0) {
+                        std::string tmp_path(tmp, tmp + n);
+                        tmp_path += "\\AHS\\VOICEROID2\\" rtvr2HostExe;
+
+                        DWORD dwAttrib = GetFileAttributes(tmp_path.c_str());
+                        if (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+                            exe_path = tmp_path;
+                    }
                 }
             }
 
