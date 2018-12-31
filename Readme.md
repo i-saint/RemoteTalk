@@ -1,3 +1,5 @@
+[![RemoteTalk demo](https://img.youtube.com/vi/QeWlsMqsYtg/0.jpg)](https://www.youtube.com/watch?v=QeWlsMqsYtg)  
+[RemoteTalk demo - https://www.youtube.com/watch?v=QeWlsMqsYtg](https://www.youtube.com/watch?v=QeWlsMqsYtg)
 # RemoteTalk
 VOICEROID や CeVIO Creative Studio などの音声を Unity の AudioSource として使えるようにするプラグインです。  
 パラメータの設定、テキストの入力、読み上げを Unity 側からコントロールでき、読み上げた音声は自動的にファイル (wav, ogg) にエクスポートできます。また、Timeline との強力な連携機能も備えています。
