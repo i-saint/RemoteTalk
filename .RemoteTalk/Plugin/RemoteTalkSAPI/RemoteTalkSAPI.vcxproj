@@ -40,7 +40,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AA037F77-DE62-47A1-8A93-2364FF69D51A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Debug'">
@@ -85,10 +85,10 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Plugins\x86_64\</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Runtime\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Plugins\x86\</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Runtime\Plugins\x86\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -115,10 +115,10 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Plugins\x86_64\</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Runtime\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Plugins\x86\</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /Yq $(TargetPath) $(SolutionDir)..\Assets\IST\RemoteTalk\Runtime\Plugins\x86\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

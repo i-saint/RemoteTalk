@@ -13,22 +13,15 @@
 *.bundle
 *.dylib
 *.so
-*.exr
-*.gif
-*.png
-*.mp4
-*.h264
-*.aac
-*.webm
 *.ogg
+*.ogg.meta
 *.flac
+*.flac.meta
 *.wav
-*.zip
-*.mll
+*.wav.meta
 *.unitypackage
 
 .vs/
-.mayaSwatches/
 _out/
 _tmp/
 _build_*/
@@ -39,11 +32,8 @@ obj/
 TestLocal/
 TestLocal.meta
 
-Assembly-CSharp*
-IST.RemoteTalk*.csproj
-RemoteTalk.sln
-Assets/RemoteTalkAssets/
-Assets/DefaultPlayables*
+.RemoteTalk/*.sln
+.RemoteTalk/*.csproj
 Assets/StreamingAssets/RemoteTalk/*.json
 Assets/StreamingAssets/RemoteTalk/*.json.meta
 
