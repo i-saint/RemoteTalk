@@ -416,6 +416,11 @@ namespace IST.RemoteTalk
                 });
             }
         }
+
+        void Awake()
+        {
+            DeployStreamingAssets.Deploy();
+        }
 #endif
 
         protected override void OnEnable()
