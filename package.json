@@ -3,5 +3,5 @@
     "description": "This package allow Unity to use text-to-speech software as AudioSources. currently supported softwares: VOICEROID, CeVIO CS, and Windows SAPI",
     "version": "1.0.0",
     "unity": "2018.3",
-    "displayName": "Remote Talk"
+    "displayName": "RemoteTalk"
 }

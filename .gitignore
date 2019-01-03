@@ -1,18 +1,7 @@
-*.ipch
-*.sdf
-*.opendb
-*.db
 *.user
-*.log
-*.tlog
-*.aps
 *.DS_Store
+*.unitypackage
 
-*.exe
-*.dll
-*.bundle
-*.dylib
-*.so
 *.ogg
 *.ogg.meta
 *.flac
@@ -36,5 +25,3 @@ TestLocal.meta
 .RemoteTalk/*.csproj
 Assets/StreamingAssets/RemoteTalk/*.json
 Assets/StreamingAssets/RemoteTalk/*.json.meta
-
-Plugin/dist/
