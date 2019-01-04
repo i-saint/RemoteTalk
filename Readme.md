@@ -7,7 +7,7 @@ VOICEROID や CeVIO Creative Studio などの音声を Unity の AudioSource と
 現在動作の確認が取れているツールは以下になります。VOICEROID シリーズは他のキャラクターでも動作する可能性は高いと思われますが、未確認です。
 - VOICEROID2: Version 2.0.4.0 - 2.0.5.0 + 結月ゆかり、継星あかり、民安ともえ(EX からのインポート)
 - VOICEROID EX+: Version 1.7.3 民安ともえ
-- CeVIO Creative Studio: Version 6.1.29.0
+- CeVIO Creative Studio: Version 6.1.29.0 + さとうささら、すずきつづみ、タカハシ
 - Windows SAPI (Windows に標準搭載されている読み上げ機能)
 
 Unity は 5.6 以降で動作します。ただし、5.6 には Timeline がありません。2017 系以降は Timeline が使えますが、2017 系と 2018 系で動作に若干違いがあります。2018 の方が望ましい動作になります。
@@ -42,8 +42,8 @@ Unity は 5.6 以降で動作します。ただし、5.6 には Timeline があ�
 - Timeline ウィンドウの "Add" から Ist.RemoteTalk -> Remote Talk Track で専用の Track を追加します
 - "Add Remote Talk Clip" で Clip を追加、Clip を選択するとキャストやテキストの編集メニューが表示されます。
 - テキストファイルから Track や Clip を作成することもできます。長文の場合こちらの方が便利でしょう。
-  - Clip 選択時の "Import Text" ボタン、もしくは GameObject -> Remote Talk -> Create Timeline From Text File でインポートします。
-  - テキストの内容は [DemoTalk.txt](Assets/Test/Animations/DemoTalks.txt) がいい例になると思われます。
+  - Clip 選択時の "Import Text" ボタン、もしくは GameObject -> Remote Talk -> Create Timeline From Text File でインポートします。**文字コードは UTF-8 でなければなりません**。
+  - テキストの内容は [DemoTalk.txt](.RemoteTalk/Assets/Test/Animations/DemoTalks.txt) がいい例になると思われます。
   - 行頭に [キャスト名] があると、以降はそのキャストが発話するテキストになります。
   - {パラメータ名:数値} があると、そのパラメータが適用されます。これは [キャスト名] の行にある場合には以降そのキャストのデフォルトパラメータとして使用され、それ以外の行にある場合はその行のみのパラメータとして扱われます。複数指定する場合 "," で区切ります。例: {高さ:0.8, 抑揚:0.8}
   - インポート時のオプション "Tracks For Each Cast" が有効だと、キャスト毎に Track と AudioSource が生成されます。無効だと単一の Track に全ての Clip が格納されます。
