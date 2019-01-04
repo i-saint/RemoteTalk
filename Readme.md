@@ -18,11 +18,15 @@ Unity は 5.6 以降で動作します。ただし、5.6 には Timeline があ�
 <img align="right" src="https://user-images.githubusercontent.com/1488611/50464656-8379ea80-09d5-11e9-838e-b88579d372a5.png" width=300>
 
 - [Releases](https://github.com/i-saint/RemoteTalk/releases) から RemoteTalk.unitypackage をダウンロードしてプロジェクトにインポート
+  - Unity 2018.3 以降の場合、このリポジトリを直接インポートすることもできます。プロジェクト内にある Packages/manifest.json をテキストエディタで開き、"dependencies" に以下の行を加えます。
+  > "com.i-saint.remotetalk": "https://github.com/i-saint/RemoteTalk.git",
+
 - GameObject -> RemoteTalk -> Create Client でクライアントを作成
 - RemoteTalkClient の "Connection" からツールに接続
-  - VOICEROID2: ボタンを押せば自動的に起動するはずですが、ツールを検出できなかった場合は VoiceroidEditor.exe の場所を指定するためのダイアログを出します。起動済みの場合は起動中のツールへ接続します
+  - VOICEROID2: ボタンを押せば自動的に起動するはずですが、ツールを検出できなかった場合は VoiceroidEditor.exe の場所を指定するためのダイアログを出します。起動済みの場合は起動中のツールへ接続します。
   - VOICEROID Ex: ファイルダイアログが出るので、VOICEROID.exe を指定します。起動済みの場合、事前に終了させておく必要があります。
     - VOICEROID2 をお持ちの場合、VOICEROID2 のエディタで Ex のデータを使えるようにするアップデータが公式に配布されているので、そちらの利用を強くおすすめいたします。([AHS のマイページ](https://www.ah-soft.com/mypage/)より、製品登録後に入手できます)
+  - CeVIO CS: ボタンを押せば自動的に起動します。既に起動している場合は起動中のツールへ接続します。
 - 接続後はテキストを入力して "Play" で再生できるようになります。
   - 再生完了後、ファイルへのエクスポートが自動的に行われます ("Export Audio" が有効な場合。デフォルトで有効)
   - ファイルはキャスト、テキスト、パラメータに基づいて生成されます。つまり、同じキャストとテキストでも、パラメータが異なれば別ファイルになります。
