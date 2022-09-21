@@ -1,9 +1,11 @@
 {
     "name": "IST.RemoteTalkEditor",
+    "rootNamespace": "",
     "references": [
-        "IST.RemoteTalk"
+        "IST.RemoteTalk",
+        "Unity.Timeline",
+        "Unity.Timeline.Editor"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
@@ -12,5 +14,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
