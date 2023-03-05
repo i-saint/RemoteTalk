@@ -9,6 +9,7 @@
 *.wav
 *.wav.meta
 *.unitypackage
+.vsconfig
 
 .vs/
 _out/
@@ -17,6 +18,7 @@ _build_*/
 external/
 Library/
 Temp/
+Logs/
 obj/
 TestLocal/
 TestLocal.meta
